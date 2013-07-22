@@ -1,7 +1,13 @@
+#!/usr/bin/python
+
 import bottle
 from bottle import route
 import json
 import pprint
+import optparse
+import tempfile
+import os
+
 '''
 
 Bottle reduction server
@@ -18,19 +24,33 @@ Define status
 '''
 
 @route('/', method='GET')
-def homepage():
+def homepage_get():
+    '''
+    Home page:
+    
+    Open with a browser or:
+    curl http://localhost:8080/
+    '''
+    return '<html><h2>Yes I am up and running!</h2></html>'
+
+@route('/', method='POST')
+def homepage_get():
     '''
     Home page
+    
+    curl -X POST  http://localhost:8080/
+    
     '''
-    return '<h2>Yes I am up and running! </h2>'
+    return {'status' : 'Yes I am up and running!'}
 
-@route('/status', method='GET')
+
+@route('/status', method='POST')
 def status():
     """
     Return server status
     
     Test:
-    curl -X GET  http://localhost:8080/status > /tmp/out.txt ; cat /tmp/out.txt 
+    curl -X POST  http://localhost:8080/status 
     """
     rv = {"status" : "waiting"}
     return rv
@@ -44,22 +64,25 @@ def sendfile():
     '''
     
     content = bottle.request.body.read()
+    
     # Need to write the file on disk! there's no open stream in nexus library for python
-    filename = "/tmp/tmp.nxs"
-    with open(filename, 'wb') as f:
-        f.write(content)
-            
+    tempFile = tempfile.NamedTemporaryFile(delete=False)
+    tempFile.write(content)
+    tempFile.close()
+  
     try :
-        import nxs
-        nexusFile = nxs.open(filename,'r')
-        nexusFile.opengroup('entry0')
-        nexusFile.opendata('title')
-        print "Title read from the Nexus file:", nexusFile.getdata()
-        nexusFile.close()
+        import nexus.handler as nx
+        nxHandler = nx.Handler(tempFile.name)  
+        print "Title read from the Nexus file:", nxHandler.title()
         
-    except  Exception as inst:
-        print "Unexpected error:", inst
-        return {"status" : "KO", "message" : str(inst) }
+    except  Exception as e:
+        print "Error while reading the nexus file:", e
+        return {"status" : "KO", "message" : str(e) }
+    
+    try :
+        os.remove(tempFile.name)
+    except  Exception as e:
+        print "Error removing temporary nexus file:", e
     
     return {"status" : "OK"}
 
@@ -86,6 +109,21 @@ def getvariables():
     
     return { "$toto" : [10,10,10,90,90,90], "$tata" : 178, "$titi" : [0, 0, 0] }
 
+def commandLineOptions():
+    '''
+    Define command line options
+    '''
+    parser = optparse.OptionParser()
+    parser.add_option('-s', '--server', help='Server host. Default localhost.', default='localhost')
+    parser.add_option('-p', '--port', help='Server port. Default 8080.', type="int", default=8080)
+    return parser
 
-bottle.debug(True) 
-bottle.run(host='localhost', port=8080)
+if __name__ == '__main__':
+    parser = commandLineOptions();
+    (options, args) = parser.parse_args()
+    
+    # Launch http server
+    bottle.debug(True) 
+    bottle.run(host=options.server, port=options.port)
+
+    
