@@ -1,0 +1,35 @@
+%class Handler
+%package handler
+
+%start MainMap::Accepting
+
+%map MainMap
+%%
+
+// accepting requests - doing nothing
+Accepting
+{   
+    //Trans //Next stage //Actions
+    receiveFile Processing { processFile();} // also sendEstimatedProcessingTime();
+    status nil { sendServerState('Accepting'); }
+    variables nil { sendServerState('Accepting'); }
+}
+
+// busy doing the processing of some data
+Processing
+{
+	receiveFile nil { sendServerState('Processing');} // also sendEstimatedProcessingTime();
+	status nil { sendServerState('Processing'); sendEstimatedProcessingTime();}
+	variables nil { sendServerState('Processing'); sendEstimatedProcessingTime();}
+	timeout Accepting { cleanUp();}
+	
+}
+
+// Data is process, waiting for commands
+Waiting
+{
+	receiveFile Processing { processFile(); sendEstimatedProcessingTime();}
+	status nil { sendServerState('Waiting'); }
+	variables nil {}
+}
+%%
