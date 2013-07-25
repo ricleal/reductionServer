@@ -1,35 +1,50 @@
 %class Handler
 %package handler
 
-%start MainMap::Accepting
+%start MainMap::Idle
 
 %map MainMap
 %%
 
-// accepting requests - doing nothing
-Accepting
+// Note:
+// Transition actions can't have a return type!!!
+
+// accepting new files
+Idle
+Entry { setStatus('Idle'); }
 {   
-    //Trans //Next stage //Actions
-    receiveFile Processing { processFile();} // also sendEstimatedProcessingTime();
-    status nil { sendServerState('Accepting'); }
-    variables nil { sendServerState('Accepting'); }
+	//Trans 
+ 	receiveFile(request)
+ 		//Next
+ 		ProcessingFile 	 
+	        // Actions
+    		{ 
+    			processFile(request);
+    			setStatus('Processing input file'); 
+    		}
 }
 
-// busy doing the processing of some data
-Processing
+ProcessingFile 
+Entry { checkFileProcessing(); }
 {
-	receiveFile nil { sendServerState('Processing');} // also sendEstimatedProcessingTime();
-	status nil { sendServerState('Processing'); sendEstimatedProcessingTime();}
-	variables nil { sendServerState('Processing'); sendEstimatedProcessingTime();}
-	timeout Accepting { cleanUp();}
-	
+	//Trans //Next // Actions  
+ 	success Waiting { setSuccessStatus('File successfully processed.'); }
+	failure Idle { setErrorStatus('ERROR: File NOT processed.'); }
 }
 
-// Data is process, waiting for commands
 Waiting
+Entry { setStatus('Waiting for queries'); }
 {
-	receiveFile Processing { processFile(); sendEstimatedProcessingTime();}
-	status nil { sendServerState('Waiting'); }
-	variables nil {}
+	query(request) ProcessingQuery { handleQuery(request); }
+	reset Idle { cleanUp(); }
 }
+
+ProcessingQuery
+Entry { setStatus('Processing query'); }
+{
+	//Trans //Next // Actions  
+ 	success Waiting { setSuccessStatus('Query satisfied'); }
+	failure Waiting { setErrorStatus('ERROR: Query NOT satisfied'); }
+}
+
 %%

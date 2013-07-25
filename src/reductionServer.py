@@ -7,6 +7,7 @@ import pprint
 import optparse
 import tempfile
 import os
+import sm.handler
 
 '''
 
@@ -14,14 +15,18 @@ Bottle reduction server
 
 To test use curl:
 -X GET | HEAD | POST | PUT | DELETE
-
 Use curl -v for verbose
 
-TODO:
 
-Define status
+Assuming that one server will run for instrument and a single file is handled by the server.
 
 '''
+
+# Global variable
+stateMachine = sm.handler.Handler()
+
+
+
 
 @route('/', method='GET')
 def homepage_get():
@@ -52,8 +57,10 @@ def status():
     Test:
     curl -X POST  http://localhost:8080/status 
     """
-    rv = {"status" : "waiting"}
-    return rv
+    status = stateMachine.status()
+    
+    print "Status", status
+    return status
 
 
 @route('/sendfile', method='POST')
@@ -87,6 +94,34 @@ def sendfile():
     
     return {"status" : "OK"}
 
+
+@route('/file', method='POST')
+def fileHandler():
+    '''
+    
+    Test: curl -X POST --data-binary @filename.nxs http://localhost:8080/sendfile
+    '''
+    #stateMachine.sm().file(bottle.request)
+    stateMachine.sm().receiveFile(bottle.request)
+    
+    status = stateMachine.status()
+    
+    print "Status", status
+    return status
+
+@route('/reset', method=['POST','GET'])
+def cleanup():
+    '''
+    
+    Test: curl -X POST http://localhost:8080/reset
+    '''
+    #stateMachine.sm().file(bottle.request)
+    stateMachine.sm().reset()
+    
+    status = stateMachine.status()
+    
+    print "Status", status
+    return status
 
 @route('/getvariables', method='POST')
 def getvariables():
@@ -122,6 +157,11 @@ def commandLineOptions():
 if __name__ == '__main__':
     parser = commandLineOptions();
     (options, args) = parser.parse_args()
+    
+    # create state machine handler
+#     global stateMachine
+#     stateMachine = sm.handler.Handler()
+    
     
     # Launch http server
     bottle.debug(True) 

@@ -14,13 +14,19 @@ class HandlerState(statemap.State):
     def Exit(self, fsm):
         pass
 
-    def receiveFile(self, fsm):
+    def failure(self, fsm):
         self.Default(fsm)
 
-    def status(self, fsm):
+    def query(self, fsm, request):
         self.Default(fsm)
 
-    def variables(self, fsm):
+    def receiveFile(self, fsm, request):
+        self.Default(fsm)
+
+    def reset(self, fsm):
+        self.Default(fsm)
+
+    def success(self, fsm):
         self.Default(fsm)
 
     def Default(self, fsm):
@@ -33,182 +39,176 @@ class HandlerState(statemap.State):
 class MainMap_Default(HandlerState):
     pass
 
-class MainMap_Accepting(MainMap_Default):
+class MainMap_Idle(MainMap_Default):
 
-    def receiveFile(self, fsm):
+    def Entry(self, fsm):
+        ctxt = fsm.getOwner()
+        ctxt.setStatus('Idle')
+
+    def receiveFile(self, fsm, request):
         ctxt = fsm.getOwner()
         if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("LEAVING STATE   : MainMap.Accepting\n")
+            fsm.getDebugStream().write("LEAVING STATE   : MainMap.Idle\n")
 
         fsm.getState().Exit(fsm)
         if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.Accepting.receiveFile()\n")
+            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.Idle.receiveFile(request)\n")
 
         fsm.clearState()
         try:
-            ctxt.processFile()
-            ctxt.sendStatus()
+            ctxt.processFile(request)
+            ctxt.setStatus('Processing input file')
         finally:
             if fsm.getDebugFlag() == True:
-                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.Accepting.receiveFile()\n")
+                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.Idle.receiveFile(request)\n")
 
-            fsm.setState(MainMap.Processing)
+            fsm.setState(MainMap.ProcessingFile)
             fsm.getState().Entry(fsm)
 
-    def status(self, fsm):
+class MainMap_ProcessingFile(MainMap_Default):
+
+    def Entry(self, fsm):
+        ctxt = fsm.getOwner()
+        ctxt.checkFileProcessing()
+
+    def failure(self, fsm):
         ctxt = fsm.getOwner()
         if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("LEAVING STATE   : MainMap.Accepting\n")
+            fsm.getDebugStream().write("LEAVING STATE   : MainMap.ProcessingFile\n")
 
-        endState = fsm.getState()
+        fsm.getState().Exit(fsm)
         if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.Accepting.status()\n")
+            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.ProcessingFile.failure()\n")
 
         fsm.clearState()
         try:
-            ctxt.sendStatus()
+            ctxt.setErrorStatus('ERROR: File NOT processed.')
         finally:
             if fsm.getDebugFlag() == True:
-                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.Accepting.status()\n")
+                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.ProcessingFile.failure()\n")
 
-            fsm.setState(endState)
+            fsm.setState(MainMap.Idle)
+            fsm.getState().Entry(fsm)
 
-    def variables(self, fsm):
+    def success(self, fsm):
         ctxt = fsm.getOwner()
         if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("LEAVING STATE   : MainMap.Accepting\n")
+            fsm.getDebugStream().write("LEAVING STATE   : MainMap.ProcessingFile\n")
 
-        endState = fsm.getState()
+        fsm.getState().Exit(fsm)
         if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.Accepting.variables()\n")
+            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.ProcessingFile.success()\n")
 
         fsm.clearState()
         try:
-            ctxt.sendStatus()
+            ctxt.setSuccessStatus('File successfully processed.')
         finally:
             if fsm.getDebugFlag() == True:
-                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.Accepting.variables()\n")
+                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.ProcessingFile.success()\n")
 
-            fsm.setState(endState)
-
-class MainMap_Processing(MainMap_Default):
-
-    def receiveFile(self, fsm):
-        ctxt = fsm.getOwner()
-        if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("LEAVING STATE   : MainMap.Processing\n")
-
-        endState = fsm.getState()
-        if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.Processing.receiveFile()\n")
-
-        fsm.clearState()
-        try:
-            ctxt.sendStatus()
-        finally:
-            if fsm.getDebugFlag() == True:
-                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.Processing.receiveFile()\n")
-
-            fsm.setState(endState)
-
-    def status(self, fsm):
-        ctxt = fsm.getOwner()
-        if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("LEAVING STATE   : MainMap.Processing\n")
-
-        endState = fsm.getState()
-        if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.Processing.status()\n")
-
-        fsm.clearState()
-        try:
-            ctxt.sendStatus()
-        finally:
-            if fsm.getDebugFlag() == True:
-                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.Processing.status()\n")
-
-            fsm.setState(endState)
-
-    def variables(self, fsm):
-        ctxt = fsm.getOwner()
-        if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("LEAVING STATE   : MainMap.Processing\n")
-
-        endState = fsm.getState()
-        if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.Processing.variables()\n")
-
-        fsm.clearState()
-        try:
-            ctxt.sendStatus()
-        finally:
-            if fsm.getDebugFlag() == True:
-                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.Processing.variables()\n")
-
-            fsm.setState(endState)
+            fsm.setState(MainMap.Waiting)
+            fsm.getState().Entry(fsm)
 
 class MainMap_Waiting(MainMap_Default):
 
-    def receiveFile(self, fsm):
+    def Entry(self, fsm):
+        ctxt = fsm.getOwner()
+        ctxt.setStatus('Waiting for queries')
+
+    def query(self, fsm, request):
         ctxt = fsm.getOwner()
         if fsm.getDebugFlag() == True:
             fsm.getDebugStream().write("LEAVING STATE   : MainMap.Waiting\n")
 
         fsm.getState().Exit(fsm)
         if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.Waiting.receiveFile()\n")
+            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.Waiting.query(request)\n")
 
         fsm.clearState()
         try:
-            ctxt.processFile()
-            ctxt.sendStatus()
+            ctxt.handleQuery(request)
         finally:
             if fsm.getDebugFlag() == True:
-                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.Waiting.receiveFile()\n")
+                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.Waiting.query(request)\n")
 
-            fsm.setState(MainMap.Processing)
+            fsm.setState(MainMap.ProcessingQuery)
             fsm.getState().Entry(fsm)
 
-    def status(self, fsm):
+    def reset(self, fsm):
         ctxt = fsm.getOwner()
         if fsm.getDebugFlag() == True:
             fsm.getDebugStream().write("LEAVING STATE   : MainMap.Waiting\n")
 
-        endState = fsm.getState()
+        fsm.getState().Exit(fsm)
         if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.Waiting.status()\n")
+            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.Waiting.reset()\n")
 
         fsm.clearState()
         try:
-            ctxt.sendStatus()
+            ctxt.cleanUp()
         finally:
             if fsm.getDebugFlag() == True:
-                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.Waiting.status()\n")
+                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.Waiting.reset()\n")
 
-            fsm.setState(endState)
+            fsm.setState(MainMap.Idle)
+            fsm.getState().Entry(fsm)
 
-    def variables(self, fsm):
+class MainMap_ProcessingQuery(MainMap_Default):
+
+    def Entry(self, fsm):
+        ctxt = fsm.getOwner()
+        ctxt.setStatus('Processing query')
+
+    def failure(self, fsm):
+        ctxt = fsm.getOwner()
         if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("LEAVING STATE   : MainMap.Waiting\n")
+            fsm.getDebugStream().write("LEAVING STATE   : MainMap.ProcessingQuery\n")
 
+        fsm.getState().Exit(fsm)
         if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.Waiting.variables()\n")
+            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.ProcessingQuery.failure()\n")
 
+        fsm.clearState()
+        try:
+            ctxt.setErrorStatus('ERROR: Query NOT satisfied')
+        finally:
+            if fsm.getDebugFlag() == True:
+                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.ProcessingQuery.failure()\n")
+
+            fsm.setState(MainMap.Waiting)
+            fsm.getState().Entry(fsm)
+
+    def success(self, fsm):
+        ctxt = fsm.getOwner()
         if fsm.getDebugFlag() == True:
-            fsm.getDebugStream().write("EXIT TRANSITION : MainMap.Waiting.variables()\n")
+            fsm.getDebugStream().write("LEAVING STATE   : MainMap.ProcessingQuery\n")
 
+        fsm.getState().Exit(fsm)
+        if fsm.getDebugFlag() == True:
+            fsm.getDebugStream().write("ENTER TRANSITION: MainMap.ProcessingQuery.success()\n")
+
+        fsm.clearState()
+        try:
+            ctxt.setSuccessStatus('Query satisfied')
+        finally:
+            if fsm.getDebugFlag() == True:
+                fsm.getDebugStream().write("EXIT TRANSITION : MainMap.ProcessingQuery.success()\n")
+
+            fsm.setState(MainMap.Waiting)
+            fsm.getState().Entry(fsm)
 
 class MainMap(object):
 
-    Accepting = MainMap_Accepting('MainMap.Accepting', 0)
-    Processing = MainMap_Processing('MainMap.Processing', 1)
+    Idle = MainMap_Idle('MainMap.Idle', 0)
+    ProcessingFile = MainMap_ProcessingFile('MainMap.ProcessingFile', 1)
     Waiting = MainMap_Waiting('MainMap.Waiting', 2)
+    ProcessingQuery = MainMap_ProcessingQuery('MainMap.ProcessingQuery', 3)
     Default = MainMap_Default('MainMap.Default', -1)
 
 class Handler_sm(statemap.FSMContext):
 
     def __init__(self, owner):
-        statemap.FSMContext.__init__(self, MainMap.Accepting)
+        statemap.FSMContext.__init__(self, MainMap.Idle)
         self._owner = owner
 
     def __getattr__(self, attrib):
