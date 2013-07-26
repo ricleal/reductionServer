@@ -8,7 +8,7 @@ Prerequisites:
 -	Java 
 
 Generate the state machine:
---------------
+---------------------------
 
 **Files**:
 - The state machine definition: handler.sm
@@ -28,8 +28,8 @@ python test.py
 
 ```
 
-Generate Graphviz Plot
------------
+Generate the Graphviz Plot:
+---------------------------
 
 ```
 java -jar $SMC_FOLDER/bin/Smc.jar -graph -glevel 1 handler.sm
@@ -41,4 +41,3 @@ dot handler_sm.dot -Tpng -ohandler_sm.png
 
 ![Bilby Stampede](handler_sm.png)
 
- 

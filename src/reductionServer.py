@@ -6,8 +6,10 @@ import json
 import pprint
 import optparse
 import tempfile
-import os
+import sys
 import sm.handler
+import logging
+import os.path
 
 '''
 
@@ -22,9 +24,15 @@ Assuming that one server will run for instrument and a single file is handled by
 
 '''
 
-# Global variable
-stateMachine = sm.handler.Handler()
+# Global variables
+# load the logging configuration
 
+LOGGING_CONF=os.path.join(os.path.dirname(__file__),"logging.ini")
+from logging import config as _config
+_config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
+logger = logging.getLogger("server")
+
+stateMachine = sm.handler.Handler()
 
 
 
@@ -36,16 +44,19 @@ def homepage_get():
     Open with a browser or:
     curl http://localhost:8080/
     '''
-    return '<html><h2>Yes I am up and running!</h2></html>'
+    ret = '<html><h2>Yes I am up and running!</h2></html>'
+    logger.debug('homepage_get')
+    return ret
 
 @route('/', method='POST')
-def homepage_get():
+def homepage_post():
     '''
     Home page
     
     curl -X POST  http://localhost:8080/
     
     '''
+    logger.debug('homepage_post')
     return {'status' : 'Yes I am up and running!'}
 
 
@@ -59,40 +70,40 @@ def status():
     """
     status = stateMachine.status()
     
-    print "Status", status
+    logger.debug("Status: " + str(status))
     return status
 
 
-@route('/sendfile', method='POST')
-def sendfile():
-    '''
-    
-    Test: curl -X POST --data-binary @filename.nxs http://localhost:8080/sendfile
-    '''
-    
-    content = bottle.request.body.read()
-    
-    # Need to write the file on disk! there's no open stream in nexus library for python
-    tempFile = tempfile.NamedTemporaryFile(delete=False)
-    tempFile.write(content)
-    tempFile.close()
-  
-    try :
-        import nexus.handler as nx
-        nxHandler = nx.Handler(tempFile.name)  
-        print "Title read from the Nexus file:", nxHandler.title()
-        
-    except  Exception as e:
-        print "Error while reading the nexus file:", e
-        return {"status" : "KO", "message" : str(e) }
-    
-    try :
-        os.remove(tempFile.name)
-    except  Exception as e:
-        print "Error removing temporary nexus file:", e
-    
-    
-    return {"status" : "OK"}
+# @route('/sendfile', method='POST')
+# def sendfile():
+#     '''
+#     
+#     Test: curl -X POST --data-binary @filename.nxs http://localhost:8080/sendfile
+#     '''
+#     
+#     content = bottle.request.body.read()
+#     
+#     # Need to write the file on disk! there's no open stream in nexus library for python
+#     tempFile = tempfile.NamedTemporaryFile(delete=False)
+#     tempFile.write(content)
+#     tempFile.close()
+#   
+#     try :
+#         import nexus.handler as nx
+#         nxHandler = nx.Handler(tempFile.name)  
+#         print "Title read from the Nexus file:", nxHandler.title()
+#         
+#     except  Exception as e:
+#         print "Error while reading the nexus file:", e
+#         return {"status" : "KO", "message" : str(e) }
+#     
+#     try :
+#         os.remove(tempFile.name)
+#     except  Exception as e:
+#         print "Error removing temporary nexus file:", e
+#     
+#     
+#     return {"status" : "OK"}
 
 
 @route('/file', method='POST')
@@ -110,40 +121,42 @@ def fileHandler():
     return status
 
 @route('/reset', method=['POST','GET'])
-def cleanup():
+def reset():
     '''
+    Clean up Nexus handler
     
     Test: curl -X POST http://localhost:8080/reset
     '''
-    #stateMachine.sm().file(bottle.request)
-    stateMachine.sm().reset()
     
+    stateMachine.sm().reset()
     status = stateMachine.status()
     
-    print "Status", status
+    logger.debug("Status: " + str(status))
     return status
 
-@route('/getvariables', method='POST')
-def getvariables():
+@route('/query', method='POST')
+def query():
     '''
     
     curl -v -H "Content-Type: application/json" \
      -H "Accept: application/json"  \
      -X POST \
      -d '{"$toto":"cell", "$tata":"spacegroup", "$titi":"origin"}' \
-     http://localhost:8080/getvariables
+     http://localhost:8080/query
     
     '''
-    
     content = bottle.request.body.read()
     print 'Server received as json: ', content
     print 'See it as python dict:'
     contentAsDict = json.loads(content)
-    pprint.pprint(contentAsDict,indent=4,depth=2)
     
-    ## Do required calculations
+    stateMachine.sm().handleQuery(contentAsDict)
     
-    return { "$toto" : [10,10,10,90,90,90], "$tata" : 178, "$titi" : [0, 0, 0] }
+    status = stateMachine.status()
+    
+    print "Query result"
+    return status
+
 
 def commandLineOptions():
     '''
@@ -154,17 +167,20 @@ def commandLineOptions():
     parser.add_option('-p', '--port', help='Server port. Default 8080.', type="int", default=8080)
     return parser
 
-if __name__ == '__main__':
+def main(argv):
     parser = commandLineOptions();
     (options, args) = parser.parse_args()
     
     # create state machine handler
-#     global stateMachine
-#     stateMachine = sm.handler.Handler()
+    #     global stateMachine
+    #     stateMachine = sm.handler.Handler()
     
     
     # Launch http server
     bottle.debug(True) 
     bottle.run(host=options.server, port=options.port)
+    
+if __name__ == '__main__':
+    main(sys.argv)
 
     

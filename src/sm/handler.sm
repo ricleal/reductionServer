@@ -35,7 +35,8 @@ Entry { checkFileProcessing(); }
 Waiting
 Entry { setStatus('Waiting for queries'); }
 {
-	query(request) ProcessingQuery { handleQuery(request); }
+	query(content) ProcessingQuery { handleQuery(content); }
+	result(content) Waiting { handleResult(content); } 
 	reset Idle { cleanUp(); }
 }
 
@@ -45,6 +46,7 @@ Entry { setStatus('Processing query'); }
 	//Trans //Next // Actions  
  	success Waiting { setSuccessStatus('Query satisfied'); }
 	failure Waiting { setErrorStatus('ERROR: Query NOT satisfied'); }
+	timeout Waiting { setErrorStatus('ERROR: Timeout!'); }
 }
 
 %%

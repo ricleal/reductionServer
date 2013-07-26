@@ -5,7 +5,9 @@ Created on Jul 22, 2013
 '''
 
 import nxs
+import logging
 
+logger = logging.getLogger(__name__) 
 
 class Handler:
     '''
@@ -14,11 +16,11 @@ class Handler:
     
     '''
     def __init__(self, filename):
-        print "Opening nexus file:", filename
+        logger.debug("Opening nexus file: " + filename)
         try:
             self.file = nxs.open(filename,'r')
         except  Exception as e:
-            print "Problems opening the nexus file: ", e
+            logger.error("Problems opening the nexus file: " + str(e) )
             raise
         
     def title(self):
@@ -30,11 +32,11 @@ class Handler:
         return title
     
     def __del__(self):
-        print "Closing nexus file..."
+        logger.debug("Closing nexus file...")
         try:
             self.file.close()
         except  Exception as e:
-            print "Problems closing the nexus file: ", e
+            logger.error( "Problems closing the nexus file: " +str(e) )
             raise     
 
     

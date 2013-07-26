@@ -9,15 +9,20 @@ import handler_sm
 import tempfile
 import os
 
+import logging
+logger = logging.getLogger(__name__) 
+
 
 class Handler:
     def __init__(self):
-        print "Initialising SM Handler..."
+        
+        logger.info("Initialising SM Handler...")
         self._fsm = handler_sm.Handler_sm(self)
         self._fsm.setDebugFlag(True)
         self.nxHandler = None
         self._satus = {}
-        
+        self._results = {} # dictionary with queries and results
+        # Start from the first state
         self._fsm.enterStartState()
         
     
@@ -25,7 +30,7 @@ class Handler:
         return self._fsm
     
     def _formatStatus(self, message, status="OK"):
-        print "Setting status to: ", status, " -> ", message
+        logger.debug("Setting status to: " + status + " -> " + message)
         self._satus['status'] = status
         self._satus['message'] = message
     
@@ -40,10 +45,12 @@ class Handler:
     
     def status(self):
         return self._satus
-        
+    
+    def results(self):
+        return self._results
     
     def processFile(self, request):
-        print "Parsing data:", request
+        logger.debug("Parsing request...")
         
         content = request.body.read()
     
@@ -55,35 +62,59 @@ class Handler:
         try :
             import nexus.handler as nx
             self.nxHandler = nx.Handler(self.tempFile.name)  
-            print "* Title read from the Nexus file:", self.nxHandler.title()
-            #self.setSuccessStatus("Nexus file well parsed.")
-            
+            logger.info("* Title read from the Nexus file: " + self.nxHandler.title())
+            # Do whatever needed with the nexus file
             
         except  Exception as e:
-            print "Error while reading the nexus file:", e
-            #self.setErrorStatus("Nexus file parsing failed:  "+ str(e) )
-        
+            self.nxHandler = None
+            logger.error("Error while reading the nexus file: " + str(e))
+            
         
     def cleanUp(self):
+        logger.debug("Cleaning up!")
         try :
             del(self.nxHandler)
         except  Exception as e:
-            print "Error:", e
+            logger.error("Error deleting nexus handler: " + str(e))
             
         try :
             os.remove(self.tempFile.name)
         except  Exception as e:
-            print "Error removing temporary nexus file:", e
+            logger.error("Error removing temporary nexus file: " + str(e))
         
     
     def checkFileProcessing(self):
-        print "** checkFileProcessing"
+        logger.debug("Checking if NeXus file was well processed...")
         if self.nxHandler is None:
             self._fsm.failure()
         else:
             self._fsm.success()
     
-    def notify(self):
-        print "Notify!"
+    def handleQuery(self,content):
+        '''
+        content if of type:
+        { "$toto" : [10,10,10,90,90,90], "$tata" : 178, "$titi" : [0, 0, 0] }
         
+        '''
+        # merge dictionaries
+        for k,v in content.iteritems():
+            print k,v
+        
+        # do some processing
+        
+        
+        self._results = reduce(lambda x,y: dict(x, **y), (self._results, content))
+        
+    def handleResult(self,content):
+        '''
+        Receives a list of variables and stores the result
+        '''
+        for i in content:
+            self._results[i]
+        
+        
+            
+        
+    
+
     
