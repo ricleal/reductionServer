@@ -1,5 +1,5 @@
-%class Handler
-%package handler
+%class FiniteStateMachineHandler
+%package fsmHandler
 
 %start MainMap::Idle
 
@@ -25,7 +25,7 @@ Entry { setStatus('Idle'); }
 }
 
 ProcessingFile 
-Entry { checkFileProcessing(); }
+Entry { checkFileProcessing(); } // check wether the processFile went OK
 {
 	//Trans //Next // Actions  
  	success Waiting { setSuccessStatus('File successfully processed.'); }
@@ -37,7 +37,7 @@ Entry { setStatus('Waiting for queries'); }
 {
 	query(content) ProcessingQuery { handleQuery(content); }
 	result(content) Waiting { handleResult(content); } 
-	reset Idle { cleanUp(); }
+	reset Idle { cleanUp(); } // cleans up the stored queries and results
 }
 
 ProcessingQuery

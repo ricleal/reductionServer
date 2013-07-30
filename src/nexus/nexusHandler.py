@@ -6,12 +6,14 @@ Created on Jul 22, 2013
 
 import nxs
 import logging
+import simplejson
+
 
 logger = logging.getLogger(__name__) 
 
-class Handler:
+class NeXusHandler:
     '''
-    Handler to deal with a nexus file
+    NeXusHandler to deal with a nexus file
     Keeps a pointer for the open file
     
     '''
@@ -30,6 +32,21 @@ class Handler:
         self.file.closedata()
         self.file.closegroup()
         return title
+    
+    def data(self):
+        self.file.opengroup('entry0')
+        self.file.opengroup('data')
+        self.file.opendata('data')
+        data = self.file.getdata()
+        self.file.closedata()
+        self.file.closegroup()
+        self.file.closegroup()
+        return data
+    
+    def dataToJson(self):
+        data = self.data()
+        jsonData = simplejson.dumps(data.tolist())
+        return jsonData
     
     def __del__(self):
         logger.debug("Closing nexus file...")

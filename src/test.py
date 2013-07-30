@@ -67,6 +67,8 @@ class Test(unittest.TestCase):
         ret = buf.getvalue()
         self.assertEqual(ret, '{"status": "OK", "message": "Waiting for queries"}' )
         buf.close()
+        
+        
 
     def tearDown(self):
         '''

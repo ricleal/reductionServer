@@ -7,7 +7,7 @@ import pprint
 import optparse
 import tempfile
 import sys
-import sm.handler
+import fsm.fsmHandler
 import logging
 import os.path
 
@@ -32,7 +32,7 @@ from logging import config as _config
 _config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
 logger = logging.getLogger("server")
 
-stateMachine = sm.handler.Handler()
+stateMachine = fsm.fsmHandler.FiniteStateMachineHandler()
 
 
 
@@ -90,7 +90,7 @@ def status():
 #   
 #     try :
 #         import nexus.handler as nx
-#         nxHandler = nx.Handler(tempFile.name)  
+#         nxHandler = nx.NeXusHandler(tempFile.name)  
 #         print "Title read from the Nexus file:", nxHandler.title()
 #         
 #     except  Exception as e:
@@ -146,15 +146,15 @@ def query():
     
     '''
     content = bottle.request.body.read()
-    print 'Server received as json: ', content
-    print 'See it as python dict:'
+    
     contentAsDict = json.loads(content)
+    
+    logger.debug("Query received: " + str(contentAsDict))
     
     stateMachine.sm().handleQuery(contentAsDict)
     
     status = stateMachine.status()
     
-    print "Query result"
     return status
 
 
@@ -170,11 +170,6 @@ def commandLineOptions():
 def main(argv):
     parser = commandLineOptions();
     (options, args) = parser.parse_args()
-    
-    # create state machine handler
-    #     global stateMachine
-    #     stateMachine = sm.handler.Handler()
-    
     
     # Launch http server
     bottle.debug(True) 

@@ -4,19 +4,33 @@ Created on Jul 25, 2013
 @author: leal
 '''
 import unittest
-import handler
+import nexusHandler
 
 
 class Test(unittest.TestCase):
-
-    def testNexusReader(self):
-        filename = "/home/leal/Documents/Mantid/IN6/157589.nxs"
-        try:
-            nxHandler = handler.Handler(filename)
-            print "Title read from the Nexus file:", nxHandler.title()
-        except  Exception as e:
-            print "Problems opening the nexus file: ", e
-            raise
+    
+    def setUp(self):
+        '''
+        
+        '''
+        self.filename = '/home/leal/Documents/Mantid/IN6/157589.nxs'
+        self.nxHandler = nexusHandler.NeXusHandler(self.filename)
+    
+    def testTitle(self):
+        title = self.nxHandler.title()
+        self.assertEqual(title,"Exploring the brain with neutrons")
+    
+    def testData(self):
+        data = self.nxHandler.data()
+        self.assertEqual(data.shape,(337, 1, 1024))
+    
+    def testDataToJson(self):
+        jsonData = self.nxHandler.dataToJson()
+        self.assertEqual(len(jsonData),1052982)
+    
+    def tearDown(self):
+        del(self.nxHandler)
+        
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testWriter']

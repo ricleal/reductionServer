@@ -32,12 +32,12 @@ Generate the Graphviz Plot:
 ---------------------------
 
 ```
-java -jar $SMC_FOLDER/bin/Smc.jar -graph -glevel 1 handler.sm
+java -jar $SMC_FOLDER/bin/Smc.jar -graph -glevel 1 fsmHandler.sm
 
 # convert to png
-dot handler_sm.dot -Tpng -ohandler_sm.png
+dot fsmHandler_sm.dot -Tpng -ofsmHandler_sm.png
 
 ```
 
-![Bilby Stampede](handler_sm.png)
+![Bilby Stampede](fsmHandler_sm.png)
 
