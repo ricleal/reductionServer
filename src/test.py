@@ -11,9 +11,10 @@ from multiprocessing import Process
 import time
 import os
 
-class Test(unittest.TestCase):
+class TestServer(unittest.TestCase):
     
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         '''
         Start the server
         '''
@@ -32,32 +33,22 @@ class Test(unittest.TestCase):
         c.setopt(c.WRITEFUNCTION, buf.write)
         c.perform()
         ret = buf.getvalue()
-        self.assertEqual(ret, '{"status": "Yes I am up and running!"}')
+        self.assertEqual(ret, 'Yes I am up and running!')
         buf.close()
-        
-    def testStatus(self):
-        buf = cStringIO.StringIO()
-        c = pycurl.Curl()
-        c.setopt(c.URL, self.url+"/status")
-        c.setopt(c.POST,1)
-        c.setopt(c.WRITEFUNCTION, buf.write)
-        c.perform()
-        ret = buf.getvalue()
-        self.assertEqual(ret, '{"status": "OK", "message": "Idle"}')
-        buf.close()
-    
+          
     def testFile(self):
         '''
         cd ~/Documents/Mantid/IN6
-        curl -v -X POST --data-binary @157589.nxs http://localhost:8080/file
+        curl -v -H "Numor: 1234" -X POST --data-binary @157589.nxs http://localhost:8080/file
         '''
         
         buf = cStringIO.StringIO()
         c = pycurl.Curl()
         c.setopt(c.URL, self.url+"/file")
         c.setopt(c.POST,1)
-        c.setopt(pycurl.VERBOSE, 1)
+        #c.setopt(pycurl.VERBOSE, 1)
         c.setopt(pycurl.HTTPHEADER, ['Content-Type: application/octet-stream'])
+        c.setopt(pycurl.HTTPHEADER, ['Numor: 1234'])
         filesize = os.path.getsize(self.filename)
         c.setopt(pycurl.POSTFIELDSIZE, filesize)
         fin = open(self.filename, 'rb')
@@ -65,18 +56,72 @@ class Test(unittest.TestCase):
         c.setopt(c.WRITEFUNCTION, buf.write)
         c.perform()
         ret = buf.getvalue()
-        self.assertEqual(ret, '{"status": "OK", "message": "Waiting for queries"}' )
+        self.assertEqual(ret, '{"numor": "1234"}')
         buf.close()
         
+    def testResults(self):
+        '''
+        cd ~/Documents/Mantid/IN6
+        curl -v -X POST http://localhost:8080/results
+        '''
         
+        buf = cStringIO.StringIO()
+        c = pycurl.Curl()
+        c.setopt(c.URL, self.url+"/results")
+        c.setopt(c.POST,1)
+        c.setopt(c.WRITEFUNCTION, buf.write)
+        c.perform()
+        ret = buf.getvalue()
+        self.assertEqual(ret, '{"numor": "1234"}')
+        buf.close()
+    
+    def testQuery(self):
+        '''
+        curl -v -H "Content-Type: application/json" \
+        -H "Numor: 1234" \
+         -H "Accept: application/json"  \
+         -X POST \
+         -d '{"$toto":"cell", "$tata":"spacegroup", "$titi":"origin"}' \
+         http://localhost:8080/query
+        '''
+        
+        textToPost = '{"$toto":"cell", "$tata":"spacegroup", "$titi":"origin"}'
+        buf = cStringIO.StringIO()
+        c = pycurl.Curl()
+        c.setopt(c.URL, self.url+"/query")
+        c.setopt(c.POST,1)
+        c.setopt(pycurl.HTTPHEADER, ['Content-Type: application/json'])
+        c.setopt(pycurl.HTTPHEADER, ['Accept: application/json'])
+        c.setopt(pycurl.HTTPHEADER, ['Numor: 1234'])
+        
+        c.setopt(c.POSTFIELDS, textToPost)
+        
+        c.setopt(c.WRITEFUNCTION, buf.write)
+        c.perform()
+        ret = buf.getvalue()
+        self.assertEqual(ret, '?')
+        buf.close()
 
-    def tearDown(self):
+
+    @classmethod
+    def tearDownClass(self):
         '''
         Kill the server
         '''
+        time.sleep(1)
         self.p.terminate()
-    
+        # to make sure everything finished (i.e. thread manager)!
+        time.sleep(1)
+         
+#         import signal
+#         print self.p, self.p.is_alive()
+#         print "Exit code = SIGTERM?", self.p.exitcode == -signal.SIGTERM
+#     
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestServer)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+
+     

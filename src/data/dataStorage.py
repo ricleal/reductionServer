@@ -3,6 +3,8 @@ Created on Jul 30, 2013
 
 @author: leal
 '''
+import simplejson
+import threading
 
 class DataStorage():
     '''
@@ -10,15 +12,16 @@ class DataStorage():
     Valid per file (numor id)
     '''
 
-
     def __init__(self,numor):
         '''
         Constructor
         '''
+        # Lock
+        self.lock = threading.Lock()
         self._data = {"numor":numor}
         
     
-    def addQuery(self, variable, value, desc):
+    def addQuery(self, variable, value, desc=None):
         '''
         Add query to the database
         For query of type:
@@ -27,7 +30,9 @@ class DataStorage():
         value = cell
         desc = 'Unit cell'
         '''
-        self._data[variable]={"value": None, "query" : value , "desc" : desc}
+        with self.lock:
+            self._data[variable]={"value": None, "query" : value , "desc" : desc,
+                                  "status": None}
     
     def updateValue(self, variable, value):
         '''
@@ -37,19 +42,41 @@ class DataStorage():
         variable = $toto 
         value = [10 10 10 90 90 90]
         '''
-        self._data[variable]["value"]=value
+        with self.lock:
+            self._data[variable]["value"]=value
+#             try: # to make sure when a a value is assigned there's no error field
+#                 del  self._data[variable]["error"]
+#             except KeyError:
+#                 pass
+            self._data[variable]["status"]=None
+            
+    def updateValueWithStatus(self, variable, message):
+        with self.lock:
+            self._data[variable]["status"]=message
     
     def getValue(self,variable):
-        return self._data[variable]["value"]
+        with self.lock:
+            return self._data[variable]["value"]
+    def getNumor(self):
+        with self.lock:
+            return self._data["numor"]
+    
+    def toJson(self):
+        with self.lock:
+            return simplejson.dumps(self._data)
     
     def __str__(self):
-        return str(self._data)
+        with self.lock:
+            return str(self._data)
 
 def main():
     d = DataStorage('11214')
     d.addQuery('$toto', 'cell', 'Unit cell')
     # Do processing
     d.updateValue('$toto', [10, 10, 10, 90, 90 ,90])
+    print d
+    d.updateValueWithStatus('$toto', "timeout")
+    print d
     print "get value:" , d.getValue('$toto') 
     print d
     

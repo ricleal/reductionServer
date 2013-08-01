@@ -3,13 +3,15 @@
 import bottle
 from bottle import route
 import json
-import pprint
 import optparse
-import tempfile
 import sys
-import fsm.fsmHandler
 import logging
 import os.path
+import data.dataStorage
+import nexus.nexusHandler
+import reduction.threadManager
+import time
+import signal
 
 '''
 
@@ -32,11 +34,27 @@ from logging import config as _config
 _config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
 logger = logging.getLogger("server")
 
-stateMachine = fsm.fsmHandler.FiniteStateMachineHandler()
+localDataStorage = None
+localNexusData = None
+threadManager = None
 
+# Handle signals
 
+def signal_handler(signal_, frame):
+    logger.info("Server caught a signal! Server is shutting down...")
+    global threadManager
+    #time.sleep(1)
+    threadManager.exit()
+    #time.sleep(1)
+    threadManager.join()
+    #os.kill(os.getpid(), signal.SIGTERM)
+    logger.info("Server shut down!")
+    sys.exit(0)
+    
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
-@route('/', method='GET')
+@route('/', method=['GET','POST'])
 def homepage_get():
     '''
     Home page:
@@ -44,119 +62,87 @@ def homepage_get():
     Open with a browser or:
     curl http://localhost:8080/
     '''
-    ret = '<html><h2>Yes I am up and running!</h2></html>'
-    logger.debug('homepage_get')
+    ret = 'Yes I am up and running!'
+    logger.debug('Home page...')
     return ret
 
-@route('/', method='POST')
-def homepage_post():
-    '''
-    Home page
-    
-    curl -X POST  http://localhost:8080/
-    
-    '''
-    logger.debug('homepage_post')
-    return {'status' : 'Yes I am up and running!'}
-
-
-@route('/status', method='POST')
-def status():
-    """
-    Return server status
-    
-    Test:
-    curl -X POST  http://localhost:8080/status 
-    """
-    status = stateMachine.status()
-    
-    logger.debug("Status: " + str(status))
-    return status
-
-
-# @route('/sendfile', method='POST')
-# def sendfile():
-#     '''
-#     
-#     Test: curl -X POST --data-binary @filename.nxs http://localhost:8080/sendfile
-#     '''
-#     
-#     content = bottle.request.body.read()
-#     
-#     # Need to write the file on disk! there's no open stream in nexus library for python
-#     tempFile = tempfile.NamedTemporaryFile(delete=False)
-#     tempFile.write(content)
-#     tempFile.close()
-#   
-#     try :
-#         import nexus.handler as nx
-#         nxHandler = nx.NeXusHandler(tempFile.name)  
-#         print "Title read from the Nexus file:", nxHandler.title()
-#         
-#     except  Exception as e:
-#         print "Error while reading the nexus file:", e
-#         return {"status" : "KO", "message" : str(e) }
-#     
-#     try :
-#         os.remove(tempFile.name)
-#     except  Exception as e:
-#         print "Error removing temporary nexus file:", e
-#     
-#     
-#     return {"status" : "OK"}
 
 
 @route('/file', method='POST')
 def fileHandler():
     '''
+    To test:
     
-    Test: curl -X POST --data-binary @filename.nxs http://localhost:8080/sendfile
+    cd ~/Documents/Mantid/IN6
+    curl -X POST -H "Numor: 1234"  --data-binary @157589.nxs http://localhost:8080/file
     '''
-    #stateMachine.sm().file(bottle.request)
-    stateMachine.sm().receiveFile(bottle.request)
+    global localDataStorage
     
-    status = stateMachine.status()
+    content = bottle.request.body.read()
     
-    print "Status", status
-    return status
+    numor =  bottle.request.get_header('Numor', None)
+    
+    logger.debug("Receiving file POST. Numor = " + str(numor))
+    
+    if numor is not None and (localDataStorage is None or localDataStorage.getNumor() != numor):
+        # create a new data storage!
+        localDataStorage = data.dataStorage.DataStorage(numor)
+    
+    # always update the nexus data (the next file may have more counts!)
+    global localNexusData
+    localNexusData = nexus.nexusHandler.NeXusHandler(content)
+    
+    return localDataStorage.toJson()
 
-@route('/reset', method=['POST','GET'])
-def reset():
-    '''
-    Clean up Nexus handler
+
+@route('/results', method=['POST','GET'])
+def results():
+    """
+    Return the contents of localDataStorage has json
     
-    Test: curl -X POST http://localhost:8080/reset
-    '''
+    Test:
+    curl -X POST  http://localhost:8080/results 
+    """
+        
+    logger.debug("Sending results to client...")
     
-    stateMachine.sm().reset()
-    status = stateMachine.status()
-    
-    logger.debug("Status: " + str(status))
-    return status
+    if localDataStorage is None :
+        return {}
+    else:
+        return localDataStorage.toJson()
+
 
 @route('/query', method='POST')
 def query():
     '''
     
     curl -v -H "Content-Type: application/json" \
+    -H "Numor: 1234" \
      -H "Accept: application/json"  \
      -X POST \
      -d '{"$toto":"cell", "$tata":"spacegroup", "$titi":"origin"}' \
      http://localhost:8080/query
     
     '''
+    global localDataStorage
+    global threadManager
+    
     content = bottle.request.body.read()
+    numor =  bottle.request.get_header('Numor', None)
     
     contentAsDict = json.loads(content)
-    
     logger.debug("Query received: " + str(contentAsDict))
     
-    stateMachine.sm().handleQuery(contentAsDict)
+    # update local storage with the queries
+    if numor is not None and localDataStorage is not None and localDataStorage.getNumor() == numor:
+        for variable,query in contentAsDict.items():
+            localDataStorage.addQuery(variable, query)
+                    
+            # launch in paralel the processing
+            
     
-    status = stateMachine.status()
+    logger.debug("Local Storage: " + str(localDataStorage))
     
-    return status
-
 
 def commandLineOptions():
     '''
@@ -171,9 +157,16 @@ def main(argv):
     parser = commandLineOptions();
     (options, args) = parser.parse_args()
     
+    # thread manager
+    global threadManager
+    threadManager = reduction.threadManager.ThreadManager(timeout=360)
+    threadManager.start()
+    
     # Launch http server
     bottle.debug(True) 
     bottle.run(host=options.server, port=options.port)
+    print "Server stopped..."
+    
     
 if __name__ == '__main__':
     main(sys.argv)

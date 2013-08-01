@@ -7,7 +7,8 @@ Created on Jul 22, 2013
 import nxs
 import logging
 import simplejson
-
+import tempfile
+import os
 
 logger = logging.getLogger(__name__) 
 
@@ -17,10 +18,31 @@ class NeXusHandler:
     Keeps a pointer for the open file
     
     '''
-    def __init__(self, filename):
-        logger.debug("Opening nexus file: " + filename)
+    
+    def __init__(self, content):
+
+        logger.debug("Parsing request...")
+    
+        # Need to write the file on disk! there's no open stream in nexus library for python
+        self.tempFile = tempfile.NamedTemporaryFile(delete=False)
+        self.tempFile.write(content)
+        self.tempFile.close()
+        
+        self.__openNexusFile()
+
+    def __del__(self):
+        logger.debug("Deleting NeXus temporary file...")
+
+        try :
+            os.remove(self.tempFile.name)
+        except  Exception as e:
+            logger.error("Error removing temporary nexus file: " + str(e))
+        
+    
+    def __openNexusFile(self):
+        logger.debug("Opening nexus file...")
         try:
-            self.file = nxs.open(filename,'r')
+            self.file = nxs.open(self.tempFile.name,'r')
         except  Exception as e:
             logger.error("Problems opening the nexus file: " + str(e) )
             raise
@@ -48,12 +70,5 @@ class NeXusHandler:
         jsonData = simplejson.dumps(data.tolist())
         return jsonData
     
-    def __del__(self):
-        logger.debug("Closing nexus file...")
-        try:
-            self.file.close()
-        except  Exception as e:
-            logger.error( "Problems closing the nexus file: " +str(e) )
-            raise     
 
     
