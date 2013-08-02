@@ -33,7 +33,7 @@ class TestServer(unittest.TestCase):
         c.setopt(c.WRITEFUNCTION, buf.write)
         c.perform()
         ret = buf.getvalue()
-        self.assertEqual(ret, 'Yes I am up and running!')
+        self.assertEqual(ret, '')
         buf.close()
           
     def testFile(self):
@@ -58,34 +58,18 @@ class TestServer(unittest.TestCase):
         ret = buf.getvalue()
         self.assertEqual(ret, '{"numor": "1234"}')
         buf.close()
-        
-    def testResults(self):
-        '''
-        cd ~/Documents/Mantid/IN6
-        curl -v -X POST http://localhost:8080/results
-        '''
-        
-        buf = cStringIO.StringIO()
-        c = pycurl.Curl()
-        c.setopt(c.URL, self.url+"/results")
-        c.setopt(c.POST,1)
-        c.setopt(c.WRITEFUNCTION, buf.write)
-        c.perform()
-        ret = buf.getvalue()
-        self.assertEqual(ret, '{"numor": "1234"}')
-        buf.close()
-    
+          
     def testQuery(self):
         '''
         curl -v -H "Content-Type: application/json" \
         -H "Numor: 1234" \
          -H "Accept: application/json"  \
          -X POST \
-         -d '{"$toto":"cell", "$tata":"spacegroup", "$titi":"origin"}' \
+         -d '{"$toto":"func1()", "$tata":"func2("par")"}' \
          http://localhost:8080/query
         '''
         
-        textToPost = '{"$toto":"cell", "$tata":"spacegroup", "$titi":"origin"}'
+        textToPost = """{"$toto":"func1()", "$tata":"func2('par')"}"""
         buf = cStringIO.StringIO()
         c = pycurl.Curl()
         c.setopt(c.URL, self.url+"/query")
@@ -95,11 +79,26 @@ class TestServer(unittest.TestCase):
         c.setopt(pycurl.HTTPHEADER, ['Numor: 1234'])
         
         c.setopt(c.POSTFIELDS, textToPost)
-        
         c.setopt(c.WRITEFUNCTION, buf.write)
         c.perform()
         ret = buf.getvalue()
-        self.assertEqual(ret, '?')
+        self.assertEqual(ret, '{"$toto": {"status": "querying", "query": "func1()", "value": null, "desc": null}, "numor": "1234", "$tata": {"status": "querying", "query": "func2(\'par\')", "value": null, "desc": null}}')
+        buf.close()
+
+    def testResults(self):
+        '''
+        cd ~/Documents/Mantid/IN6
+        curl -v -X POST http://localhost:8080/results
+        '''
+        time.sleep(2)
+        buf = cStringIO.StringIO()
+        c = pycurl.Curl()
+        c.setopt(c.URL, self.url+"/results")
+        c.setopt(c.POST,1)
+        c.setopt(c.WRITEFUNCTION, buf.write)
+        c.perform()
+        ret = buf.getvalue()
+        self.assertEqual(ret, '{"$toto": {"status": "Done", "query": "func1()", "value": "ret func1", "desc": null}, "numor": "1234", "$tata": {"status": "Done", "query": "func2(\'par\')", "value": "ret func2", "desc": null}}')
         buf.close()
 
 

@@ -30,8 +30,10 @@ Assuming that one server will run for instrument and a single file is handled by
 # load the logging configuration
 
 LOGGING_CONF=os.path.join(os.path.dirname(__file__),"logging.ini")
+ 
 from logging import config as _config
 _config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
+
 logger = logging.getLogger("server")
 
 localDataStorage = None
@@ -62,9 +64,8 @@ def homepage_get():
     Open with a browser or:
     curl http://localhost:8080/
     '''
-    ret = 'Yes I am up and running!'
-    logger.debug('Home page...')
-    return ret
+    logger.debug('Home page was requested.')
+
 
 
 
@@ -109,6 +110,7 @@ def results():
     if localDataStorage is None :
         return {}
     else:
+        logger.debug("Local Storage: " + str(localDataStorage))
         return localDataStorage.toJson()
 
 
@@ -132,17 +134,24 @@ def query():
     
     contentAsDict = json.loads(content)
     logger.debug("Query received: " + str(contentAsDict))
+    logger.debug("Local Storage: " + str(localDataStorage))
     
     # update local storage with the queries
     if numor is not None and localDataStorage is not None and localDataStorage.getNumor() == numor:
         for variable,query in contentAsDict.items():
-            localDataStorage.addQuery(variable, query)
+            
+            # Launching the process
+            threadManager.addThread(variable, query)
+            
+            
+            #localDataStorage.addQuery(variable, query)
                     
             # launch in paralel the processing
             
     
     logger.debug("Local Storage: " + str(localDataStorage))
-    
+    return localDataStorage.toJson()
+
 
 def commandLineOptions():
     '''

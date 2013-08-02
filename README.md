@@ -60,27 +60,41 @@ Open the adress ```http://localhost:8080/``` in a browser.
 
 **Test with curl client**
 
+The server has been implemented with the following conditions:
+- There will be a server per instrument. However, one machine can server several instruments, as long as the server are launched with different ports.
+- Every NeXus file must be submitted to the server with the corresponding "Numor" in the HTTP header. The numor can be seen as the unique id of every data set. See below th example. 
+
 Implemented functions to date:
 
 ```
-# Simple call:
-curl http://localhost:8080/
+# Simple call with verbose active:
+curl -v http://localhost:8080/
 
-# Simple call by POST with json response:
+# Simple call by POST:
 curl -X POST  http://localhost:8080/
 
-# Server status
-curl -X POST  http://localhost:8080/status
+# Send a a binary nexus/hdf5 by post. Note the "Numor" header.
+curl -X POST -H "Numor: 1234"  --data-binary @157589.nxs http://localhost:8080/file
+# Return:
+{"numor": "1234"}
 
-# Send a binary nexus/hdf5 file to the server:
-curl -X POST --data-binary @filename.nxs http://localhost:8080/sendfile
-
-# Send json content with verbose and predefined content types:
+# Send a query to the server. Here the client is asking to put in the variables $toto and $tata the result of calling func1() and func2('par'). 
 curl -v -H "Content-Type: application/json" \
-	-H "Accept: application/json"  \
-    -X POST \
-    -d '{"$toto":"cell", "$tata":"spacegroup", "$titi":"origin"}' \
-    http://localhost:8080/getvariables
+        -H "Numor: 1234" \
+         -H "Accept: application/json"  \
+         -X POST \
+         -d '{"$toto":"func1()", "$tata":"func2(\"par\")"}' \
+         http://localhost:8080/query
+# Return:
+{u'$toto': {'status': 'querying', 'query': u'func1()', 'value': None, 'desc': None}, 'numor': '1234', u'$tata': {'status': 'querying', 'query': u"func2('par')", 'value': None, 'desc': None}}         
+
+# Now the client will ask for the results of the previous query:
+curl -v -X POST http://localhost:8080/results
+# Return
+{u'$toto': {'status': 'Done', 'query': u'func1()', 'value': 'ret func1', 'desc': None}, 'numor': '1234', u'$tata': {'status': 'Done', 'query': u"func2('par')", 'value': 'ret func2', 'desc': None}
 ```
 
+**Test with unittest framework.**
+
+The file test.py in the root of the project has a a test invoking all the requested above coded in pycurl.
 

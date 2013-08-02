@@ -21,7 +21,7 @@ class DataStorage():
         self._data = {"numor":numor}
         
     
-    def addQuery(self, variable, value, desc=None):
+    def addQuery(self, variable, value, status, desc=None):
         '''
         Add query to the database
         For query of type:
@@ -32,9 +32,9 @@ class DataStorage():
         '''
         with self.lock:
             self._data[variable]={"value": None, "query" : value , "desc" : desc,
-                                  "status": None}
+                                  "status": status}
     
-    def updateValue(self, variable, value):
+    def updateValue(self, variable, value, status):
         '''
         Add the result from reduction query to the data
         For query of type:
@@ -48,7 +48,7 @@ class DataStorage():
 #                 del  self._data[variable]["error"]
 #             except KeyError:
 #                 pass
-            self._data[variable]["status"]=None
+            self._data[variable]["status"]=status
             
     def updateValueWithStatus(self, variable, message):
         with self.lock:
