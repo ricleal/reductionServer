@@ -11,9 +11,9 @@ import time
 import sys
 import logging
 
-import reductionServer
-
 logger = logging.getLogger(__name__) 
+
+
 
 # dummy functions called from the TreadableFunctionCaller
 def func1():
@@ -99,8 +99,10 @@ class ThreadManager(threading.Thread):
         logger.debug("Launching thread: Variable: %s; Calling: %s."%(variable,functionSignatureToCall))
         
         print "*****************************************"
-        print reductionServer.localDataStorage
-        reductionServer.localDataStorage.addQuery(variable, functionSignatureToCall, status="querying")
+        
+        from reductionServer import localDataStorage
+        print localDataStorage
+        localDataStorage.addQuery(variable, functionSignatureToCall, status="querying")
         
         
         t = TreadableFunctionCaller(functionSignatureToCall);

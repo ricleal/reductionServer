@@ -65,8 +65,7 @@ def homepage_get():
     curl http://localhost:8080/
     '''
     logger.debug('Home page was requested.')
-
-
+    return
 
 
 @route('/file', method='POST')
@@ -85,7 +84,7 @@ def fileHandler():
     
     logger.debug("Receiving file POST. Numor = " + str(numor))
     
-    if numor is not None and (localDataStorage is None or localDataStorage.getNumor() != numor):
+    if numor is not None and (localDataStorage.empty() or localDataStorage.getNumor() != numor):
         # create a new data storage!
         localDataStorage = data.dataStorage.DataStorage(numor)
     
@@ -106,12 +105,8 @@ def results():
     """
         
     logger.debug("Sending results to client...")
-    
-    if localDataStorage is None :
-        return {}
-    else:
-        logger.debug("Local Storage: " + str(localDataStorage))
-        return localDataStorage.toJson()
+    logger.debug("Local Storage: " + str(localDataStorage))
+    return localDataStorage.toJson()
 
 
 @route('/query', method='POST')
@@ -128,7 +123,7 @@ def query():
     '''
     global localDataStorage
     global threadManager
-    
+
     content = bottle.request.body.read()
     numor =  bottle.request.get_header('Numor', None)
     
@@ -137,7 +132,7 @@ def query():
     logger.debug("Local Storage: " + str(localDataStorage))
     
     # update local storage with the queries
-    if numor is not None and localDataStorage is not None and localDataStorage.getNumor() == numor:
+    if numor is not None and not localDataStorage.empty() and localDataStorage.getNumor() == numor:
         for variable,query in contentAsDict.items():
             
             # Launching the process
@@ -171,6 +166,9 @@ def main(argv):
     threadManager = reduction.threadManager.ThreadManager(timeout=360)
     threadManager.start()
     
+    global localDataStorage
+    localDataStorage = data.dataStorage.DataStorage()
+     
     # Launch http server
     bottle.debug(True) 
     bottle.run(host=options.server, port=options.port)

@@ -26,6 +26,10 @@ class TestServer(unittest.TestCase):
         self.filename = '/home/leal/Documents/Mantid/IN6/157589.nxs'
     
     def testAlive(self):
+        '''
+        curl -v http://localhost:8080/
+        '''
+        
         buf = cStringIO.StringIO()
         c = pycurl.Curl()
         c.setopt(c.URL, self.url)
@@ -65,7 +69,7 @@ class TestServer(unittest.TestCase):
         -H "Numor: 1234" \
          -H "Accept: application/json"  \
          -X POST \
-         -d '{"$toto":"func1()", "$tata":"func2("par")"}' \
+         -d '{"$toto":"func1()", "$tata":"func2(\"par\")"}' \
          http://localhost:8080/query
         '''
         
@@ -87,7 +91,6 @@ class TestServer(unittest.TestCase):
 
     def testResults(self):
         '''
-        cd ~/Documents/Mantid/IN6
         curl -v -X POST http://localhost:8080/results
         '''
         time.sleep(2)

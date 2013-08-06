@@ -12,14 +12,28 @@ class DataStorage():
     Valid per file (numor id)
     '''
 
-    def __init__(self,numor):
+    def __init__(self,numor=None):
         '''
         Constructor
         '''
         # Lock
         self.lock = threading.Lock()
-        self._data = {"numor":numor}
+        with self.lock:
+            self._data = {}
+            if numor is not None:
+                self._data = {"numor":numor}
+    
+    def data(self):
+        with self.lock:
+            return self._data
+    def empty(self):
+        with self.lock:
+            return len(self._data) <= 0
         
+    def __str__(self):
+        with self.lock:
+            return str(self._data)
+    
     
     def addQuery(self, variable, value, status, desc=None):
         '''
@@ -65,15 +79,20 @@ class DataStorage():
         with self.lock:
             return simplejson.dumps(self._data)
     
-    def __str__(self):
-        with self.lock:
-            return str(self._data)
+
 
 def main():
+    d = DataStorage()
+    print d
+    if d._data == {}:
+        print "D is empty!"
+    
+    
+    print "---------------------"
     d = DataStorage('11214')
     d.addQuery('$toto', 'cell', 'Unit cell')
     # Do processing
-    d.updateValue('$toto', [10, 10, 10, 90, 90 ,90])
+    d.updateValue('$toto', [10, 10, 10, 90, 90 ,90], "processing")
     print d
     d.updateValueWithStatus('$toto', "timeout")
     print d
