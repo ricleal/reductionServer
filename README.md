@@ -61,10 +61,12 @@ Open the adress ```http://localhost:8080/``` in a browser.
 **Test with curl client**
 
 The server has been implemented with the following conditions:
-- There will be a server per instrument. However, one machine can server several instruments, as long as the server are launched with different ports.
-- Every NeXus file must be submitted to the server with the corresponding "Numor" in the HTTP header. The numor can be seen as the unique id of every data set. See below th example. 
+- There will be a server per instrument. However, one machine can serve several instruments, as long as the servers are launched in different ports.
+- Every NeXus file must be submitted to the server with the corresponding "Numor" in the HTTP header. The numor can be seen as the unique id of every data set. See below the examples. 
 
 Implemented functions to date:
+
+This simple call can be performed by POST or GET. This is useful to see if the server is running from a http browser.
 
 ```
 # Simple call with verbose active:
@@ -72,12 +74,24 @@ curl -v http://localhost:8080/
 
 # Simple call by POST:
 curl -X POST  http://localhost:8080/
+```
 
+The reduction procedure starts with with the submission of a NeXus file with the http header "Numor: <ILL generated numor>".
+A unique [Borg Singleton](http://code.activestate.com/recipes/66531-singleton-we-dont-need-no-stinkin-singleton-the-bo/) is created ```data.dataStorage``` to store the status of the reduction procedure.
+The same Nexus file can be submitted to the server as many times as desired.
+
+```
 # Send a a binary nexus/hdf5 by post. Note the "Numor" header.
 curl -X POST -H "Numor: 1234"  --data-binary @157589.nxs http://localhost:8080/file
 # Return:
 {"numor": "1234"}
+```
 
+Once a NeXus file is submitted to the server, the reduction process can start.
+This is done by sending pairs of ```<variable name> : <function to be called in the reduction server>```. 
+This functions will be called in threads managed by the ```reduction.threadManager```. The threadManager will monitor the functions and eventually remove the timed out requests.
+
+```
 # Send a query to the server. Here the client is asking to put in the variables $toto and $tata the result of calling func1() and func2('par'). 
 curl -v -H "Content-Type: application/json" \
         -H "Numor: 1234" \
@@ -87,7 +101,11 @@ curl -v -H "Content-Type: application/json" \
          http://localhost:8080/query
 # Return:
 {u'$toto': {'status': 'querying', 'query': u'func1()', 'value': None, 'desc': None}, 'numor': '1234', u'$tata': {'status': 'querying', 'query': u"func2('par')", 'value': None, 'desc': None}}         
+```
 
+The monitoring of the server can be done through the request ```/results```. This will return several JSON fields including the result of the called function ```value``` as well as the ```status``` of the query.
+
+```
 # Now the client will ask for the results of the previous query:
 curl -v -X POST http://localhost:8080/results
 # Return
@@ -96,5 +114,9 @@ curl -v -X POST http://localhost:8080/results
 
 **Test with unittest framework.**
 
-The file test.py in the root of the project has a a test invoking all the requested above coded in pycurl.
+The file ```test.py``` in the root of the project has unittest invoking all the implement requests. The client calls are coded in pycurl. Comments show how to call the same requests through the ```curl``` command line.
 
+TODO
+----
+
+A list of supported reduction functions available per instrument.

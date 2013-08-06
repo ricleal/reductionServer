@@ -6,22 +6,33 @@ Created on Jul 30, 2013
 import simplejson
 import threading
 
-class DataStorage():
+class DataStorage(object):
     '''
     Class to store data for a file being threated
     Valid per file (numor id)
+    
+    Borg singleton config object
     '''
+    
+    _data ={}
+    __shared_state = {}
 
-    def __init__(self,numor=None):
+    def __init__(self):
         '''
         Constructor
         '''
+        #implement the borg pattern (_shared_state)
+        self.__dict__ = self.__shared_state
+        
         # Lock
         self.lock = threading.Lock()
+        
+    def setNumor(self,numor):
+        '''
+        A new numor is set => All the _data is reset!
+        '''
         with self.lock:
-            self._data = {}
-            if numor is not None:
-                self._data = {"numor":numor}
+            self._data = {"numor":numor}
     
     def data(self):
         with self.lock:
@@ -83,13 +94,10 @@ class DataStorage():
 
 def main():
     d = DataStorage()
-    print d
-    if d._data == {}:
-        print "D is empty!"
-    
-    
+    print d    
     print "---------------------"
-    d = DataStorage('11214')
+    d = DataStorage()
+    d.setNumor('11214')
     d.addQuery('$toto', 'cell', 'Unit cell')
     # Do processing
     d.updateValue('$toto', [10, 10, 10, 90, 90 ,90], "processing")
@@ -97,6 +105,9 @@ def main():
     d.updateValueWithStatus('$toto', "timeout")
     print d
     print "get value:" , d.getValue('$toto') 
+    print d
+    print "---------------------"
+    d = DataStorage()
     print d
     
 if __name__ == "__main__":

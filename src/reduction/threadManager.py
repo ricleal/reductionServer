@@ -10,6 +10,7 @@ import threading
 import time
 import sys
 import logging
+import data.dataStorage
 
 logger = logging.getLogger(__name__) 
 
@@ -72,13 +73,15 @@ class ThreadManager(threading.Thread):
         (time.time() - entry["startTime"] > self._timeOut) : 
             logger.debug("Tread has %s timed out! Deleting..."%entry["variable"])
             # if time out is reason to delete we should find a safe way to kill it.
-            reductionServer.localDataStorage.updateValue(entry["variable"], 
+            localDataStorage = data.dataStorage.DataStorage()
+            localDataStorage.updateValue(entry["variable"], 
                                                          None, "Timeout")
             return True
         if not entry["thread"].isAlive() :
             logger.debug("Tread has %s finished! Deleting..."%entry["variable"])
             # if time out is reason to delete we should find a safe way to kill it.
-            reductionServer.localDataStorage.updateValue(entry["variable"], 
+            localDataStorage = data.dataStorage.DataStorage()
+            localDataStorage.updateValue(entry["variable"], 
                                                          entry["thread"].result, "Done")
             return True
         else:
@@ -100,8 +103,7 @@ class ThreadManager(threading.Thread):
         
         print "*****************************************"
         
-        from reductionServer import localDataStorage
-        print localDataStorage
+        localDataStorage = data.dataStorage.DataStorage()
         localDataStorage.addQuery(variable, functionSignatureToCall, status="querying")
         
         

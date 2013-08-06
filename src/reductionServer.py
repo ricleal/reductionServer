@@ -36,7 +36,6 @@ _config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
 
 logger = logging.getLogger("server")
 
-localDataStorage = None
 localNexusData = None
 threadManager = None
 
@@ -76,7 +75,7 @@ def fileHandler():
     cd ~/Documents/Mantid/IN6
     curl -X POST -H "Numor: 1234"  --data-binary @157589.nxs http://localhost:8080/file
     '''
-    global localDataStorage
+    
     
     content = bottle.request.body.read()
     
@@ -84,9 +83,10 @@ def fileHandler():
     
     logger.debug("Receiving file POST. Numor = " + str(numor))
     
+    localDataStorage = data.dataStorage.DataStorage()
     if numor is not None and (localDataStorage.empty() or localDataStorage.getNumor() != numor):
         # create a new data storage!
-        localDataStorage = data.dataStorage.DataStorage(numor)
+        localDataStorage.setNumor(numor)
     
     # always update the nexus data (the next file may have more counts!)
     global localNexusData
@@ -103,9 +103,12 @@ def results():
     Test:
     curl -X POST  http://localhost:8080/results 
     """
+    
+    localDataStorage = data.dataStorage.DataStorage()
         
     logger.debug("Sending results to client...")
     logger.debug("Local Storage: " + str(localDataStorage))
+    
     return localDataStorage.toJson()
 
 
@@ -121,7 +124,6 @@ def query():
      http://localhost:8080/query
     
     '''
-    global localDataStorage
     global threadManager
 
     content = bottle.request.body.read()
@@ -129,6 +131,7 @@ def query():
     
     contentAsDict = json.loads(content)
     logger.debug("Query received: " + str(contentAsDict))
+    localDataStorage = data.dataStorage.DataStorage()
     logger.debug("Local Storage: " + str(localDataStorage))
     
     # update local storage with the queries
@@ -165,9 +168,6 @@ def main(argv):
     global threadManager
     threadManager = reduction.threadManager.ThreadManager(timeout=360)
     threadManager.start()
-    
-    global localDataStorage
-    localDataStorage = data.dataStorage.DataStorage()
      
     # Launch http server
     bottle.debug(True) 
