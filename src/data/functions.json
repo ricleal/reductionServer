@@ -1,0 +1,46 @@
+{
+	"_comment":"List of functions available for data reduction.",
+	"functions":[
+		{
+			"name":"sofqw",
+			"description":"Calculates the intensity as a function of momentum transfer against energy: S(q,w)",
+			"maximum_processing_time":360,
+			"parameters":{
+				"input":[
+					{
+						"name":"param1",
+						"type":"float[]",
+						"description":"Description of the param1",
+						"units":"NA"
+					},
+					{
+						"name":"param2",
+						"type":"int[]",
+						"description":"Description of the param2",
+						"units":"counts"
+					},
+					{
+						"name":"param3",
+						"type":"float[]",
+						"description":"Description of the param3",
+						"units":"mev"
+					}
+				],
+				"output":[
+					{
+						"name":"paramOut1",
+						"type":"float",
+						"description":"Description of the param 1 out",
+						"units":"NA"
+					},
+					{
+						"name":"paramOut2",
+						"type":"float",
+						"description":"Description of the param 2 out",
+						"units":"NA"
+					}
+				]
+			}
+		}
+	]
+}

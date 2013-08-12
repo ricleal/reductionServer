@@ -4,6 +4,9 @@
 Created on Jul 31, 2013
 
 @author: leal
+
+Threading module launch by the reduction server.
+
 '''
 
 import threading
@@ -24,7 +27,7 @@ def func1():
 
 def func2(par=None):
     func_name = sys._getframe().f_code.co_name
-    time.sleep(1)
+    time.sleep(5)
     return "ret func2"
 
 class TreadableFunctionCaller(threading.Thread):
@@ -46,6 +49,10 @@ class TreadableFunctionCaller(threading.Thread):
         logger.debug("Calling %s within a thread..."%self.name) 
         # Using eval is evil, but let's use it here:
         try :
+            # TODO:
+            # I'm trusting that what comes in functionSignatureCall
+            # can be called with eval
+            # This must be though in the future
             self.result = eval(self.name)
             logger.debug("Function %s successfully evaluated!"%self.name)
         except Exception as e:
@@ -57,29 +64,27 @@ class TreadableFunctionCaller(threading.Thread):
     
 class ThreadManager(threading.Thread):
     """
-    Class it self a thread wich will launch and store
+    Class it self a thread which will launch and store
     info about launched threads
     """
-    def __init__(self,timeout):
+    def __init__(self):
         threading.Thread.__init__(self)
         self._threadingList = []
         self._exitFlag = False
-        self._timeOut = timeout # seconds
-        logger.debug("Initializing Thread Manager with timeout: " + str(self._timeOut))
+        logger.debug("Initializing Thread Manager")
 
     def _isThreadEntryToDelete(self,entry):
         
         if entry["thread"].isAlive() and \
-        (time.time() - entry["startTime"] > self._timeOut) : 
-            logger.debug("Tread has %s timed out! Deleting..."%entry["variable"])
+        (time.time() - entry["startTime"] > entry["timeout"]) : 
+            logger.debug("Tread %s has timed out! Deleting..."%entry["variable"])
             # if time out is reason to delete we should find a safe way to kill it.
             localDataStorage = data.dataStorage.DataStorage()
             localDataStorage.updateValue(entry["variable"], 
                                                          None, "Timeout")
             return True
         if not entry["thread"].isAlive() :
-            logger.debug("Tread has %s finished! Deleting..."%entry["variable"])
-            # if time out is reason to delete we should find a safe way to kill it.
+            logger.debug("Tread %s has finished! Deleting..."%entry["variable"])
             localDataStorage = data.dataStorage.DataStorage()
             localDataStorage.updateValue(entry["variable"], 
                                                          entry["thread"].result, "Done")
@@ -98,10 +103,8 @@ class ThreadManager(threading.Thread):
             self._threadingList[:] = [x for x in self._threadingList if not self._isThreadEntryToDelete(x)]
             time.sleep(0.2)
             
-    def addThread(self,variable, functionSignatureToCall):
+    def addThread(self,variable, functionSignatureToCall,timeout=300):
         logger.debug("Launching thread: Variable: %s; Calling: %s."%(variable,functionSignatureToCall))
-        
-        print "*****************************************"
         
         localDataStorage = data.dataStorage.DataStorage()
         localDataStorage.addQuery(variable, functionSignatureToCall, status="querying")
@@ -112,10 +115,24 @@ class ThreadManager(threading.Thread):
         startTime = time.time()
         entry = {"startTime" : startTime,
                  "variable" : variable,
+                 "timeout" : timeout,
                  "thread" : t}
         self._threadingList.append(entry)
         t.start()
 
+    def removeAllThreads(self):
+        '''
+        Will go trought the self._threadingList and safely removes all threads
+        '''
+        for t in self._threadingList:
+            if ["thread"].isAlive() :
+                #TODO
+                # safely kill it
+                pass
+        
+        self._threadingList = [] 
+                
+        
 
     
     def exit(self):
@@ -133,13 +150,17 @@ if __name__ == '__main__':
     func1 will be removed from the list for timing out
     func2 will be removed from the list as it performed successfuly
     '''
+    
+    from logging import config as _config
+    _config.fileConfig('../logging.ini',disable_existing_loggers=False)
+
     print "Main started"
-    t = ThreadManager(timeout=4)
+    t = ThreadManager()
     t.start()
     time.sleep(0.5)
     t.addThread("$toto","func1()")
     time.sleep(1)
-    t.addThread("func2('param1')")
+    t.addThread("$tata","func2('param1')",timeout=2)
     time.sleep(5)
     t.exit()
     t.join(100) # continue but thread even if the thread is still running

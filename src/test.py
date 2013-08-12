@@ -1,7 +1,12 @@
+#!/usr/bin/python
+
 '''
 Created on Jul 25, 2013
 
 @author: leal
+
+Unit tests will be in this file
+
 '''
 import unittest
 import reductionServer
@@ -12,6 +17,12 @@ import time
 import os
 
 class TestServer(unittest.TestCase):
+    """
+    Unit test for server
+    2 class methods setUpClass and tearDownClass are invoked before and
+    after all tests to start and stop the server respectivelly. 
+    
+    """
     
     @classmethod
     def setUpClass(self):
@@ -101,9 +112,8 @@ class TestServer(unittest.TestCase):
         c.setopt(c.WRITEFUNCTION, buf.write)
         c.perform()
         ret = buf.getvalue()
-        self.assertEqual(ret, '{"$toto": {"status": "Done", "query": "func1()", "value": "ret func1", "desc": null}, "numor": "1234", "$tata": {"status": "Done", "query": "func2(\'par\')", "value": "ret func2", "desc": null}}')
+        self.assertEqual(ret, '{"$toto": {"status": "Done", "query": "func1()", "value": "ret func1", "desc": null}, "numor": "1234", "$tata": {"status": "querying", "query": "func2(\'par\')", "value": null, "desc": null}}')
         buf.close()
-
 
     @classmethod
     def tearDownClass(self):
@@ -122,8 +132,8 @@ class TestServer(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestServer)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main()
+    #suite = unittest.TestLoader().loadTestsFromTestCase(TestServer)
+    #unittest.TextTestRunner(verbosity=2).run(suite)
 
      

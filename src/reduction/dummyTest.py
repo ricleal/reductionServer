@@ -2,6 +2,9 @@
 Created on Jul 25, 2013
 
 @author: leal
+
+Dummy set of tests
+
 '''
 import unittest
 import dummyReducer

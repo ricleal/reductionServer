@@ -2,6 +2,9 @@
 Created on Jul 25, 2013
 
 @author: leal
+
+Unit tests for NeXus file handler
+
 '''
 import unittest
 import nexusHandler

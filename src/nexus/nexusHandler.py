@@ -2,6 +2,9 @@
 Created on Jul 22, 2013
 
 @author: leal
+
+Nexus handler
+
 '''
 
 import nxs
@@ -20,6 +23,9 @@ class NeXusHandler:
     '''
     
     def __init__(self, content):
+        '''
+        @param content: binary stream - contents of the nexus file 
+        '''
 
         logger.debug("Parsing request...")
     
@@ -46,7 +52,10 @@ class NeXusHandler:
         except  Exception as e:
             logger.error("Problems opening the nexus file: " + str(e) )
             raise
-        
+    
+    def filename(self):
+        return self.tempFile.name
+    
     def title(self):
         self.file.opengroup('entry0')
         self.file.opendata('title')
@@ -56,6 +65,13 @@ class NeXusHandler:
         return title
     
     def data(self):
+        '''
+        gets the data field
+        TODO:
+        Needs to be modified in order to cleverly
+        find the data field (e.g. that with signal=1,
+        or the biggest array in the file)   
+        '''
         self.file.opengroup('entry0')
         self.file.opengroup('data')
         self.file.opendata('data')

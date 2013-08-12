@@ -21,8 +21,10 @@ To test use curl:
 -X GET | HEAD | POST | PUT | DELETE
 Use curl -v for verbose
 
-
-Assuming that one server will run for instrument and a single file is handled by the server.
+It assumes:
+    - One server will run for a single instrument
+    - Just a single file is handled by the server at the same time.
+        - The submission of new file will invalidates the stored data of the previous one
 
 '''
 
@@ -87,6 +89,12 @@ def fileHandler():
     if numor is not None and (localDataStorage.empty() or localDataStorage.getNumor() != numor):
         # create a new data storage!
         localDataStorage.setNumor(numor)
+        # TODO:
+        # Code the removeAllThreads function!
+        global threadManager
+        threadManager.removeAllThreads()
+        
+        
     
     # always update the nexus data (the next file may have more counts!)
     global localNexusData
@@ -137,14 +145,9 @@ def query():
     # update local storage with the queries
     if numor is not None and not localDataStorage.empty() and localDataStorage.getNumor() == numor:
         for variable,query in contentAsDict.items():
-            
             # Launching the process
             threadManager.addThread(variable, query)
-            
-            
-            #localDataStorage.addQuery(variable, query)
-                    
-            # launch in paralel the processing
+
             
     
     logger.debug("Local Storage: " + str(localDataStorage))
@@ -166,7 +169,7 @@ def main(argv):
     
     # thread manager
     global threadManager
-    threadManager = reduction.threadManager.ThreadManager(timeout=360)
+    threadManager = reduction.threadManager.ThreadManager()
     threadManager.start()
      
     # Launch http server

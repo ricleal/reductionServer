@@ -120,3 +120,6 @@ TODO
 ----
 
 A list of supported reduction functions available per instrument.
+
+To date, a simple JSON definition of a reduction function is available here: [src/data/functions.json](src/data/functions.json). More will come soon.
+
