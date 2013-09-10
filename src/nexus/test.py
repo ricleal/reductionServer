@@ -16,8 +16,9 @@ class Test(unittest.TestCase):
         '''
         
         '''
-        self.filename = '/home/leal/Documents/Mantid/IN6/157589.nxs'
-        self.nxHandler = nexusHandler.NeXusHandler(self.filename)
+        filename = '/home/leal/Documents/Mantid/IN6/157589.nxs'
+        f = open(filename)
+        self.nxHandler = nexusHandler.NeXusHandler(f.read())
     
     def testTitle(self):
         title = self.nxHandler.title()
