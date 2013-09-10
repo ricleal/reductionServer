@@ -13,7 +13,9 @@ Launcher to run shell commands.
 import subprocess
 import threading
 import time
+import logging
 
+logger = logging.getLogger(__name__) 
 
 class Launcher(threading.Thread):
     '''
@@ -33,7 +35,7 @@ class Launcher(threading.Thread):
         threading.Thread.__init__(self)
         self.__command = command
         self.__timeout = timeout
-        
+        logger.debug("Command to execute <%s> with timeout=%d"%(command,timeout))
         self.__out = None
         self.__err = None
         self.__process = None
@@ -54,6 +56,10 @@ class Launcher(threading.Thread):
         self.__out, self.__err = self.__process.communicate()
     
     def execute(self):
+        '''
+        Doesn't block!!! Runs the command in background.
+        '''
+        logger.debug("Running in background: %s" % self.__command)
         self.start()
     
     def wait(self):
@@ -64,20 +70,26 @@ class Launcher(threading.Thread):
         elapsedTime =  time.time() - self.__startTime
         timeout = self.__timeout - elapsedTime 
         if timeout >0:
+            logger.debug("Waiting for the process to finish with a timeout...")
             self.join(self.__timeout)
+            logger.debug("Process finished...")
         # if after the timeout it is still alive
         if self.is_alive():
+            logger.debug("Process is still alive... Killing it!")
             self.__process.terminate()
             self.join()
+            
     
     def executeAndWait(self):
         '''
         Blocks until process executes or times out
         '''
         self.start()
+        logger.debug("Waiting for the process to finish with a timeout...")
         self.join(self.__timeout)
         # if after the timeout it is still alive
         if self.is_alive():
+            logger.debug("Timeout!! Process is still alive... Killing it!")
             self.__process.terminate()
             self.join()
     
@@ -98,39 +110,55 @@ class Launcher(threading.Thread):
         return self.__out
     def returnCode(self):
         return self.__process.returncode
+
+import unittest
+
+class Test(unittest.TestCase):
+    
+    def setUp(self):
+        from logging import config as _config
+        _config.fileConfig('../logging.ini',disable_existing_loggers=False)
     
 
+    def test_a_ShortCommandLongTimeoutSuccess(self):
+        print
+        l = Launcher('ls',2)
+        l.executeAndWait()
+        print "** Out:"
+        print l.output()
+        self.assertEqual(l.returnCode(),0)
+    
+    def test_b_ShortCommandLongTimeoutFailure(self):
+        print
+        l = Launcher('ls -la /root',2)
+        l.executeAndWait()
+        print "** Error:"
+        print l.error()
+        self.assertNotEqual(l.returnCode(),0)
+    
+    def test_c_LongCommandShortTimeout(self):
+        print
+        l = Launcher('sleep 10',1)
+        l.executeAndWait()
+        self.assertNotEqual(l.returnCode(),0)
+    
+    def test_d_AverangeCommandDoesntBlockCaller(self):
+        print
+        l = Launcher('sleep 2',10)
+        l.execute()
+        print "Doing something in launcher while command runs in bg..."
+        time.sleep(1)
+        self.assertTrue(l.isSubProcessRunning(), "Is subprocess running?")
+        print "Still doing something in launcher while command runs in bg..."
+        time.sleep(2)
+        self.assertEqual(l.returnCode(),0)
+        
+    def tearDown(self):
+        pass
+
 if __name__ == "__main__":
-    
-    # short command
-    l = Launcher('ls -la',2)
-    l.executeAndWait()
-    print "** Error:",
-    print l.error()
-    print "** Out:",
-    print l.output()
-    print "** Return Code:",
-    print l.returnCode()
-    
-    # long command with shor timeout
-    # waits to be done
-    print "******************************"
-    l = Launcher('sleep 10',1)
-    l.executeAndWait()
-    print "** Time out run out: Return Code =/= 0:",
-    print l.returnCode()
-    
-    # shor command long time out
-    # Launchs command and don't hangup
-    print "******************************"
-    l = Launcher('sleep 2',5)
-    l.execute()
-    print "I'm doing other stuff"
-    time.sleep(1)
-    print "Is subprocess running?",
-    print l.isSubProcessRunning()
-    time.sleep(2)
-    print "Should be done. Return Code must be zero if it's done:",
-    print l.returnCode()
-    
+    #import sys;sys.argv = ['', 'Test.testWriter']
+    #unittest.main()
+    suite = unittest.TestLoader().loadTestsFromTestCase(Test)
+    unittest.TextTestRunner(verbosity=2).run(suite)
     
