@@ -14,51 +14,9 @@ import time
 import sys
 import logging
 import data.dataStorage
+import launcher
 
 logger = logging.getLogger(__name__) 
-
-
-
-# dummy functions called from the TreadableFunctionCaller
-def func1():
-    func_name = sys._getframe().f_code.co_name
-    time.sleep(1)
-    return "ret func1"
-
-def func2(par=None):
-    func_name = sys._getframe().f_code.co_name
-    time.sleep(5)
-    return "ret func2"
-
-class TreadableFunctionCaller(threading.Thread):
-    """
-    Class to be threaded
-    This class will call the reduction functions
-    """
-    def __init__(self,functionSignatureCall):
-        """
-        name will be an existing function with parameter list, e.g.:
-        "fullName( name = 'Joe', family = 'Brand' )"
-        
-        """
-        threading.Thread.__init__(self,name=functionSignatureCall)
-        self.result = None
-
-    def run(self):
-        ''' Function to be threaded '''
-        logger.debug("Calling %s within a thread..."%self.name) 
-        # Using eval is evil, but let's use it here:
-        try :
-            # TODO:
-            # I'm trusting that what comes in functionSignatureCall
-            # can be called with eval
-            # This must be though in the future
-            self.result = eval(self.name)
-            logger.debug("Function %s successfully evaluated!"%self.name)
-        except Exception as e:
-            logger.error("Error while evaluating %s : %s" % (self.name,str(e)))
-            self.result = None
-        
 
 
     
@@ -75,7 +33,7 @@ class ThreadManager(threading.Thread):
 
     def _isThreadEntryToDelete(self,entry):
         
-        if entry["thread"].isAlive() and \
+        if entry["thread"].isSubProcessRunning() and \
         (time.time() - entry["startTime"] > entry["timeout"]) : 
             logger.debug("Tread %s has timed out! Deleting..."%entry["variable"])
             # if time out is reason to delete we should find a safe way to kill it.
@@ -83,11 +41,11 @@ class ThreadManager(threading.Thread):
             localDataStorage.updateValue(entry["variable"], 
                                                          None, "Timeout")
             return True
-        if not entry["thread"].isAlive() :
+        if not entry["thread"].isSubProcessRunning() :
             logger.debug("Tread %s has finished! Deleting..."%entry["variable"])
             localDataStorage = data.dataStorage.DataStorage()
             localDataStorage.updateValue(entry["variable"], 
-                                                         entry["thread"].result, "Done")
+                                                         entry["thread"].output(), "Done")
             return True
         else:
             return False
@@ -109,26 +67,24 @@ class ThreadManager(threading.Thread):
         localDataStorage = data.dataStorage.DataStorage()
         localDataStorage.addQuery(variable, functionSignatureToCall, status="querying")
         
-        
-        t = TreadableFunctionCaller(functionSignatureToCall);
+        thisLauncher = launcher.Launcher(functionSignatureToCall,timeout)
+                
         # Put threads in a list        
         startTime = time.time()
         entry = {"startTime" : startTime,
                  "variable" : variable,
                  "timeout" : timeout,
-                 "thread" : t}
+                 "thread" : thisLauncher}
         self._threadingList.append(entry)
-        t.start()
+        thisLauncher.execute()
 
     def removeAllThreads(self):
         '''
         Will go trought the self._threadingList and safely removes all threads
         '''
-        for t in self._threadingList:
-            if ["thread"].isAlive() :
-                #TODO
-                # safely kill it
-                pass
+        for entry in self._threadingList:
+            if entry["thread"].isSubProcessRunning() :
+                entry["thread"].kill()
         
         self._threadingList = [] 
                 
@@ -154,14 +110,20 @@ if __name__ == '__main__':
     from logging import config as _config
     _config.fileConfig('../logging.ini',disable_existing_loggers=False)
 
+    localDataStorage = data.dataStorage.DataStorage()
+    import pprint
+
     print "Main started"
     t = ThreadManager()
     t.start()
     time.sleep(0.5)
-    t.addThread("$toto","func1()")
+    t.addThread("$toto","ls *.py | head -1")
+    pprint.pprint(localDataStorage._data)
     time.sleep(1)
-    t.addThread("$tata","func2('param1')",timeout=2)
-    time.sleep(5)
+    pprint.pprint(localDataStorage._data)
+    t.addThread("$tata","ls -la *.py | head -1",timeout=2)
+    time.sleep(2)
+    pprint.pprint(localDataStorage._data)
     t.exit()
     t.join(100) # continue but thread even if the thread is still running
     print "Main ended..."
