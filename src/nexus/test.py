@@ -16,6 +16,9 @@ class Test(unittest.TestCase):
         '''
         
         '''
+        from logging import config as _config
+        _config.fileConfig('../logging.ini',disable_existing_loggers=False)
+        
         filename = '/home/leal/Documents/Mantid/IN6/157589.nxs'
         f = open(filename)
         self.nxHandler = nexusHandler.NeXusHandler(f.read())
@@ -32,10 +35,16 @@ class Test(unittest.TestCase):
         jsonData = self.nxHandler.dataToJson()
         self.assertEqual(len(jsonData),1052982)
     
+    def testFilename(self):
+        filename = self.nxHandler.filename()
+        print 'filename:',filename
+        self.assertTrue(filename.startswith('/tmp'))
+    
+    
     def tearDown(self):
         del(self.nxHandler)
         
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testWriter']
-    unittest.main()
+    suite = unittest.TestLoader().loadTestsFromTestCase(Test)
+    unittest.TextTestRunner(verbosity=2).run(suite)

@@ -76,7 +76,7 @@ class ThreadManager(threading.Thread):
                  "timeout" : timeout,
                  "thread" : thisLauncher}
         self._threadingList.append(entry)
-        thisLauncher.execute()
+        thisLauncher.launch()
 
     def removeAllThreads(self):
         '''

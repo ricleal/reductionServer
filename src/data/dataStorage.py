@@ -27,12 +27,25 @@ class DataStorage(object):
         # Lock
         self.lock = threading.Lock()
         
+        
+        
     def setNumor(self,numor):
         '''
         A new numor is set => All the _data is reset!
         '''
         with self.lock:
             self._data = {"numor":numor}
+    
+    def setNexusHandler(self,nexusHandler):
+        '''
+        '''
+        self.__nexusHandler = nexusHandler
+    def getNexusHandler(self):
+        '''
+        '''
+        return self.__nexusHandler
+    
+    
     
     def data(self):
         with self.lock:

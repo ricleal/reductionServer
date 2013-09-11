@@ -38,7 +38,6 @@ _config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
 
 logger = logging.getLogger("server")
 
-localNexusData = None
 threadManager = None
 
 # Handle signals
@@ -94,11 +93,8 @@ def fileHandler():
         global threadManager
         threadManager.removeAllThreads()
         
-        
-    
     # always update the nexus data (the next file may have more counts!)
-    global localNexusData
-    localNexusData = nexus.nexusHandler.NeXusHandler(content)
+    localDataStorage.setNexusHandler(nexus.nexusHandler.NeXusHandler(content))
     
     return localDataStorage.toJson()
 
