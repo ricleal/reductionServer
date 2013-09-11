@@ -80,11 +80,11 @@ class TestServer(unittest.TestCase):
         -H "Numor: 1234" \
          -H "Accept: application/json"  \
          -X POST \
-         -d '{"$toto":"func1()", "$tata":"func2(\"par\")"}' \
+         -d '{"$toto":"/home/leal/git/reductionServer/bin/test1.sh", "$tata":"/home/leal/git/reductionServer/bin/test1.sh /bin/sh"}' \
          http://localhost:8080/query
         '''
         
-        textToPost = """{"$toto":"func1()", "$tata":"func2('par')"}"""
+        textToPost = """{"$toto":"/home/leal/git/reductionServer/bin/test1.sh", "$tata":"/home/leal/git/reductionServer/bin/test1.sh /bin/sh"}"""
         buf = cStringIO.StringIO()
         c = pycurl.Curl()
         c.setopt(c.URL, self.url+"/query")
@@ -97,7 +97,8 @@ class TestServer(unittest.TestCase):
         c.setopt(c.WRITEFUNCTION, buf.write)
         c.perform()
         ret = buf.getvalue()
-        self.assertEqual(ret, '{"$toto": {"status": "querying", "query": "func1()", "value": null, "desc": null}, "numor": "1234", "$tata": {"status": "querying", "query": "func2(\'par\')", "value": null, "desc": null}}')
+        self.assertEqual(ret, '{"$toto": {"status": "querying", "query": "/home/leal/git/reductionServer/bin/test1.sh", "value": null, "desc": null}, "numor": "1234", ' +
+                         '"$tata": {"status": "querying", "query": "/home/leal/git/reductionServer/bin/test1.sh /bin/sh", "value": null, "desc": null}}')
         buf.close()
 
     def testResults(self):
@@ -112,7 +113,8 @@ class TestServer(unittest.TestCase):
         c.setopt(c.WRITEFUNCTION, buf.write)
         c.perform()
         ret = buf.getvalue()
-        self.assertEqual(ret, '{"$toto": {"status": "Done", "query": "func1()", "value": "ret func1", "desc": null}, "numor": "1234", "$tata": {"status": "querying", "query": "func2(\'par\')", "value": null, "desc": null}}')
+        self.assertEqual(ret, '{"$toto": {"status": "Done", "query": "/home/leal/git/reductionServer/bin/test1.sh", "value": "Usage: /home/leal/git/reductionServer/bin/test1.sh filename\\n", "desc": null}, "numor": "1234", ' + 
+                         '"$tata": {"status": "Done", "query": "/home/leal/git/reductionServer/bin/test1.sh /bin/sh", "value": "File found\\n", "desc": null}}')
         buf.close()
 
     @classmethod
