@@ -20,12 +20,11 @@ logger = logging.getLogger(__name__)
 
 class Launcher(threading.Thread):
     '''
-    Launcher class
-    
-    Inherits from Thread.
-    
+    Launcher class. Inherits from Thread.
     
     Constructer gets the shell command as parameter.
+    
+    Every command is executed within a thread with a time out. Thus, it never blocks the execution.
     
     '''
 
@@ -41,11 +40,12 @@ class Launcher(threading.Thread):
         self.__command = command
         self.__timeout = timeout
         logger.debug("Command to execute <%s> with timeout=%d"%(command,timeout))
+        
         self.__out = None
         self.__err = None
         self.__process = None
-        self.__startTime = None
         self.__pid = None
+        self.__returnCode = None
     
     def run(self):
         '''
@@ -56,86 +56,54 @@ class Launcher(threading.Thread):
         Communicate  blocks until the command is fully executed.
         '''
         
-        self.__startTime = time.time()
+        logger.debug("Running in background: %s" % self.__command)        
 
         self.__process = subprocess.Popen(self.__command,
                               shell=True,
                               stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         
         self.__pid = self.__process.pid
-        
         self.__out, self.__err = self.__process.communicate()
-    
-    def __isTimedOut(self):
-        elapsedTime =  time.time() - self.__startTime
-        timer = self.__timeout - elapsedTime 
-        if timer < 0: 
-            return True
-        else:
-            return False
-            
+        self.__returnCode = self.__process.returncode
+        
     ### Non private methods:
     
-    def execute(self):
-        '''
-        Doesn't block!!! Runs the command in background.
-        '''
-        logger.debug("Running in background: %s" % self.__command)
-        self.start() 
-    
-    def wait(self):
-        '''
-        Blocks until the process finishes or timeout
-        '''
-        if not self.__isTimedOut():
-            logger.debug("Waiting for the process to finish or to timeout...")
-            self.join(self.__timeout)
-            logger.debug("Process finished...")
-        # if after the timeout it is still alive
-        if self.is_alive():
-            logger.debug("Process is still alive... Killing it!")
-            self.__process.terminate()
-            self.join()        
-    
-    def executeAndWait(self):
-        '''
-        Blocks until process executes or times out
-        '''
+    def launch(self):
+        """
+        Only function to be called. Starts the command with a time out.
+        
+        Block the execution!!!!
+        
+        It might have to be launched within other thread!!!!
+        http://stackoverflow.com/questions/4158502/python-kill-or-terminate-subprocess-when-timeout
+        """
         self.start()
-        logger.debug("Waiting for the process to finish with a timeout...")
         self.join(self.__timeout)
-        # if after the timeout it is still alive
+
         if self.is_alive():
-            logger.debug("Process finished or Timed out, but it is still alive... Killing it!")
+            logger.info("Thread timed out but the process is still running. Killing: %s" % self.__command )
             self.__process.terminate()
             self.join()
+            logger.debug("Done.")
+        else :
+            logger.info("Thread finished successfully: %s"%self.__command)
     
     def isSubProcessRunning(self):
         """
-        Just checks if the subprocess is still running or timed out.
-        If it's timeout kills it! 
-        
-        Assuming it's running. Otherwise we need some safety checks!
-        """
-        
+        Just checks if the thread is running.
+        """    
         # Check if child process has terminated. Set and return returncode attribute.
         if self.__process.poll() is None:
-            # still running:
-            if self.__isTimedOut():
-                if self.is_alive():
-                    logger.debug("Process finished or Timed out, but it is still alive... Killing it!")
-                    self.__process.terminate()
-                    self.join()
-                return False
             return True
         else:
             return False
     
     def kill(self):
         if self.is_alive():
-            logger.debug("Thread is alive... Killing subprocess!")
+            logger.debug("Thread is alive... Killing subprocess: %s"%self.__command)
             self.__process.terminate()
             self.join()
+            logger.debug("Process killed...")
         
     
     def pid(self):
@@ -154,7 +122,7 @@ class Launcher(threading.Thread):
     def output(self):
         return self.__out
     def returnCode(self):
-        return self.__process.returncode
+        return self.__returnCode
 
 import unittest
 
@@ -168,7 +136,7 @@ class Test(unittest.TestCase):
     def test_a_ShortCommandLongTimeoutSuccess(self):
         print
         l = Launcher('ls',2)
-        l.executeAndWait()
+        l.launch()
         print "** Out:"
         print l.output()
         self.assertEqual(l.returnCode(),0)
@@ -176,7 +144,7 @@ class Test(unittest.TestCase):
     def test_b_ShortCommandLongTimeoutFailure(self):
         print
         l = Launcher('ls -la /root',2)
-        l.executeAndWait()
+        l.launch()
         print "** Error:"
         print l.error()
         self.assertNotEqual(l.returnCode(),0)
@@ -184,23 +152,32 @@ class Test(unittest.TestCase):
     def test_c_LongCommandShortTimeout(self):
         print
         l = Launcher('sleep 10',1)
-        l.executeAndWait()
+        l.launch()
+        time.sleep(1.1)
         self.assertNotEqual(l.returnCode(),0)
+        
     
     def test_d_AverangeCommandDoesntBlockCaller(self):
         print
+        
         l = Launcher('sleep 2',10)
-        l.execute()
-        time.sleep(0.1)
+        
+        # As launch block execution let's run in in a thread
+        t = threading.Thread(target=l.launch)
+        t.start()
+        
         print "Doing something in launcher while command runs in bg..."
+        time.sleep(0.1)
         pid = l.pid()
         os.system('ps -ef | grep %d'%pid)
         print "Pid of the subprocess:", pid
-        time.sleep(0.9)
+        time.sleep(0.5)
         self.assertTrue(l.isSubProcessRunning(), "Is subprocess running?")
         print "Still doing something in launcher while command runs in bg..."
         time.sleep(2)
         self.assertEqual(l.returnCode(),0)
+        
+        t.join()
     
     def test_e_realTimeOut(self):
         print
@@ -209,14 +186,15 @@ class Test(unittest.TestCase):
         data['timeout'] = 2
         
         l = Launcher(data['command'],data['timeout'])
-        l.execute()
+        t = threading.Thread(target=l.launch)
+        t.start()
         time.sleep(0.1)
-        
         data['pid']=l.pid()
         
         while l.isSubProcessRunning():
             print 'Process is still running'
             time.sleep(0.2)
+        t.join()
         
         data['out'] = l.output()
         data['err'] = l.error() 
@@ -231,7 +209,8 @@ class Test(unittest.TestCase):
         data['timeout'] = 10
         
         l = Launcher(data['command'],data['timeout'])
-        l.execute()
+        t = threading.Thread(target=l.launch)
+        t.start()
         time.sleep(0.1)
         
         data['pid']=l.pid()
@@ -239,7 +218,7 @@ class Test(unittest.TestCase):
         while l.isSubProcessRunning():
             print 'Process is still running'
             time.sleep(0.2)
-        
+        t.join()
         data['out'] = l.output()
         data['err'] = l.error() 
         data['retCode'] = l.returnCode()
