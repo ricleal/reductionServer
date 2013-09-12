@@ -94,7 +94,8 @@ def fileHandler():
         threadManager.removeAllThreads()
         
     # always update the nexus data (the next file may have more counts!)
-    localDataStorage.setNexusHandler(nexus.nexusHandler.NeXusHandler(content))
+    nexusHandler = nexus.nexusHandler.NeXusHandler(content)
+    localDataStorage.setNexusHandler(nexusHandler)
     
     return localDataStorage.toJson()
 
