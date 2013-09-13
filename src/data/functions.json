@@ -4,7 +4,7 @@
 		{
 			"name":"sofqw",
 			"description":"Calculates the intensity as a function of momentum transfer against energy: S(q,w)",
-			"maximum_processing_time":360,
+			"timeout":300,
 			"parameters":{
 				"input":[
 					{
@@ -25,6 +25,7 @@
 						"description":"Description of the param3",
 						"units":"mev"
 					}
+					
 				],
 				"output":[
 					{
@@ -39,8 +40,37 @@
 						"description":"Description of the param 2 out",
 						"units":"NA"
 					}
+					
 				]
+				
+			},
+			"local_routine":{
+				"script":"/usr/bin/sofqw",
+				"parameters":{
+					"input":[
+						{
+							"name":"filepath",
+							"type":"file",
+							"description":"local nexus file name"
+						}
+						
+					],
+					"output":[
+						{
+							"name":"out",
+							"type":"float[][]",
+							"description":"out put of s of q",
+							"units":"Counts,mEv",
+							"axes":"Counts,energy"
+						}
+						
+					]
+					
+				}
+				
 			}
+			
 		}
+		
 	]
 }

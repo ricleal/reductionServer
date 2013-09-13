@@ -1,7 +1,7 @@
 Reduction Server
 ===============
 
-ILL REST Reduction server
+ILL REST Reduction Server
 
 Prerequisites
 -------------

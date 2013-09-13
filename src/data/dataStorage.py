@@ -5,7 +5,67 @@ Created on Jul 30, 2013
 '''
 import simplejson
 import threading
+import pprint
+import collections
+import nexus.nexusHandler
 
+class DataStorage(object):
+    '''
+    Class to store a deck of entries.
+    
+    Every entry has:
+    numor:
+    nexusHandler :
+    queries : list of queries . Every query is a dic.
+    
+    Borg singleton config object
+    '''
+    __shared_state = {}
+    
+    _data = collections.deque(maxlen=22)
+    
+    def __init__(self):
+        
+        #implement the borg pattern (_shared_state)
+        self.__dict__ = self.__shared_state
+    
+    def __numorExistsInData(self,numor):
+        for idx, value in enumerate(self._data) :
+            if numor == value['numor']:
+                return idx
+        return None
+    
+    def __str__(self):
+        res = ""
+        for idx, value in enumerate(self._data) :
+            res += "%s -> %s, "%(idx,value['numor'])
+        return res
+    
+    def insert(self,numor,content):
+        
+        tmpNxHandler = nexus.nexusHandler.NeXusHandler(numor, content)
+        
+        idx = self.__numorExistsInData(numor)
+        
+        if idx is not None:
+            self._data[idx]["nexus_content"] = tmpNxHandler
+        else:
+            entry = {'numor':numor, "nexus_content":tmpNxHandler}
+            self._data.appendleft(entry)
+        
+    
+    def fileNameLastInserted(self):
+        return self._data[0]["nexus_content"].filename()
+    
+    def fileName(self,numor):
+        for value in self._data :
+            if numor == value['numor']:
+                return value["nexus_content"].filename()
+        return None
+    def size(self):
+        return len(self._data)
+    
+    
 class DataStorage(object):
     '''
     Class to store data for a file being threated
@@ -14,8 +74,10 @@ class DataStorage(object):
     Borg singleton config object
     '''
     
-    _data ={}
     __shared_state = {}
+    
+    _data = collections.deque(maxlen=22)
+    
 
     def __init__(self):
         '''
@@ -24,8 +86,8 @@ class DataStorage(object):
         #implement the borg pattern (_shared_state)
         self.__dict__ = self.__shared_state
         
-        # Lock
-        self.lock = threading.Lock()
+        
+    def addEntry(self,entry):
         
         
         
@@ -56,7 +118,8 @@ class DataStorage(object):
         
     def __str__(self):
         with self.lock:
-            return str(self._data)
+            #return str(self._data)
+            return pprint.pformat(self._data)
     
     
     def addQuery(self, variable, value, status, desc=None):

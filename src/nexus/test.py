@@ -20,8 +20,8 @@ class Test(unittest.TestCase):
         _config.fileConfig('../logging.ini',disable_existing_loggers=False)
         
         filename = '/home/leal/Documents/Mantid/IN6/157589.nxs'
-        f = open(filename)
-        self.nxHandler = nexusHandler.NeXusHandler(f.read())
+        self.f = open(filename).read()
+        self.nxHandler = nexusHandler.NeXusHandler(157589,self.f)
     
     def testTitle(self):
         title = self.nxHandler.title()
@@ -40,6 +40,26 @@ class Test(unittest.TestCase):
         print 'filename:',filename
         self.assertTrue(filename.startswith('/tmp'))
     
+    
+    def testNexusStorage(self):
+        
+        nxs = nexusHandler.NexusStorage()
+        nxs.insert(157589,self.f)
+        print str(nxs)
+        self.assertEqual(nxs.size(),1)
+        
+        nxs = nexusHandler.NexusStorage()
+        nxs.insert(157590,self.f)
+        nxs.insert(157591,self.f)
+        print str(nxs)
+        self.assertEqual(nxs.size(),3)
+        
+        nxs.insert(157591,self.f)
+        nxs.insert(157591,self.f)
+        nxs.insert(157591,self.f)
+        self.assertEqual(nxs.size(),3)
+        print str(nxs)
+
     
     def tearDown(self):
         del(self.nxHandler)

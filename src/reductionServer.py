@@ -12,6 +12,7 @@ import nexus.nexusHandler
 import reduction.threadManager
 import time
 import signal
+import uuid
 
 '''
 
@@ -112,7 +113,7 @@ def results():
     localDataStorage = data.dataStorage.DataStorage()
         
     logger.debug("Sending results to client...")
-    logger.debug("Local Storage: " + str(localDataStorage))
+    logger.debug("Local Storage: \n" + str(localDataStorage))
     
     return localDataStorage.toJson()
 
@@ -139,6 +140,8 @@ def query():
     localDataStorage = data.dataStorage.DataStorage()
     logger.debug("Local Storage: " + str(localDataStorage))
     
+    uniqId = uuid.uuid4()
+    
     # update local storage with the queries
     if numor is not None and not localDataStorage.empty() and localDataStorage.getNumor() == numor:
         for variable,query in contentAsDict.items():
@@ -147,7 +150,7 @@ def query():
 
             
     
-    logger.debug("Local Storage: " + str(localDataStorage))
+    logger.debug("Local Storage: \n" + str(localDataStorage))
     return localDataStorage.toJson()
 
 
