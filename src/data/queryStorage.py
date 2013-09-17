@@ -1,26 +1,37 @@
 '''
-Created on Jul 30, 2013
+Created on Sep 16, 2013
 
 @author: leal
 '''
+
 
 import logging
 import helper.dict
 
 logger = logging.getLogger(__name__) 
 
-class DataStorage(helper.dict.LimitedSizeDict):
+class QueryStorage(helper.dict.LimitedSizeDict):
     '''
-    Class to store data
+    Class to store data for a file being threated
     
     
-    Table for Nexus + numor
+    Table for Queries:
     {
-    numor:
-    nexus_handler :
+    queries : {
+        numors: 
+        query :
+        uuid :
+        start_time:
+        end_time : 
+        timeout :
+        result : {
+            
+            }
+        }
     }
-    
+       
     '''
+    
     
 #     def __new__(cls, *args, **kwargs):
 #         '''
@@ -28,6 +39,7 @@ class DataStorage(helper.dict.LimitedSizeDict):
 #         '''
 #         if not hasattr(cls, '_instance'):
 #             cls._instance = dict.__new__(cls, *args, **kwargs)
+#             print "Create instance..."
 #         return cls._instance
 #     
 #     def __init__(self, *args, **kwds):
@@ -40,48 +52,37 @@ class DataStorage(helper.dict.LimitedSizeDict):
 #             self.size_limit
 #         except:
 #             helper.dict.LimitedSizeDict.__init__(self, *args, **kwds)
-    
+
     def __init__(self, *args, **kwds):
         '''
         Constructor
         '''
         helper.dict.LimitedSizeDict.__init__(self, *args, **kwds)
-        
-    def isValidNumor(self,numor):
-        return numor in self
     
-    def findInvalidNumors(self,numors):
-        '''
-        Return non existent numors from the input param
-        '''
-        res = []
-        for n in numors:
-            if not self.isValidNumor(n) :
-                res.append(n)
-        return res
-            
-dataStorage = DataStorage(size_limit=22)
+    def addQuery(self,queryId,query):
+        self[queryId]=query
+        
+    
 
+queryStorage = QueryStorage(size_limit=256)
+        
 def main():
-    q = DataStorage(size_limit=5)
     
     for i in range(10):
-        e = "Nexus File content %d"%i
-        q[i] = e
-        print len(q),q
-    print q.isValidNumor(7)
-    print q.isValidNumor(12)
+        qTxt = "xpto_%d"%i
+        e = {'query' : qTxt, 'params':[i]*5}
+        import uuid
+        id = str(uuid.uuid4())
+        queryStorage[id] = e
+        print len(queryStorage),queryStorage
     
-    print q.findInvalidNumors([1,2,7,8])
     
-    q2 = DataStorage()
-    for i in range(10,20):
-        e = "Nexus File content %d"%i
-        q2[i] = e
-        print len(q2),q2
+    print
+    print len(queryStorage),queryStorage
+    
+    queryStorage.addQuery('232323-23-232-323-1212', {"query":"sofw"})
+    print len(queryStorage),queryStorage
     
     
 if __name__ == "__main__":
     main()
-        
-        

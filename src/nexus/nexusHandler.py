@@ -12,60 +12,9 @@ import logging
 import simplejson
 import tempfile
 import os
-import collections
 
 logger = logging.getLogger(__name__) 
 
-
-class NexusStorage(object):
-    '''
-    Class to store the nexus file
-    Identified by the numor.
-    
-    Borg singleton config object
-    '''
-    __shared_state = {}
-    _data = collections.deque(maxlen=22)
-    
-    def __init__(self):
-        
-        #implement the borg pattern (_shared_state)
-        self.__dict__ = self.__shared_state
-    
-    def __numorExistsInData(self,numor):
-        for idx, value in enumerate(self._data) :
-            if numor == value.numor():
-                return idx
-        return None
-    
-    def __str__(self):
-        res = ""
-        for idx, value in enumerate(self._data) :
-            res += "%s -> %s, "%(idx,value.numor())
-        return res
-    
-    def insert(self,numor,content):
-        
-        tmpNxHandler = NeXusHandler(numor, content)
-        
-        idx = self.__numorExistsInData(numor)
-        
-        if idx is not None:
-            self._data[idx] = tmpNxHandler
-        else:
-            self._data.appendleft(tmpNxHandler)
-        
-    
-    def fileNameLastInserted(self):
-        return self._data[0].filename()
-    
-    def fileName(self,numor):
-        for value in self._data :
-            if numor == value.numor():
-                return value.filename()
-        return None
-    def size(self):
-        return len(self._data)
     
 
 class NeXusHandler(object):
@@ -77,14 +26,12 @@ class NeXusHandler(object):
     
     '''
     
-    def __init__(self, numor, content):
+    def __init__(self, content):
         '''
         @param content: binary stream - contents of the nexus file 
         '''
         
         logger.debug("Parsing request...")
-        
-        self.__numor = numor
     
         # Need to write the file on disk! there's no open stream in nexus library for python
         self.tempFile = tempfile.NamedTemporaryFile(delete=False)
@@ -109,10 +56,7 @@ class NeXusHandler(object):
         except  Exception as e:
             logger.error("Problems opening the nexus file: " + str(e) )
             raise
-    
-    def numor(self):
-        return self.__numor
-    
+
     def filename(self):
         return self.tempFile.name
     

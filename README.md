@@ -81,8 +81,8 @@ A unique [Borg Singleton](http://code.activestate.com/recipes/66531-singleton-we
 The same Nexus file can be submitted to the server as many times as desired.
 
 ```
-# Send a a binary nexus/hdf5 by post. Note the "Numor" header.
-curl -X POST -H "Numor: 1234"  --data-binary @157589.nxs http://localhost:8080/file
+# Send a a binary nexus/hdf5 by post with the respective numor appended to the URL.
+curl -X POST --data-binary @157589.nxs http://localhost:8080/file/157589
 # Return:
 {"numor": "1234"}
 ```
@@ -92,13 +92,13 @@ This is done by sending pairs of ```<variable name> : <function to be called in 
 This functions will be called in threads managed by the ```reduction.threadManager```. The threadManager will monitor the functions and eventually remove the timed out requests.
 
 ```
-# Send a query to the server. Here the client is asking to put in the variables $toto and $tata the result of calling func1() and func2('par'). 
+# Send a query to the server. The URL must be appended with the numor(s) used by the query. If multiple numors are used, then they must be separated by a comma ```,```.
+Here the client is asking to put in the variables $toto and $tata the result of calling func1() and func2('par'). 
 curl -v -H "Content-Type: application/json" \
-        -H "Numor: 1234" \
          -H "Accept: application/json"  \
          -X POST \
          -d '{"$toto":"func1()", "$tata":"func2(\"par\")"}' \
-         http://localhost:8080/query
+         http://localhost:8080/query/12345,12346,12347
 # Return:
 {u'$toto': {'status': 'querying', 'query': u'func1()', 'value': None, 'desc': None}, 'numor': '1234', u'$tata': {'status': 'querying', 'query': u"func2('par')", 'value': None, 'desc': None}}         
 ```

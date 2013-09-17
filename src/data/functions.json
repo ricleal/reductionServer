@@ -44,7 +44,7 @@
 				]
 				
 			},
-			"local_routine":{
+			"local_mapping":{
 				"script":"/usr/bin/sofqw",
 				"parameters":{
 					"input":[

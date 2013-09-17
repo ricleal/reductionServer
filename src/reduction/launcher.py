@@ -121,8 +121,12 @@ class Launcher(threading.Thread):
     
     def output(self):
         return self.__out
+    
     def returnCode(self):
         return self.__returnCode
+    
+    def __del__(self):
+        self.kill()
 
 import unittest
 
@@ -153,7 +157,6 @@ class Test(unittest.TestCase):
         print
         l = Launcher('sleep 10',1)
         l.launch()
-        time.sleep(1.1)
         self.assertNotEqual(l.returnCode(),0)
         
     
