@@ -166,7 +166,7 @@ def results(queryId):
     """
     
     from data.queryStorage import queryStorage
-    thisQuery = queryStorage[queryId]
+    thisQuery = queryStorage[queryId].copy() # copy by value
     
     logger.debug("This Query:\n" + pprint.pformat(thisQuery))
     

@@ -16,6 +16,8 @@ from multiprocessing import Process
 import time
 import os
 
+queryId = None
+
 class TestServer(unittest.TestCase):
     """
     Unit test for server
@@ -35,8 +37,8 @@ class TestServer(unittest.TestCase):
         #p.join()
         self.url = "http://localhost:8080"
         self.filename = '/home/leal/Documents/Mantid/IN6/157589.nxs'
-    
-    def testAlive(self):
+        
+    def test_a_Alive(self):
         '''
         curl -v http://localhost:8080/
         '''
@@ -50,20 +52,14 @@ class TestServer(unittest.TestCase):
         ret = buf.getvalue()
         self.assertEqual(ret, '')
         buf.close()
-          
-    def testFile(self):
-        '''
-        cd ~/Documents/Mantid/IN6
-        curl -v -H "Numor: 1234" -X POST --data-binary @157589.nxs http://localhost:8080/file
-        '''
-        
+    
+    def postFile(self,numor):
         buf = cStringIO.StringIO()
         c = pycurl.Curl()
-        c.setopt(c.URL, self.url+"/file")
+        c.setopt(c.URL, self.url+"/file/%d"%numor)
         c.setopt(c.POST,1)
         #c.setopt(pycurl.VERBOSE, 1)
         c.setopt(pycurl.HTTPHEADER, ['Content-Type: application/octet-stream'])
-        c.setopt(pycurl.HTTPHEADER, ['Numor: 1234'])
         filesize = os.path.getsize(self.filename)
         c.setopt(pycurl.POSTFIELDSIZE, filesize)
         fin = open(self.filename, 'rb')
@@ -71,20 +67,31 @@ class TestServer(unittest.TestCase):
         c.setopt(c.WRITEFUNCTION, buf.write)
         c.perform()
         ret = buf.getvalue()
-        self.assertEqual(ret, '{"numor": "1234"}')
         buf.close()
+        return ret
+    
+    def test_b_File(self):
+        '''
+        cd ~/Documents/Mantid/IN6
+        curl -v -X POST --data-binary @157589.nxs http://localhost:8080/file/157589
+        '''
+        ret = self.postFile(1)
+        self.assertEqual(ret, '{"success": "OK"}')
+        
+        ret = self.postFile(2)
+        self.assertEqual(ret, '{"success": "OK"}')
+        
           
-    def testQuery(self):
+    def test_c_Query(self):
         '''
         curl -v -H "Content-Type: application/json" \
-        -H "Numor: 1234" \
          -H "Accept: application/json"  \
          -X POST \
-         -d '{"$toto":"/home/leal/git/reductionServer/bin/test1.sh", "$tata":"/home/leal/git/reductionServer/bin/test1.sh /bin/sh"}' \
+         -d '{"query":"sofw","numors":[1,2]}' \
          http://localhost:8080/query
         '''
         
-        textToPost = """{"$toto":"/home/leal/git/reductionServer/bin/test1.sh", "$tata":"/home/leal/git/reductionServer/bin/test1.sh /bin/sh"}"""
+        textToPost = """{"query":"sofw","numors":[1,2]}"""
         buf = cStringIO.StringIO()
         c = pycurl.Curl()
         c.setopt(c.URL, self.url+"/query")
@@ -97,24 +104,26 @@ class TestServer(unittest.TestCase):
         c.setopt(c.WRITEFUNCTION, buf.write)
         c.perform()
         ret = buf.getvalue()
-        self.assertEqual(ret, '{"$toto": {"status": "querying", "query": "/home/leal/git/reductionServer/bin/test1.sh", "value": null, "desc": null}, "numor": "1234", ' +
-                         '"$tata": {"status": "querying", "query": "/home/leal/git/reductionServer/bin/test1.sh /bin/sh", "value": null, "desc": null}}')
+        global queryId
+        queryId = eval(ret)['query_id']
+        self.assertEqual(ret, """{"query_id": "%s"}"""%queryId )
         buf.close()
+        
 
-    def testResults(self):
+    def test_d_Results(self):
         '''
-        curl -v -X POST http://localhost:8080/results
+        curl -v -X POST http://localhost:8080/results/QUERY_ID
         '''
         time.sleep(2)
         buf = cStringIO.StringIO()
         c = pycurl.Curl()
-        c.setopt(c.URL, self.url+"/results")
+        global queryId
+        c.setopt(c.URL, self.url+"/results/" + queryId)
         c.setopt(c.POST,1)
         c.setopt(c.WRITEFUNCTION, buf.write)
         c.perform()
         ret = buf.getvalue()
-        self.assertEqual(ret, '{"$toto": {"status": "Done", "query": "/home/leal/git/reductionServer/bin/test1.sh", "value": "Usage: /home/leal/git/reductionServer/bin/test1.sh filename\\n", "desc": null}, "numor": "1234", ' + 
-                         '"$tata": {"status": "Done", "query": "/home/leal/git/reductionServer/bin/test1.sh /bin/sh", "value": "File found\\n", "desc": null}}')
+        self.assertTrue('"status": "done"' in ret)
         buf.close()
 
     @classmethod
