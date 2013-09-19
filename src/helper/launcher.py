@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 
 class Launcher(threading.Thread):
     '''
-    Launcher class. Inherits from Thread.
+    Launcher class.
     
-    Constructer gets the shell command as parameter.
+    It only Inherits from Thread for time out purposes.
     
-    Every command is executed within a thread with a time out. Thus, it never blocks the execution.
+    The main method : launch() is blocker
     
     '''
 
@@ -72,7 +72,7 @@ class Launcher(threading.Thread):
         """
         Only function to be called. Starts the command with a time out.
         
-        Block the execution!!!!
+        Blocks the execution!!!!
         
         It might have to be launched within other thread!!!!
         http://stackoverflow.com/questions/4158502/python-kill-or-terminate-subprocess-when-timeout

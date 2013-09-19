@@ -59,6 +59,11 @@ class DataStorage(helper.dict.LimitedSizeDict):
             if not self.isValidNumor(n) :
                 res.append(n)
         return res
+    
+    def deleteContent(self):
+        for k in self.keys():
+            del self[k]
+
             
 dataStorage = DataStorage(size_limit=22)
 

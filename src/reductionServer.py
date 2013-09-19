@@ -7,13 +7,17 @@ import optparse
 import sys
 import logging
 import os.path
-import data.dataStorage
-import data.queryStorage
 import nexus.nexusHandler
 import time
 import signal
 import uuid
 import simplejson
+import pprint
+
+import data.dataStorage
+import data.queryStorage
+import data.queryValidator
+import reduction.queryLauncher
 
 '''
 
@@ -42,20 +46,24 @@ logger = logging.getLogger("server")
 
 
 # Handle signals
-
-# def signal_handler(signal_, frame):
-#     logger.info("Server caught a signal! Server is shutting down...")
-#     global queryManager
-#     #time.sleep(1)
-#     queryManager.exit()
-#     #time.sleep(1)
-#     queryManager.join()
-#     #os.kill(os.getpid(), signal.SIGTERM)
-#     logger.info("Server shut down!")
-#     sys.exit(0)
-#     
-# signal.signal(signal.SIGINT, signal_handler)
-# signal.signal(signal.SIGTERM, signal_handler)
+def signal_handler(signal_, frame):
+    logger.info("Server caught a signal! Server is shutting down...")
+    logger.info("Killing running processes...")
+    
+    queryManager = reduction.queryLauncher.QueryLauncher()
+    queryManager.killAllRunningLaunchers()
+    
+    # delete temporary nexus files
+    from data.dataStorage import dataStorage
+    dataStorage.deleteContent()
+    
+    time.sleep(1)
+    
+    logger.info("Server shut down!")
+    sys.exit(0)
+     
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 @route('/', method=['GET','POST'])
 def homepage_get():
@@ -87,8 +95,8 @@ def fileHandler(numor):
     
     from data.dataStorage import dataStorage
     dataStorage[numor] = nexusHandler
+    logger.debug("DataStorage:\n" + pprint.pformat(dataStorage.items()))
     
-    logger.debug(str(dataStorage))
     return successMsg
 
 #@route('/query/<numors:re:[0-9,]+>', method='POST')
@@ -105,22 +113,48 @@ def query():
     '''
     
     content = bottle.request.body.read()
+    
+    logger.debug("RAW Query received: " + str(content))
         
-    contentAsDict = json.loads(content)
-    logger.debug("Query received: " + str(contentAsDict))
+    try :
+        contentAsDict = json.loads(content)
+    except Exception, e:
+        logger.exception("JSON looks invalid: " + str(e)) 
+        return "NOT WELL FORMATED JSON"
+    
+    logger.debug("FORMATTED Query received: " + str(contentAsDict))
+    
     
     # TODO: validate query:
+    queryValidator = data.queryValidator.QueryValidator(contentAsDict)
+    validErrorMessage = queryValidator.validate()
+    if validErrorMessage is not None :
+        return "ERROR" + validErrorMessage
     
-    uniqId = str(uuid.uuid4())
+    # See if numors exist first in the data storage
+    from data.dataStorage import dataStorage
+    numorsToProcess = set(contentAsDict["numors"])
+    allNumors = set(dataStorage.keys())
+    if not numorsToProcess.issubset(allNumors) :
+        return "ERROR Numors don't exist in the database: " +  str(list(numorsToProcess - allNumors))
+        
+    
+    queryId = str(uuid.uuid4())
     from data.queryStorage import queryStorage
-    queryStorage.addQuery(uniqId,content)
+    queryStorage.addQuery(queryId,contentAsDict)
+    
+    logger.debug("QueryStorage:\n" + pprint.pformat(queryStorage.items()))
     
     #TODO: handle query
+    queryStorage[queryId]["executable"] = queryValidator.getExecutable() 
+    queryStorage[queryId]["timeout"] = queryValidator.getExecutableTimeout()
     
+    q = reduction.queryLauncher.QueryLauncher()
+    q.processQuery(queryId)
     
+    logger.debug("DataStorage:\n" + pprint.pformat(queryStorage.items()))
     
-    
-    return {"query_id" : uniqId}
+    return {"query_id" : queryId}
 
 @route('/results/<queryId>', method=['POST','GET'])
 def results(queryId):
@@ -134,9 +168,9 @@ def results(queryId):
     from data.queryStorage import queryStorage
     thisQuery = queryStorage[queryId]
     
+    logger.debug("This Query:\n" + pprint.pformat(thisQuery))
     
-    print thisQuery
-    
+    del thisQuery["launcher"] # Json can't serialise objects!
     return simplejson.dumps(thisQuery)
 
 
@@ -155,13 +189,7 @@ def commandLineOptions():
 def main(argv):
     parser = commandLineOptions();
     (options, args) = parser.parse_args()
-    
-    # thread manager
-    
-    #
-    dataStorage = data.dataStorage.DataStorage(size_limit=22)
-    queryStorage = data.queryStorage.QueryStorage(size_limit=256)
-    
+        
     # Launch http server
     bottle.debug(True) 
     bottle.run(host=options.server, port=options.port)

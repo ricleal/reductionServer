@@ -11,19 +11,14 @@ Threading module launch by the reduction server.
 
 import threading
 import time
-import sys
 import logging
-import data.dataStorage
-import launcher
+import helper.launcher
 
 logger = logging.getLogger(__name__) 
-
-
-
     
-class QueryManager():
+class QueryLauncher():
     """
-    Launchs and stores info about launched processes
+    Launchs and stores info in QueryStorage about launched processes.
     
     """
 
@@ -32,14 +27,16 @@ class QueryManager():
         '''
         from data.queryStorage import queryStorage
         self._queryStorage = queryStorage
-    
+        self.lastThread = None
     
     def processQuery(self, queryId):
-        t = threading.Thread(target=self.launchQueryInBackground, args=(queryId,))
-        t.start()
+        self.lastThread = threading.Thread(target=self._launchQueryInBackground, args=(queryId,))
+        self.lastThread.start()
                 
     
-    def launchQueryInBackground(self, queryId):
+    def _launchQueryInBackground(self, queryId):
+        
+        logger.debug("Launching the query in background...")
         
         self._queryStorage[queryId]["start_time"] = time.time()
         self._queryStorage[queryId]["start_local_time"] = time.asctime(time.localtime(time.time()))
@@ -47,11 +44,10 @@ class QueryManager():
         
         # TODO mapping name and local command and timeout
         # fill in time out etc
-        query = self._queryStorage[queryId]["query"]
-        commandToExecute = "ls /home"
+        commandToExecute = self._queryStorage[queryId]["executable"]
         timeout = 10
         
-        l = launcher.Launcher(commandToExecute, timeout)    
+        l = helper.launcher.Launcher(commandToExecute, timeout)    
         self._queryStorage[queryId]["launcher"] = l 
         l.launch()
         
@@ -66,7 +62,7 @@ class QueryManager():
     
 
 
-    def killAllRunningLaunchers(self, entry):
+    def killAllRunningLaunchers(self):
         
         for k in self._queryStorage.keys():
             if self._queryStorage[k]["launcher"].isSubProcessRunning() :
@@ -79,26 +75,30 @@ class QueryManager():
             
 if __name__ == '__main__':
     '''
-    func1 will be removed from the list for timing out
-    func2 will be removed from the list as it performed successfuly
+
     '''
     
     from logging import config as _config
     _config.fileConfig('../logging.ini', disable_existing_loggers=False)
 
+    import pprint
+    
     from data.queryStorage import queryStorage
-    for i in range(10):
-        qTxt = "xpto_%d"%i
-        e = {'query' : qTxt, 'params':[i]*5}
-        import uuid
-        id = str(uuid.uuid4())
-        queryStorage[id] = e
-        print len(queryStorage),queryStorage
     
-    q = QueryManager()
-    q.processQuery(id)
-    time.sleep(0.3)
-    queryStorage[id]["launcher"]
+        
+    e = {'query' : "call_xpto", 'params':[1,2,4], "executable" : "ls /tmp"}
+    import uuid
+    queryId = str(uuid.uuid4())
+    queryStorage[queryId] = e
+    print len(queryStorage),queryStorage
+
+    q = QueryLauncher()
+    q.processQuery(queryId)    
     
-    print queryStorage
+    pprint.pprint(queryStorage[queryId])
+    q.lastThread.join()
+    #time.sleep(0.3) # wait for launcher to finish
+    pprint.pprint(queryStorage[queryId])
+    
+    
     print "Main ended..."

@@ -61,7 +61,7 @@ class QueryStorage(helper.dict.LimitedSizeDict):
     
     def addQuery(self,queryId,query):
         self[queryId]=query
-        
+    
     
 
 queryStorage = QueryStorage(size_limit=256)
