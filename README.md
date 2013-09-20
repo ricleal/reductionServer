@@ -81,7 +81,7 @@ The reduction procedure starts with the submission of a NeXus file and the respe
 A unique instance of a limited size dictionary ```DataStorage``` (inherited from [src/helper/dict.py](src/helper/dict.py) ) stores the pairs ```numor``` and ```NeXusHandler```. 
 The same Nexus file can be submitted to the server as many times as desired. If the ```numor``` is already in the ```DataStorage``` the NeXus file handler will be updated, e.g., the old file will be deleted and replaced by the new one.
 
-```
+```bash
 # Send a a binary nexus/hdf5 by post with the respective numor appended to the URL.
 curl -X POST --data-binary @157589.nxs http://localhost:8080/file/157589
 # Return
