@@ -16,7 +16,7 @@ Prerequisites for testing
 
 At the ILL, in a Linux terminal, the following environent variables are often defined: `http_proxy` and `https_proxy`.
 
-```
+```bash
 http_proxy="http://proxy.ill.fr:8888"
 https_proxy="http://proxy.ill.fr:8888"
 ```
@@ -28,7 +28,7 @@ Testing
 
 **Start the server:**
 
-```
+```bash
 # ./reductionServer.py -h
 Usage: reductionServer.py [options]
 
@@ -41,13 +41,13 @@ Options:
 
 E.g.:
 
-```
+```bash
 ./reductionServer.py -s localhost -p 8080
 ```
 
 or the local hostname or the IP address. E.g.:
 
-```
+```bash
 ./reductionServer.py -s mypchostname.gen.ill.fr
 ```
 
@@ -68,7 +68,7 @@ Implemented functions to date:
 
 This simple call can be performed by POST or GET. This is useful to see if the server is running from a http browser.
 
-```
+```bash
 # Simple call with verbose active:
 curl -v http://localhost:8080/
 
@@ -116,7 +116,7 @@ This is done by sending *queries* in JSON format to the server. The format of th
 The nexus files affected by the query (and previously submitted) are identified by the field ```numors```.
 A query identifier - universally unique identifier (UUID) - is returned for every query submited.
 
-```
+```bash
 # Send a query to the server enclosing the JSON above. The curl header (-H) parameters are optional. Both curl and Bottle.py are clever enough to detect the content formats.
 curl -v -H "Content-Type: application/json" \
          -H "Accept: application/json"  \
@@ -130,7 +130,7 @@ curl -v -H "Content-Type: application/json" \
 The ```query_id``` is used to fecth the results of a previously submitted query. The query submission details along with its results when fully processed are stored in the ```QueryStorage``` limited size dictionary. This dictionary is indexed by the UUID.
 The results of a query can be fecthed through the request ```/results```:
 
-```
+```bash
 # Now the client will ask for the results of the previous query:
 curl -v -X POST http://localhost:8080/results/99faddc1-f089-4034-8599-9e4ce7d39c76
 # Return
