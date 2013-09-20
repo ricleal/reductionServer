@@ -12,9 +12,9 @@ Prerequisites
 Prerequisites for testing
 -------------------------
 
-  - Curl ([http://curl.haxx.se](http://curl.haxx.se/)). It is normally already installed by default in any modern Linux distribution.
+  - Curl ([http://curl.haxx.se](http://curl.haxx.se/)). It is usually already installed by default in any modern Linux distribution.
 
-At the ILL, in a Linux terminal, usually the following environent variables are defined: `http_proxy` and `https_proxy`.
+At the ILL, in a Linux terminal, the following environent variables are often defined: `http_proxy` and `https_proxy`.
 
 ```
 http_proxy="http://proxy.ill.fr:8888"
@@ -62,7 +62,7 @@ Open the adress ```http://localhost:8080/``` in a browser.
 
 The server has been implemented with the following conditions:
 - There will be a server per instrument. However, one machine can serve several instruments, as long as the servers are launched in different ports.
-- Every NeXus file must be submitted to the server with the corresponding "Numor" in the HTTP header. The numor can be seen as the unique id of every data set. See below the examples. 
+- Every NeXus file must be submitted to the server with the corresponding "Numor" as part of the URL. The numor can be seen as the unique identifier for every data set. See below the examples. 
 
 Implemented functions to date:
 
@@ -76,41 +76,83 @@ curl -v http://localhost:8080/
 curl -X POST  http://localhost:8080/
 ```
 
-The reduction procedure starts with with the submission of a NeXus file with the http header "Numor: <ILL generated numor>".
-A unique [Borg Singleton](http://code.activestate.com/recipes/66531-singleton-we-dont-need-no-stinkin-singleton-the-bo/) is created ```data.dataStorage``` to store the status of the reduction procedure.
-The same Nexus file can be submitted to the server as many times as desired.
+The reduction procedure starts with the submission of a NeXus file and the respective numor.
+
+A unique instance of a limited size dictionary ```DataStorage``` (inherited from [src/helper/dict.py](src/helper/dict.py) ) stores the pairs ```numor``` and ```NeXusHandler```. 
+The same Nexus file can be submitted to the server as many times as desired. If the ```numor``` is already in the ```DataStorage``` the NeXus file handler will be updated, e.g., the old file will be deleted and replaced by the new one.
 
 ```
 # Send a a binary nexus/hdf5 by post with the respective numor appended to the URL.
 curl -X POST --data-binary @157589.nxs http://localhost:8080/file/157589
-# Return:
-{"numor": "1234"}
+# Return
+{"success": "OK"}
 ```
 
 Once a NeXus file is submitted to the server, the reduction process can start.
-This is done by sending pairs of ```<variable name> : <function to be called in the reduction server>```. 
-This functions will be called in threads managed by the ```reduction.threadManager```. The threadManager will monitor the functions and eventually remove the timed out requests.
+This is done by sending *queries* in JSON format to the server. The format of the JSON queries is beeing defined. It may look like this:
+```
+{
+    "query": "sofqw",
+    "input_parameters": [
+        {
+            "binning": [
+                0.1,
+                3,
+                0.05
+            ]
+        },
+        {
+            "emode": "direct"
+        }
+    ],
+    "numors": [
+        10001,
+        10002,
+        10003
+    ]
+}
+```
+
+The nexus files affected by the query (and previously submitted) are identified by the field ```numors```.
+A query identifier - universally unique identifier (UUID) - is returned for every query submited.
 
 ```
-# Send a query to the server. The URL must be appended with the numor(s) used by the query. If multiple numors are used, then they must be separated by a comma ```,```.
-Here the client is asking to put in the variables $toto and $tata the result of calling func1() and func2('par'). 
+# Send a query to the server enclosing the JSON above. The curl header (-H) parameters are optional. Both curl and Bottle.py are clever enough to detect the content formats.
 curl -v -H "Content-Type: application/json" \
          -H "Accept: application/json"  \
          -X POST \
-         -d '{"$toto":"func1()", "$tata":"func2(\"par\")"}' \
-         http://localhost:8080/query/12345,12346,12347
+         -d '{"query":"sofqw","input_parameters":[{"binning":[0.1,3,0.05]},{"emode":"direct"}],"numors":[10001,10002,10003]}' \
+         http://localhost:8080/query
 # Return:
-{u'$toto': {'status': 'querying', 'query': u'func1()', 'value': None, 'desc': None}, 'numor': '1234', u'$tata': {'status': 'querying', 'query': u"func2('par')", 'value': None, 'desc': None}}         
+{"query_id": "99faddc1-f089-4034-8599-9e4ce7d39c76"}
 ```
 
-The monitoring of the server can be done through the request ```/results```. This will return several JSON fields including the result of the called function ```value``` as well as the ```status``` of the query.
+The ```query_id``` is used to fecth the results of a previously submitted query. The query submission details along with its results when fully processed are stored in the ```QueryStorage``` limited size dictionary. This dictionary is indexed by the UUID.
+The results of a query can be fecthed through the request ```/results```:
 
 ```
 # Now the client will ask for the results of the previous query:
-curl -v -X POST http://localhost:8080/results
+curl -v -X POST http://localhost:8080/results/99faddc1-f089-4034-8599-9e4ce7d39c76
 # Return
-{u'$toto': {'status': 'Done', 'query': u'func1()', 'value': 'ret func1', 'desc': None}, 'numor': '1234', u'$tata': {'status': 'Done', 'query': u"func2('par')", 'value': 'ret func2', 'desc': None}
+{
+    "status": "done",
+    "executable": "ls -l",
+    "start_time": 1379602228.618543,
+    "return_code": 0,
+    "start_local_time": "Thu Sep 19 16:50:28 2013",
+    "end_local_time": "Thu Sep 19 16:50:28 2013",
+    "query": "sofqw",
+    "end_time": 1379602228.637719,
+    "timeout": 10,
+    "error": "",
+    "numors": [
+        8
+    ],
+    "output": "total 56\ndrwxr-xr-x 2 leal lss 4096 Sep 19 12:21 data\n-rw-r--r-- 1 leal lss  523 Sep 16 16:44 globalVars.pyc\ndrwxr-xr-x 2 leal lss 4096 Sep 19 11:12 helper\n-rw-r--r-- 1 leal lss  921 Jul 26 17:41 logging.ini\ndrwxr-xr-x 2 leal lss 4096 Sep 16 11:01 nexus\ndrwxr-xr-x 2 leal lss 4096 Sep 19 12:08 reduction\n-rwxr-xr-x 1 leal lss 5330 Sep 19 16:50 reductionServer.py\n-rw-r--r-- 1 leal lss 4864 Sep 12 11:55 reductionServer.pyc\n-rwxr-xr-x 1 leal lss 4113 Sep 19 16:42 test.py\n-rw-r--r-- 1 leal lss 4625 Aug  9 10:44 test.pyc\n"
+}
 ```
+
+Every *query* (e.g. *sofw*) will be mapped internally to an executable. In the example below the *sofqw* is mapped to ```"executable": "ls -l"```. This is still to be defined.
 
 **Test with unittest framework.**
 
@@ -119,7 +161,8 @@ The file ```test.py``` in the root of the project has unittest invoking all the 
 TODO
 ----
 
-A list of supported reduction functions available per instrument.
+- A list of supported reduction functions available per instrument.
+- A mapping between every function and the respective local executable.
 
 To date, a simple JSON definition of a reduction function is available here: [src/data/functions.json](src/data/functions.json). More will come soon.
 
