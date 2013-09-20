@@ -90,7 +90,7 @@ curl -X POST --data-binary @157589.nxs http://localhost:8080/file/157589
 
 Once a NeXus file is submitted to the server, the reduction process can start.
 This is done by sending *queries* in JSON format to the server. The format of the JSON queries is beeing defined. It may look like this:
-```
+```json
 {
     "query": "sofqw",
     "input_parameters": [
@@ -134,6 +134,8 @@ The results of a query can be fecthed through the request ```/results```:
 # Now the client will ask for the results of the previous query:
 curl -v -X POST http://localhost:8080/results/99faddc1-f089-4034-8599-9e4ce7d39c76
 # Return
+```
+```json
 {
     "status": "done",
     "executable": "ls -l",
