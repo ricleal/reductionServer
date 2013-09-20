@@ -3,112 +3,88 @@ Created on Jul 30, 2013
 
 @author: leal
 '''
-import simplejson
-import threading
 
-class DataStorage(object):
-    '''
-    Class to store data for a file being threated
-    Valid per file (numor id)
-    
-    Borg singleton config object
-    '''
-    
-    _data ={}
-    __shared_state = {}
+import logging
+import helper.dict
 
-    def __init__(self):
+logger = logging.getLogger(__name__) 
+
+class DataStorage(helper.dict.LimitedSizeDict):
+    '''
+    Class to store data
+    
+    
+    Table for Nexus + numor
+    {
+    numor:
+    nexus_handler :
+    }
+    
+    '''
+    
+#     def __new__(cls, *args, **kwargs):
+#         '''
+#         Singleton
+#         '''
+#         if not hasattr(cls, '_instance'):
+#             cls._instance = dict.__new__(cls, *args, **kwargs)
+#         return cls._instance
+#     
+#     def __init__(self, *args, **kwds):
+#         '''
+#         Constructor
+#         As it's a singleton if self.size_limit exists alredy 
+#         does not call the super.__init__
+#         '''
+#         try:
+#             self.size_limit
+#         except:
+#             helper.dict.LimitedSizeDict.__init__(self, *args, **kwds)
+    
+    def __init__(self, *args, **kwds):
         '''
         Constructor
         '''
-        #implement the borg pattern (_shared_state)
-        self.__dict__ = self.__shared_state
+        helper.dict.LimitedSizeDict.__init__(self, *args, **kwds)
         
-        # Lock
-        self.lock = threading.Lock()
-        
-    def setNumor(self,numor):
+    def isValidNumor(self,numor):
+        return numor in self
+    
+    def findInvalidNumors(self,numors):
         '''
-        A new numor is set => All the _data is reset!
+        Return non existent numors from the input param
         '''
-        with self.lock:
-            self._data = {"numor":numor}
+        res = []
+        for n in numors:
+            if not self.isValidNumor(n) :
+                res.append(n)
+        return res
     
-    def data(self):
-        with self.lock:
-            return self._data
-    def empty(self):
-        with self.lock:
-            return len(self._data) <= 0
-        
-    def __str__(self):
-        with self.lock:
-            return str(self._data)
-    
-    
-    def addQuery(self, variable, value, status, desc=None):
-        '''
-        Add query to the database
-        For query of type:
-        {$toto : cell}
-        variable = $toto 
-        value = cell
-        desc = 'Unit cell'
-        '''
-        with self.lock:
-            self._data[variable]={"value": None, "query" : value , "desc" : desc,
-                                  "status": status}
-    
-    def updateValue(self, variable, value, status):
-        '''
-        Add the result from reduction query to the data
-        For query of type:
-        {$toto : [10 10 10 90 90 90]}
-        variable = $toto 
-        value = [10 10 10 90 90 90]
-        '''
-        with self.lock:
-            self._data[variable]["value"]=value
-#             try: # to make sure when a a value is assigned there's no error field
-#                 del  self._data[variable]["error"]
-#             except KeyError:
-#                 pass
-            self._data[variable]["status"]=status
-            
-    def updateValueWithStatus(self, variable, message):
-        with self.lock:
-            self._data[variable]["status"]=message
-    
-    def getValue(self,variable):
-        with self.lock:
-            return self._data[variable]["value"]
-    def getNumor(self):
-        with self.lock:
-            return self._data["numor"]
-    
-    def toJson(self):
-        with self.lock:
-            return simplejson.dumps(self._data)
-    
+    def deleteContent(self):
+        for k in self.keys():
+            del self[k]
 
+            
+dataStorage = DataStorage(size_limit=22)
 
 def main():
-    d = DataStorage()
-    print d    
-    print "---------------------"
-    d = DataStorage()
-    d.setNumor('11214')
-    d.addQuery('$toto', 'cell', 'Unit cell')
-    # Do processing
-    d.updateValue('$toto', [10, 10, 10, 90, 90 ,90], "processing")
-    print d
-    d.updateValueWithStatus('$toto', "timeout")
-    print d
-    print "get value:" , d.getValue('$toto') 
-    print d
-    print "---------------------"
-    d = DataStorage()
-    print d
+    q = DataStorage(size_limit=5)
+    
+    for i in range(10):
+        e = "Nexus File content %d"%i
+        q[i] = e
+        print len(q),q
+    print q.isValidNumor(7)
+    print q.isValidNumor(12)
+    
+    print q.findInvalidNumors([1,2,7,8])
+    
+    q2 = DataStorage()
+    for i in range(10,20):
+        e = "Nexus File content %d"%i
+        q2[i] = e
+        print len(q2),q2
+    
     
 if __name__ == "__main__":
     main()

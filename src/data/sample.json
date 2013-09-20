@@ -1,0 +1,25 @@
+{
+	"method":"rebinning",
+	"input_params":{
+		"numor":12345,
+		"bining":[
+			0,
+			20,
+			0.2
+		]
+		
+	},
+	"output_params":{
+		"x_axis":[
+			2..3
+		],
+		"y_axis":[
+			2..3
+		],
+		"z_axis":[
+			2..3
+		]
+		
+	}
+	
+}

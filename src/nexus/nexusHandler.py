@@ -15,10 +15,14 @@ import os
 
 logger = logging.getLogger(__name__) 
 
-class NeXusHandler:
+    
+
+class NeXusHandler(object):
     '''
     NeXusHandler to deal with a nexus file
     Keeps a pointer for the open file
+    
+    Only handles one file at the time.
     
     '''
     
@@ -26,7 +30,7 @@ class NeXusHandler:
         '''
         @param content: binary stream - contents of the nexus file 
         '''
-
+        
         logger.debug("Parsing request...")
     
         # Need to write the file on disk! there's no open stream in nexus library for python
@@ -37,7 +41,7 @@ class NeXusHandler:
         self.__openNexusFile()
 
     def __del__(self):
-        logger.debug("Deleting NeXus temporary file...")
+        logger.debug("Deleting NeXus temporary file: %s"%self.tempFile.name)
 
         try :
             os.remove(self.tempFile.name)
@@ -52,7 +56,7 @@ class NeXusHandler:
         except  Exception as e:
             logger.error("Problems opening the nexus file: " + str(e) )
             raise
-    
+
     def filename(self):
         return self.tempFile.name
     

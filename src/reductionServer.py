@@ -7,11 +7,17 @@ import optparse
 import sys
 import logging
 import os.path
-import data.dataStorage
 import nexus.nexusHandler
-import reduction.threadManager
 import time
 import signal
+import uuid
+import simplejson
+import pprint
+
+import data.dataStorage
+import data.queryStorage
+import data.queryValidator
+import reduction.queryLauncher
 
 '''
 
@@ -38,22 +44,24 @@ _config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
 
 logger = logging.getLogger("server")
 
-localNexusData = None
-threadManager = None
 
 # Handle signals
-
 def signal_handler(signal_, frame):
     logger.info("Server caught a signal! Server is shutting down...")
-    global threadManager
-    #time.sleep(1)
-    threadManager.exit()
-    #time.sleep(1)
-    threadManager.join()
-    #os.kill(os.getpid(), signal.SIGTERM)
+    logger.info("Killing running processes...")
+    
+    queryManager = reduction.queryLauncher.QueryLauncher()
+    queryManager.killAllRunningLaunchers()
+    
+    # delete temporary nexus files
+    from data.dataStorage import dataStorage
+    dataStorage.deleteContent()
+    
+    time.sleep(1)
+    
     logger.info("Server shut down!")
     sys.exit(0)
-    
+     
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
@@ -69,89 +77,104 @@ def homepage_get():
     return
 
 
-@route('/file', method='POST')
-def fileHandler():
+@route('/file/<numor:int>', method='POST')
+def fileHandler(numor):
     '''
     To test:
     
     cd ~/Documents/Mantid/IN6
-    curl -X POST -H "Numor: 1234"  --data-binary @157589.nxs http://localhost:8080/file
+    curl -X POST --data-binary @157589.nxs http://localhost:8080/file/<numor>
     '''
     
+    successMsg = {"success" : "OK"}
+    
+    logger.debug("Receiving Nexus file by POST with numor = %d" % numor)
     
     content = bottle.request.body.read()
+    nexusHandler = nexus.nexusHandler.NeXusHandler(content)
     
-    numor =  bottle.request.get_header('Numor', None)
+    from data.dataStorage import dataStorage
+    dataStorage[numor] = nexusHandler
+    logger.debug("DataStorage:\n" + pprint.pformat(dataStorage.items()))
     
-    logger.debug("Receiving file POST. Numor = " + str(numor))
-    
-    localDataStorage = data.dataStorage.DataStorage()
-    if numor is not None and (localDataStorage.empty() or localDataStorage.getNumor() != numor):
-        # create a new data storage!
-        localDataStorage.setNumor(numor)
-        # TODO:
-        # Code the removeAllThreads function!
-        global threadManager
-        threadManager.removeAllThreads()
-        
-        
-    
-    # always update the nexus data (the next file may have more counts!)
-    global localNexusData
-    localNexusData = nexus.nexusHandler.NeXusHandler(content)
-    
-    return localDataStorage.toJson()
+    return successMsg
 
-
-@route('/results', method=['POST','GET'])
-def results():
-    """
-    Return the contents of localDataStorage has json
-    
-    Test:
-    curl -X POST  http://localhost:8080/results 
-    """
-    
-    localDataStorage = data.dataStorage.DataStorage()
-        
-    logger.debug("Sending results to client...")
-    logger.debug("Local Storage: " + str(localDataStorage))
-    
-    return localDataStorage.toJson()
-
-
+#@route('/query/<numors:re:[0-9,]+>', method='POST')
 @route('/query', method='POST')
 def query():
     '''
     
     curl -v -H "Content-Type: application/json" \
-    -H "Numor: 1234" \
      -H "Accept: application/json"  \
      -X POST \
-     -d '{"$toto":"cell", "$tata":"spacegroup", "$titi":"origin"}' \
-     http://localhost:8080/query
-    
+     -d '{"query":"plot", "axes":"x,y"}' \
+     http://localhost:8080/query>
+     
     '''
-    global threadManager
-
+    
     content = bottle.request.body.read()
-    numor =  bottle.request.get_header('Numor', None)
     
-    contentAsDict = json.loads(content)
-    logger.debug("Query received: " + str(contentAsDict))
-    localDataStorage = data.dataStorage.DataStorage()
-    logger.debug("Local Storage: " + str(localDataStorage))
+    logger.debug("RAW Query received: " + str(content))
+        
+    try :
+        contentAsDict = json.loads(content)
+    except Exception, e:
+        logger.exception("JSON looks invalid: " + str(e)) 
+        return "NOT WELL FORMATED JSON"
     
-    # update local storage with the queries
-    if numor is not None and not localDataStorage.empty() and localDataStorage.getNumor() == numor:
-        for variable,query in contentAsDict.items():
-            # Launching the process
-            threadManager.addThread(variable, query)
+    logger.debug("FORMATTED Query received: " + str(contentAsDict))
+    
+    
+    # TODO: validate query:
+    queryValidator = data.queryValidator.QueryValidator(contentAsDict)
+    validErrorMessage = queryValidator.validate()
+    if validErrorMessage is not None :
+        return "ERROR" + validErrorMessage
+    
+    # See if numors exist first in the data storage
+    from data.dataStorage import dataStorage
+    numorsToProcess = set(contentAsDict["numors"])
+    allNumors = set(dataStorage.keys())
+    if not numorsToProcess.issubset(allNumors) :
+        return "ERROR Numors don't exist in the database: " +  str(list(numorsToProcess - allNumors))
+        
+    
+    queryId = str(uuid.uuid4())
+    from data.queryStorage import queryStorage
+    queryStorage.addQuery(queryId,contentAsDict)
+    
+    logger.debug("QueryStorage:\n" + pprint.pformat(queryStorage.items()))
+    
+    #TODO: handle query
+    queryStorage[queryId]["executable"] = queryValidator.getExecutable() 
+    queryStorage[queryId]["timeout"] = queryValidator.getExecutableTimeout()
+    
+    q = reduction.queryLauncher.QueryLauncher()
+    q.processQuery(queryId)
+    
+    logger.debug("DataStorage:\n" + pprint.pformat(queryStorage.items()))
+    
+    return {"query_id" : queryId}
 
-            
+@route('/results/<queryId>', method=['POST','GET'])
+def results(queryId):
+    """
+    Return the contents of localDataStorage has json
     
-    logger.debug("Local Storage: " + str(localDataStorage))
-    return localDataStorage.toJson()
+    Test:
+    curl -X POST  http://localhost:8080/results/<queryId>
+    """
+    
+    from data.queryStorage import queryStorage
+    thisQuery = queryStorage[queryId].copy() # copy by value
+    
+    logger.debug("This Query:\n" + pprint.pformat(thisQuery))
+    
+    del thisQuery["launcher"] # Json can't serialise objects!
+    return simplejson.dumps(thisQuery)
+
+
+
 
 
 def commandLineOptions():
@@ -166,12 +189,7 @@ def commandLineOptions():
 def main(argv):
     parser = commandLineOptions();
     (options, args) = parser.parse_args()
-    
-    # thread manager
-    global threadManager
-    threadManager = reduction.threadManager.ThreadManager()
-    threadManager.start()
-     
+        
     # Launch http server
     bottle.debug(True) 
     bottle.run(host=options.server, port=options.port)
