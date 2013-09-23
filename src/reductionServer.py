@@ -173,7 +173,20 @@ def results(queryId):
     del thisQuery["launcher"] # Json can't serialise objects!
     return simplejson.dumps(thisQuery)
 
-
+@route('/status', method=['POST','GET'])
+def status():
+    
+    from data.queryStorage import queryStorage
+    ret = {}
+    
+    for k in queryStorage.keys():
+        try:
+            ret[k] = queryStorage[k]["status"]
+        except:
+            pass
+    
+    return ret
+    
 
 
 

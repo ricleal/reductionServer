@@ -156,6 +156,27 @@ curl -v -X POST http://localhost:8080/results/99faddc1-f089-4034-8599-9e4ce7d39c
 
 Every *query* (e.g. *sofw*) will be mapped internally to an executable. In the example below the *sofqw* is mapped to ```"executable": "ls -l"```. This is still to be defined.
 
+To get the status of all queries submitted to the server:
+```bash
+# This request can be either submitted by POST or GET
+curl  http://localhost:8080/status
+# Return
+```
+```json
+{
+  "7c772e56-afd2-4e05-ad6a-7beec625eeb0": "done", 
+  "a388c27b-0227-4e6e-bb8f-328c9c93f99b": "done"
+}
+```
+
+In the OS command line the JSON output can be formatted with the python command:
+```bash
+# Running curl in silent mode (-s : Don't show progress meter or error messages).
+curl  -s http://localhost:8080/results/7c772e56-afd2-4e05-ad6a-7beec625eeb0 | python -mjson.tool
+
+```
+
+
 **Test with unittest framework.**
 
 The file ```test.py``` in the root of the project has unittest invoking all the implement requests. The client calls are coded in pycurl. Comments show how to call the same requests through the ```curl``` command line.
