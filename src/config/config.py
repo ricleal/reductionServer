@@ -28,7 +28,7 @@ parser = commandLineOptions();
 (options, args) = parser.parse_args()
 
 
-### LOG
+### File log config
 import os
 
 LOGGING_CONF=os.path.join(os.path.dirname(__file__),options.log)
@@ -37,7 +37,7 @@ from logging import config as _config
 _config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
 
 
-### Configurations
+### File INI configuration
 import ConfigParser, os
 
 CONFIG_FILENAME = options.config
@@ -48,5 +48,3 @@ config.read([CONFIG_FILENAME,
              os.path.join(os.path.dirname(os.path.realpath(__file__)),CONFIG_FILENAME),
              os.path.join(os.path.dirname(os.path.realpath(__file__)),os.path.join(os.pardir,CONFIG_FILENAME))]) #..
 
-if __name__ == '__main__':
-    print config.get('General','mantid.home')
