@@ -45,7 +45,7 @@
 				
 			},
 			"local_mapping":{
-				"script":"/usr/bin/sofqw",
+				"executable":"/usr/bin/sofqw",
 				"parameters":{
 					"input":[
 						{

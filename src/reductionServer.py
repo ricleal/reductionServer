@@ -3,7 +3,6 @@
 import bottle
 from bottle import route
 import json
-import optparse
 import sys
 import logging
 import os.path
@@ -34,13 +33,7 @@ It assumes:
 
 '''
 
-# Global variables
-# load the logging configuration
-
-LOGGING_CONF=os.path.join(os.path.dirname(__file__),"logging.ini")
- 
-from logging import config as _config
-_config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
+import config.config
 
 logger = logging.getLogger("server")
 
@@ -186,28 +179,16 @@ def status():
             pass
     
     return ret
-    
 
-
-
-def commandLineOptions():
-    '''
-    Define command line options
-    '''
-    parser = optparse.OptionParser()
-    parser.add_option('-s', '--server', help='Server host. Default localhost.', default='localhost')
-    parser.add_option('-p', '--port', help='Server port. Default 8080.', type="int", default=8080)
-    return parser
 
 def main(argv):
-    parser = commandLineOptions();
-    (options, args) = parser.parse_args()
+    # command line options
+    from config.config import options
         
     # Launch http server
     bottle.debug(True) 
     bottle.run(host=options.server, port=options.port)
     print "Server stopped..."
-    
     
 if __name__ == '__main__':
     main(sys.argv)

@@ -6,7 +6,7 @@ Created on Sep 23, 2013
 
 import logging
 import numpy as np
-from helper.config import config
+from config.config import config
 
 import sys
 sys.path.append(config.get('General','mantid.home'))
@@ -41,7 +41,23 @@ class MantidSimple(object):
     def integratedValues(self):
         self._integration()
         return self.wsIntegrated.extractY() # 2D copy of workspace data
-        
+
+
+def mantidWStoJson(ws):
+    """
+    In [78]: ws.extractX().shape
+Out[78]: (337, 1025)
+
+In [79]: ws.extractY().shape
+Out[79]: (337, 1024)
+
+    """
+    
+    res = {}
+    res["name"] = ws.getName()
+    
+    x = ws.extractX()[1]
+    
         
 if __name__ == '__main__':
     testfile = r'/home/leal/Documents/Mantid/IN6/157589.nxs'
