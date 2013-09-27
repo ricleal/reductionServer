@@ -186,9 +186,15 @@ def main(argv):
     from config.config import options
         
     # Launch http server
-    bottle.debug(True) 
-    bottle.run(host=options.server, port=options.port)
-    print "Server stopped..."
+    bottle.debug(True)
+    
+    try :
+        bottle.run(host=options.server, port=options.port)
+    except Exception as e:
+        #logger.exception("Web server cannot run: " + str(e)) 
+        logger.error("Web server cannot run: " + str(e))
+    
+    logger.info("Server shutdown...")
     
 if __name__ == '__main__':
     main(sys.argv)
