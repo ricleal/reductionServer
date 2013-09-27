@@ -15,8 +15,11 @@ fi
 
 temp_filename=`mktemp -u --tmpdir=/tmp --suffix=.json mantid_XXXXXX`
 
+THIS_FILE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+
 # Suppress all output!
-python theta_vs_counts_IN5.py ${nexus_filename} ${temp_filename} > /dev/null 2>&1
+python ${THIS_FILE_DIR}/theta_vs_counts_IN5.py ${nexus_filename} ${temp_filename} > /dev/null 2>&1
 
 scrict_ret_code=$?
 

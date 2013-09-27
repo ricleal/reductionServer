@@ -45,7 +45,7 @@ class QueryLauncher():
         # TODO mapping name and local command and timeout
         # fill in time out etc
         commandToExecute = self._queryStorage[queryId]["executable"]
-        timeout = 10
+        timeout = self._queryStorage[queryId]["timeout"]
         
         l = helper.launcher.Launcher(commandToExecute, timeout)    
         self._queryStorage[queryId]["launcher"] = l 
@@ -57,7 +57,10 @@ class QueryLauncher():
         self._queryStorage[queryId]["end_time"] = time.time()
         self._queryStorage[queryId]["end_local_time"] = time.asctime(time.localtime(time.time()))
         self._queryStorage[queryId]["error"] = l.error()
-        self._queryStorage[queryId]["output"] = l.output()
+        
+        # get the output as json
+        import ast
+        self._queryStorage[queryId]["output"] = ast.literal_eval(l.output())
     
     
 

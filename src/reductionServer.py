@@ -17,6 +17,7 @@ import data.dataStorage
 import data.queryStorage
 import data.queryValidator
 import reduction.queryLauncher
+import data.messages
 
 '''
 
@@ -67,7 +68,7 @@ def homepage_get():
     curl http://localhost:8080/
     '''
     logger.debug('Home page was requested.')
-    return
+    return data.messages.Messages.success("Server is up and running.")
 
 
 @route('/file/<numor:int>', method='POST')
@@ -79,8 +80,6 @@ def fileHandler(numor):
     curl -X POST --data-binary @157589.nxs http://localhost:8080/file/<numor>
     '''
     
-    successMsg = {"success" : "OK"}
-    
     logger.debug("Receiving Nexus file by POST with numor = %d" % numor)
     
     content = bottle.request.body.read()
@@ -90,7 +89,7 @@ def fileHandler(numor):
     dataStorage[numor] = nexusHandler
     logger.debug("DataStorage:\n" + pprint.pformat(dataStorage.items()))
     
-    return successMsg
+    return data.messages.Messages.success("File successfully received.")
 
 #@route('/query/<numors:re:[0-9,]+>', method='POST')
 @route('/query', method='POST')
@@ -112,25 +111,25 @@ def query():
     try :
         contentAsDict = json.loads(content)
     except Exception, e:
-        logger.exception("JSON looks invalid: " + str(e)) 
-        return "NOT WELL FORMATED JSON"
+        message = "JSON looks invalid: " + str(e)
+        logger.exception(message)
+        return data.messages.Messages.error(message,str(e))
     
     logger.debug("FORMATTED Query received: " + str(contentAsDict))
-    
     
     # TODO: validate query:
     queryValidator = data.queryValidator.QueryValidator(contentAsDict)
     validErrorMessage = queryValidator.validate()
     if validErrorMessage is not None :
-        return "ERROR" + validErrorMessage
+        return validErrorMessage
     
     # See if numors exist first in the data storage
     from data.dataStorage import dataStorage
-    numorsToProcess = set(contentAsDict["numors"])
+    numorsToProcess = set(contentAsDict["input_params"]["numors"])
     allNumors = set(dataStorage.keys())
     if not numorsToProcess.issubset(allNumors) :
-        return "ERROR Numors don't exist in the database: " +  str(list(numorsToProcess - allNumors))
-        
+        logger.error("Numors don't exist in the database: " +  str(list(numorsToProcess - allNumors)))
+        return data.messages.Messages.error("Numors do not exist in the database",{"invalid_numors":list(numorsToProcess - allNumors)})    
     
     queryId = str(uuid.uuid4())
     from data.queryStorage import queryStorage

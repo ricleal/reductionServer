@@ -37,7 +37,12 @@ Options:
   -s SERVER, --server=SERVER
                         Server host. Default localhost.
   -p PORT, --port=PORT  Server port. Default 8080.
+  -c CONFIG, --config=CONFIG
+                        Configuration file. Default config.ini.
+  -l LOG, --log=LOG     Logging configuration file. Default logging.ini.
 ```
+
+Default ```.ini``` files are stored in the ```config``` directory.
 
 E.g.:
 

@@ -1,76 +1,46 @@
 {
-	"_comment":"List of functions available for data reduction.",
-	"functions":[
-		{
-			"name":"sofqw",
-			"description":"Calculates the intensity as a function of momentum transfer against energy: S(q,w)",
-			"timeout":300,
+	"theta_vs_counts":{
+		"description":"Calculates the detector counts as a function of theta",
+		"timeout":30,
+		"parameters":{
+			"input":[
+				
+			],
+			"output":[
+				{
+					"name":"plot",
+					"type":"json",
+					"description":"1D plot of theta vs counts",
+					"units":"NA"
+				}
+				
+			]
+			
+		},
+		"local_mapping":{
+			"executable":"%(scripts_directory)s/theta_vs_counts_%(instrument_name)s.sh",
 			"parameters":{
 				"input":[
 					{
-						"name":"param1",
-						"type":"float[]",
-						"description":"Description of the param1",
-						"units":"NA"
-					},
-					{
-						"name":"param2",
-						"type":"int[]",
-						"description":"Description of the param2",
-						"units":"counts"
-					},
-					{
-						"name":"param3",
-						"type":"float[]",
-						"description":"Description of the param3",
-						"units":"mev"
+						"name":"filename",
+						"type":"string",
+						"description":"local nexus file name"
 					}
 					
 				],
 				"output":[
 					{
-						"name":"paramOut1",
-						"type":"float",
-						"description":"Description of the param 1 out",
-						"units":"NA"
-					},
-					{
-						"name":"paramOut2",
-						"type":"float",
-						"description":"Description of the param 2 out",
+						"name":"plot",
+						"type":"json",
+						"description":"1D plot of theta vs counts",
 						"units":"NA"
 					}
 					
 				]
 				
-			},
-			"local_mapping":{
-				"executable":"/usr/bin/sofqw",
-				"parameters":{
-					"input":[
-						{
-							"name":"filepath",
-							"type":"file",
-							"description":"local nexus file name"
-						}
-						
-					],
-					"output":[
-						{
-							"name":"out",
-							"type":"float[][]",
-							"description":"out put of s of q",
-							"units":"Counts,mEv",
-							"axes":"Counts,energy"
-						}
-						
-					]
-					
-				}
-				
 			}
 			
 		}
 		
-	]
+	}
 }
