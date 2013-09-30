@@ -11,4 +11,3 @@ curl -s -X POST --data-binary @102297.nxs http://localhost:8080/file/102297 | py
 curl -s -X POST -d '{"function":"theta_vs_counts","input_params":{"numors":[102296]}}'  http://localhost:8080/query | python -mjson.tool
 
 curl -s http://localhost:8080/results/ | python -mjson.tool
-
