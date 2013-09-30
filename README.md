@@ -209,9 +209,11 @@ curl -s -X POST --data-binary @102297.nxs http://localhost:8080/file/102297 | py
 Now let's submit a queries:
 
 1. Inexistant function:
+
 ```bash
 curl -s -X POST -d '{"function":"theta_vs_count","input_params":{"numors":[10229]}}'  http://localhost:8080/query | python -mjson.tool
 ```
+
 ```json
 {
     "errors": {
@@ -227,9 +229,11 @@ curl -s -X POST -d '{"function":"theta_vs_count","input_params":{"numors":[10229
 ```
 
 2. Invalid Numors:
+
 ```bash
 curl -s -X POST -d '{"function":"theta_vs_counts","input_params":{"numors":[10229]}}'  http://localhost:8080/query | python -mjson.tool
 ```
+
 ```json
 {
     "errors": {
@@ -247,6 +251,7 @@ curl -s -X POST -d '{"function":"theta_vs_counts","input_params":{"numors":[1022
 ```bash
 curl -s -X POST -d '{"function":"theta_vs_counts","input_params":{"numors":[102296]}}'  http://localhost:8080/query | python -mjson.tool
 ```
+
 ```json
 {
     "query_id": "12c5faa1-661e-47a6-b56e-3eb4e2c026f4"
@@ -255,9 +260,10 @@ curl -s -X POST -d '{"function":"theta_vs_counts","input_params":{"numors":[1022
 
 Query result:
 
-```
+```bash
 curl -s http://localhost:8080/results/12c5faa1-661e-47a6-b56e-3eb4e2c026f4 | python -mjson.tool
 ```
+
 ```json
 {
     "end_local_time": "Mon Sep 30 17:44:19 2013", 
