@@ -9,6 +9,9 @@ configParser.read([CONFIG_FILENAME,
              os.path.join(os.path.dirname(os.path.realpath(__file__)),CONFIG_FILENAME),
              os.path.join(os.path.dirname(os.path.realpath(__file__)),os.path.join(os.pardir,CONFIG_FILENAME))]) #..
 
+
+
+
 ### Mantid imports
 
 import sys

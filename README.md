@@ -181,6 +181,139 @@ curl  -s http://localhost:8080/results/7c772e56-afd2-4e05-ad6a-7beec625eeb0 | py
 
 ```
 
+**Example:**
+
+Let's submit 2 data files with 2 different numors:
+```bash
+curl -s -X POST --data-binary @102296.nxs http://localhost:8080/file/102296 | python -mjson.tool
+```
+```json
+{
+    "errors": "", 
+    "general_message": "File successfully received.", 
+    "success": "True"
+}
+```
+
+```bash
+curl -s -X POST --data-binary @102297.nxs http://localhost:8080/file/102297 | python -mjson.tool
+```
+```json
+{
+    "errors": "", 
+    "general_message": "File successfully received.", 
+    "success": "True"
+}
+```
+
+Now let's submit a queries:
+
+1. Inexistant function:
+```bash
+curl -s -X POST -d '{"function":"theta_vs_count","input_params":{"numors":[10229]}}'  http://localhost:8080/query | python -mjson.tool
+```
+```json
+{
+    "errors": {
+        "exception_message": "u'theta_vs_count'", 
+        "valid_functions": [
+            "theta_vs_counts"
+        ]
+    }, 
+    "general_message": "Error while validating the query function. Is it a valid function?", 
+    "success": "False"
+}
+
+```
+
+2. Invalid Numors:
+```bash
+curl -s -X POST -d '{"function":"theta_vs_counts","input_params":{"numors":[10229]}}'  http://localhost:8080/query | python -mjson.tool
+```
+```json
+{
+    "errors": {
+        "invalid_numors": [
+            10229
+        ]
+    }, 
+    "general_message": "Numors do not exist in the database", 
+    "success": "False"
+}
+```
+
+3. Valid query
+
+```bash
+curl -s -X POST -d '{"function":"theta_vs_counts","input_params":{"numors":[102296]}}'  http://localhost:8080/query | python -mjson.tool
+```
+```json
+{
+    "query_id": "12c5faa1-661e-47a6-b56e-3eb4e2c026f4"
+}
+```
+
+Query result:
+
+```
+curl -s http://localhost:8080/results/12c5faa1-661e-47a6-b56e-3eb4e2c026f4 | python -mjson.tool
+```
+```json
+{
+    "end_local_time": "Mon Sep 30 17:44:19 2013", 
+    "end_time": 1380555859.450503, 
+    "error": "", 
+    "executable": "/home/leal/git/reductionServer/scripts/theta_vs_counts_IN5.sh /tmp/tmpkaNAEI ", 
+    "function": "theta_vs_counts", 
+    "input_params": {
+        "numors": [
+            102296
+        ]
+    }, 
+    "output": {
+        "data_label": "Counts", 
+        "data_shape": [
+            1, 
+            135
+        ], 
+        "data_units": "", 
+        "data_values": [
+            [
+                0.0, 
+                0.0, 
+                0.0, 
+                0.0, 
+                0.0, 
+                107.0, 
+                (...)
+                289.6976403687601, 
+                158.0
+            ]
+        ], 
+        "x_axis_label": "Scattering angle", 
+        "x_axis_shape": [
+            135
+        ], 
+        "x_axis_unit": "degrees", 
+        "x_axis_values": [
+            0.7091979356415034, 
+            1.56893481993162, 
+            2.540112536576862, 
+            3.5110504074526236, 
+            (...)
+            132.4872807689507, 
+            133.47312916428413, 
+            134.3798613665934
+        ]
+    }, 
+    "return_code": 0, 
+    "start_local_time": "Mon Sep 30 17:44:08 2013", 
+    "start_time": 1380555848.857111, 
+    "status": "done", 
+    "timeout": 30
+}
+
+```
 
 **Test with unittest framework.**
 

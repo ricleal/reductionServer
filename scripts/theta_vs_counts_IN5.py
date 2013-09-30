@@ -15,12 +15,22 @@ if len(sys.argv) != 3 :
     sys.exit(errno.EINVAL)
 
 
+
+
 # import everything
 from mantid_common import *
 
 datafile = sys.argv[1]
 jsonfile = sys.argv[2]
 maskfile = configParser.get('Mantid','in5_mask_file')
+
+# ## Redirect STDOUT STDERR
+# import sys, os, logging
+# sys.stdout = os.devnull
+# sys.stderr = os.devnull
+# logger = logging.getLogger()
+# logger.disabled = True
+
 
 # load data
 Load(Filename=datafile,OutputWorkspace='Data')
