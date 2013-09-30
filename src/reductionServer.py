@@ -117,20 +117,25 @@ def query():
     
     logger.debug("FORMATTED Query received: " + str(contentAsDict))
     
-    # TODO: validate query:
+    
     queryValidator = data.queryValidator.QueryValidator(contentAsDict)
-    validErrorMessage = queryValidator.validate()
+    
+    validErrorMessage = queryValidator.validateFunction()
     if validErrorMessage is not None :
         return validErrorMessage
     
-    # See if numors exist first in the data storage
-    from data.dataStorage import dataStorage
-    numorsToProcess = set(contentAsDict["input_params"]["numors"])
-    allNumors = set(dataStorage.keys())
-    if not numorsToProcess.issubset(allNumors) :
-        logger.error("Numors don't exist in the database: " +  str(list(numorsToProcess - allNumors)))
-        return data.messages.Messages.error("Numors do not exist in the database",{"invalid_numors":list(numorsToProcess - allNumors)})    
+    validErrorMessage = queryValidator.validateNumors()
+    if validErrorMessage is not None :
+        return validErrorMessage
     
+#     # See if numors exist first in the data storage
+#     from data.dataStorage import dataStorage
+#     numorsToProcess = set(contentAsDict["input_params"]["numors"])
+#     allNumors = set(dataStorage.keys())
+#     if not numorsToProcess.issubset(allNumors) :
+#         logger.error("Numors don't exist in the database: " +  str(list(numorsToProcess - allNumors)))
+#         return data.messages.Messages.error("Numors do not exist in the database",{"invalid_numors":list(numorsToProcess - allNumors)})    
+#     
     queryId = str(uuid.uuid4())
     from data.queryStorage import queryStorage
     queryStorage.addQuery(queryId,contentAsDict)

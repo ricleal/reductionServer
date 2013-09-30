@@ -37,21 +37,29 @@ class QueryValidator(object):
         json_data.close()
         return data
         
-    def validate(self):
+    def validateFunction(self):
         '''
         @todo:Validate query agains schema
         @return: None if it's valid otherwise error message
-        '''
-        
-        logger.debug("Validating query: %s"%self._query["function"])
+        '''        
         try: 
             self._thisFunction = self._functionsDic[self._query["function"]]
         except Exception as e:
-            message = "Error while validating the query."
+            message = "Error while validating the query function. Is it a valid function?"
             logger.exception(message)
-            return data.messages.Messages.error(message,str(e))
+            return data.messages.Messages.error(message,{ "exception_message" : str(e), "valid_functions" : self._functionsDic.keys() } )
         
-        return None    
+        return None
+    
+    def validateNumors(self):
+        # See if numors exist first in the data storage
+        from data.dataStorage import dataStorage
+        numorsToProcess = set(self._query["input_params"]["numors"])
+        allNumors = set(dataStorage.keys())
+        if not numorsToProcess.issubset(allNumors) :
+            logger.error("Numors don't exist in the database: " +  str(list(numorsToProcess - allNumors)))
+            return data.messages.Messages.error("Numors do not exist in the database",{"invalid_numors":list(numorsToProcess - allNumors)})    
+        return None
         
     
     def getExecutable(self):
