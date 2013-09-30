@@ -29,4 +29,6 @@ then
     cat ${temp_filename}
 fi
 
+rm ${temp_filename}  > /dev/null 2>&1
+
 exit ${scrict_ret_code}
