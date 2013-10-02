@@ -163,12 +163,16 @@ def results(queryId):
     """
     
     from data.queryStorage import queryStorage
-    thisQuery = queryStorage[queryId].copy() # copy by value
+    try:
+        thisQuery = queryStorage[queryId].copy() # copy by value
+        logger.debug("This Query:\n" + pprint.pformat(thisQuery))
+        del thisQuery["launcher"] # Json can't serialise objects!
+        return simplejson.dumps(thisQuery)
+    except Exception, e:
+        message = "query_id appears to be invalid."
+        logger.exception(message  + str(e))
+        return data.messages.Messages.error(message,str(e))
     
-    logger.debug("This Query:\n" + pprint.pformat(thisQuery))
-    
-    del thisQuery["launcher"] # Json can't serialise objects!
-    return simplejson.dumps(thisQuery)
 
 @route('/status', method=['POST','GET'])
 def status():
