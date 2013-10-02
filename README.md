@@ -110,7 +110,10 @@ This is performed by submiting JSON *queries* to the server. The format of the J
 {
 	"function":"<function name>",
 	"input_params":{
-		"<parameter name>":<parameter value>
+		[
+		"<parameter name>":<parameter value>,
+		"<parameter name>":<parameter value>,
+		(...)
 		]
 		
 	}
@@ -304,7 +307,7 @@ curl  http://localhost:8080/status
 }
 ```
 
-In the OS command line the JSON output can be formatted with the python command:
+In the OS command line the JSON output can be formatted pipping the python command ```python -mjson.tool```:
 ```bash
 # Running curl in silent mode (-s : Don't show progress meter or error messages).
 curl  -s http://localhost:8080/results/7c772e56-afd2-4e05-ad6a-7beec625eeb0 | python -mjson.tool
