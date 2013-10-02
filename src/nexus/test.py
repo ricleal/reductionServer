@@ -8,7 +8,11 @@ Unit tests for NeXus file handler
 '''
 import unittest
 import nexusHandler
+import logging
 
+import config.config
+
+logger = logging.getLogger(__name__) 
 
 class Test(unittest.TestCase):
     
@@ -16,22 +20,22 @@ class Test(unittest.TestCase):
         '''
         
         '''
-        from logging import config as _config
-        _config.fileConfig('../logging.ini',disable_existing_loggers=False)
-        
         filename = '/home/leal/Documents/Mantid/IN6/157589.nxs'
         self.f = open(filename).read()
         self.nxHandler = nexusHandler.NeXusHandler(self.f)
     
     def testTitle(self):
+        self.nxHandler.openFile()
         title = self.nxHandler.title()
         self.assertEqual(title,"Exploring the brain with neutrons")
     
     def testData(self):
+        self.nxHandler.openFile()
         data = self.nxHandler.data()
         self.assertEqual(data.shape,(337, 1, 1024))
     
     def testDataToJson(self):
+        self.nxHandler.openFile()
         jsonData = self.nxHandler.dataToJson()
         self.assertEqual(len(jsonData),1052982)
     

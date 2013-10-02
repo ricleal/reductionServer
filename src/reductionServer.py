@@ -3,7 +3,6 @@
 import bottle
 from bottle import route
 import json
-import optparse
 import sys
 import logging
 import os.path
@@ -18,6 +17,7 @@ import data.dataStorage
 import data.queryStorage
 import data.queryValidator
 import reduction.queryLauncher
+import data.messages
 
 '''
 
@@ -34,13 +34,7 @@ It assumes:
 
 '''
 
-# Global variables
-# load the logging configuration
-
-LOGGING_CONF=os.path.join(os.path.dirname(__file__),"logging.ini")
- 
-from logging import config as _config
-_config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
+import config.config
 
 logger = logging.getLogger("server")
 
@@ -74,7 +68,7 @@ def homepage_get():
     curl http://localhost:8080/
     '''
     logger.debug('Home page was requested.')
-    return
+    return data.messages.Messages.success("Server is up and running.")
 
 
 @route('/file/<numor:int>', method='POST')
@@ -86,8 +80,6 @@ def fileHandler(numor):
     curl -X POST --data-binary @157589.nxs http://localhost:8080/file/<numor>
     '''
     
-    successMsg = {"success" : "OK"}
-    
     logger.debug("Receiving Nexus file by POST with numor = %d" % numor)
     
     content = bottle.request.body.read()
@@ -97,7 +89,7 @@ def fileHandler(numor):
     dataStorage[numor] = nexusHandler
     logger.debug("DataStorage:\n" + pprint.pformat(dataStorage.items()))
     
-    return successMsg
+    return data.messages.Messages.success("File successfully received.")
 
 #@route('/query/<numors:re:[0-9,]+>', method='POST')
 @route('/query', method='POST')
@@ -119,26 +111,31 @@ def query():
     try :
         contentAsDict = json.loads(content)
     except Exception, e:
-        logger.exception("JSON looks invalid: " + str(e)) 
-        return "NOT WELL FORMATED JSON"
+        message = "JSON appears to be invalid."
+        logger.exception(message  + str(e))
+        return data.messages.Messages.error(message,str(e))
     
     logger.debug("FORMATTED Query received: " + str(contentAsDict))
     
     
-    # TODO: validate query:
     queryValidator = data.queryValidator.QueryValidator(contentAsDict)
-    validErrorMessage = queryValidator.validate()
+    
+    validErrorMessage = queryValidator.validateFunction()
     if validErrorMessage is not None :
-        return "ERROR" + validErrorMessage
+        return validErrorMessage
     
-    # See if numors exist first in the data storage
-    from data.dataStorage import dataStorage
-    numorsToProcess = set(contentAsDict["numors"])
-    allNumors = set(dataStorage.keys())
-    if not numorsToProcess.issubset(allNumors) :
-        return "ERROR Numors don't exist in the database: " +  str(list(numorsToProcess - allNumors))
-        
+    validErrorMessage = queryValidator.validateNumors()
+    if validErrorMessage is not None :
+        return validErrorMessage
     
+#     # See if numors exist first in the data storage
+#     from data.dataStorage import dataStorage
+#     numorsToProcess = set(contentAsDict["input_params"]["numors"])
+#     allNumors = set(dataStorage.keys())
+#     if not numorsToProcess.issubset(allNumors) :
+#         logger.error("Numors don't exist in the database: " +  str(list(numorsToProcess - allNumors)))
+#         return data.messages.Messages.error("Numors do not exist in the database",{"invalid_numors":list(numorsToProcess - allNumors)})    
+#     
     queryId = str(uuid.uuid4())
     from data.queryStorage import queryStorage
     queryStorage.addQuery(queryId,contentAsDict)
@@ -166,12 +163,16 @@ def results(queryId):
     """
     
     from data.queryStorage import queryStorage
-    thisQuery = queryStorage[queryId].copy() # copy by value
+    try:
+        thisQuery = queryStorage[queryId].copy() # copy by value
+        logger.debug("This Query:\n" + pprint.pformat(thisQuery))
+        del thisQuery["launcher"] # Json can't serialise objects!
+        return simplejson.dumps(thisQuery)
+    except Exception, e:
+        message = "query_id appears to be invalid."
+        logger.exception(message  + str(e))
+        return data.messages.Messages.error(message,str(e))
     
-    logger.debug("This Query:\n" + pprint.pformat(thisQuery))
-    
-    del thisQuery["launcher"] # Json can't serialise objects!
-    return simplejson.dumps(thisQuery)
 
 @route('/status', method=['POST','GET'])
 def status():
@@ -186,28 +187,22 @@ def status():
             pass
     
     return ret
-    
 
-
-
-def commandLineOptions():
-    '''
-    Define command line options
-    '''
-    parser = optparse.OptionParser()
-    parser.add_option('-s', '--server', help='Server host. Default localhost.', default='localhost')
-    parser.add_option('-p', '--port', help='Server port. Default 8080.', type="int", default=8080)
-    return parser
 
 def main(argv):
-    parser = commandLineOptions();
-    (options, args) = parser.parse_args()
+    # command line options
+    from config.config import options
         
     # Launch http server
-    bottle.debug(True) 
-    bottle.run(host=options.server, port=options.port)
-    print "Server stopped..."
+    bottle.debug(True)
     
+    try :
+        bottle.run(host=options.server, port=options.port)
+    except Exception as e:
+        #logger.exception("Web server cannot run: " + str(e)) 
+        logger.error("Web server cannot run: " + str(e))
+    
+    logger.info("Server shutdown...")
     
 if __name__ == '__main__':
     main(sys.argv)

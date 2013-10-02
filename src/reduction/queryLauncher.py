@@ -13,6 +13,8 @@ import threading
 import time
 import logging
 import helper.launcher
+import data.messages
+import datetime
 
 logger = logging.getLogger(__name__) 
     
@@ -38,26 +40,36 @@ class QueryLauncher():
         
         logger.debug("Launching the query in background...")
         
-        self._queryStorage[queryId]["start_time"] = time.time()
-        self._queryStorage[queryId]["start_local_time"] = time.asctime(time.localtime(time.time()))
+        self._queryStorage[queryId]["start_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+        #self._queryStorage[queryId]["start_local_time"] = time.asctime(time.localtime(time.time()))
         self._queryStorage[queryId]["status"] = "running" 
         
         # TODO mapping name and local command and timeout
         # fill in time out etc
         commandToExecute = self._queryStorage[queryId]["executable"]
-        timeout = 10
+        timeout = self._queryStorage[queryId]["timeout"]
         
         l = helper.launcher.Launcher(commandToExecute, timeout)    
         self._queryStorage[queryId]["launcher"] = l 
-        l.launch()
+        l.launch() # Blocks until executed or error
         
-        # # Blocks until executed or error
+                # get the output as json
+        try:
+            import ast
+            self._queryStorage[queryId]["output"] = ast.literal_eval(l.output())
+        except Exception, e:
+            message = "JSON of the output processing file looks invalid: " + str(e)
+            logger.exception(message)
+            logger.debug(l.output())
+            self._queryStorage[queryId]["output"] = data.messages.Messages.error(message,str(e))
+        
         self._queryStorage[queryId]["status"] = "done" 
         self._queryStorage[queryId]["return_code"] = l.returnCode()
-        self._queryStorage[queryId]["end_time"] = time.time()
-        self._queryStorage[queryId]["end_local_time"] = time.asctime(time.localtime(time.time()))
+        self._queryStorage[queryId]["end_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+        #self._queryStorage[queryId]["end_local_time"] = time.asctime(time.localtime(time.time()))
         self._queryStorage[queryId]["error"] = l.error()
-        self._queryStorage[queryId]["output"] = l.output()
+
+
     
     
 

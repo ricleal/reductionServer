@@ -36,7 +36,7 @@ class TestServer(unittest.TestCase):
         time.sleep(0.1)
         #p.join()
         self.url = "http://localhost:8080"
-        self.filename = '/home/leal/Documents/Mantid/IN6/157589.nxs'
+        self.filename = '/home/leal/Documents/Mantid/IN5/094460.nxs'
         
     def test_a_Alive(self):
         '''
@@ -50,7 +50,7 @@ class TestServer(unittest.TestCase):
         c.setopt(c.WRITEFUNCTION, buf.write)
         c.perform()
         ret = buf.getvalue()
-        self.assertEqual(ret, '')
+        self.assertEqual(ret, '{"general_message": "Server is up and running.", "errors": "", "success": "True"}')
         buf.close()
     
     def postFile(self,numor):
@@ -75,11 +75,11 @@ class TestServer(unittest.TestCase):
         cd ~/Documents/Mantid/IN6
         curl -v -X POST --data-binary @157589.nxs http://localhost:8080/file/157589
         '''
-        ret = self.postFile(1)
-        self.assertEqual(ret, '{"success": "OK"}')
+        ret = self.postFile(94460)
+        self.assertEqual(ret, '{"general_message": "File successfully received.", "errors": "", "success": "True"}')
         
-        ret = self.postFile(2)
-        self.assertEqual(ret, '{"success": "OK"}')
+        ret = self.postFile(94460)
+        self.assertEqual(ret, '{"general_message": "File successfully received.", "errors": "", "success": "True"}')
         
           
     def test_c_Query(self):
@@ -91,14 +91,14 @@ class TestServer(unittest.TestCase):
          http://localhost:8080/query
         '''
         
-        textToPost = """{"query":"sofw","numors":[1,2]}"""
+        textToPost =  '{"function":"theta_vs_counts","input_params":{"numors":[94460]}}'
+        
         buf = cStringIO.StringIO()
         c = pycurl.Curl()
         c.setopt(c.URL, self.url+"/query")
         c.setopt(c.POST,1)
         c.setopt(pycurl.HTTPHEADER, ['Content-Type: application/json'])
         c.setopt(pycurl.HTTPHEADER, ['Accept: application/json'])
-        c.setopt(pycurl.HTTPHEADER, ['Numor: 1234'])
         
         c.setopt(c.POSTFIELDS, textToPost)
         c.setopt(c.WRITEFUNCTION, buf.write)
@@ -125,13 +125,43 @@ class TestServer(unittest.TestCase):
         ret = buf.getvalue()
         self.assertTrue('"status": "done"' in ret)
         buf.close()
+    
+    def test_e_Results(self):
+        '''
+        curl -v -X POST http://localhost:8080/results/QUERY_ID
+        '''
+        import ast, time
+        
+        time.sleep(2)
+        buf = cStringIO.StringIO()
+        c = pycurl.Curl()
+        global queryId
+        c.setopt(c.URL, self.url+"/results/" + queryId)
+        c.setopt(c.POST,1)
+        c.setopt(c.WRITEFUNCTION, buf.write)
+        
+        c.perform()
+        ret = buf.getvalue()
+        retDic = ast.literal_eval(ret)
+        
+        while retDic['status'] == 'running':
+            time.sleep(1)
+            c.perform()
+            ret = buf.getvalue()
+            retDic = ast.literal_eval(ret)
+            
+        
+        
+        
+        self.assertTrue('"status": "done"' in ret)
+        buf.close()
 
     @classmethod
     def tearDownClass(self):
         '''
         Kill the server
         '''
-        time.sleep(1)
+        time.sleep(20)
         self.p.terminate()
         # to make sure everything finished (i.e. thread manager)!
         time.sleep(1)

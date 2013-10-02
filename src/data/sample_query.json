@@ -1,0 +1,9 @@
+{
+	"function":"theta_vs_counts",
+	"input_params":{
+		"numors":[
+			12345
+		]
+		
+	}
+}
