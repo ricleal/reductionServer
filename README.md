@@ -167,6 +167,7 @@ curl -s -X POST -d '{"function":"theta_vs_count","input_params":{"numors":[10229
     "general_message": "Error while validating the query function. Is it a valid function?", 
     "success": "False"
 }
+```
 
 If invalid input parameters (numors in this case) are sent in the query, the result is:
 
