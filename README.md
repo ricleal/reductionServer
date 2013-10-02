@@ -42,7 +42,7 @@ Options:
   -l LOG, --log=LOG     Logging configuration file. Default logging.ini.
 ```
 
-Default ```.ini``` files are stored in the ```config``` directory.
+Default ```.ini``` files are stored in the ```config``` directory. Usually the logging.ini does not need to be updated.
 
 E.g.:
 
@@ -55,8 +55,6 @@ or the local hostname or the IP address. E.g.:
 ```bash
 ./reductionServer.py -s mypchostname.gen.ill.fr
 ```
-
-
 
 **Test with a browser:**
 
@@ -189,10 +187,11 @@ curl -s -X POST --data-binary @102296.nxs http://localhost:8080/file/102296 | py
 ```
 ```json
 {
-    "errors": "", 
-    "general_message": "File successfully received.", 
+    "details": "", 
+    "message": "File successfully received.", 
     "success": "True"
 }
+
 ```
 
 ```bash
@@ -200,8 +199,8 @@ curl -s -X POST --data-binary @102297.nxs http://localhost:8080/file/102297 | py
 ```
 ```json
 {
-    "errors": "", 
-    "general_message": "File successfully received.", 
+    "details": "", 
+    "message": "File successfully received.", 
     "success": "True"
 }
 ```
@@ -266,10 +265,9 @@ curl -s http://localhost:8080/results/12c5faa1-661e-47a6-b56e-3eb4e2c026f4 | pyt
 
 ```json
 {
-    "end_local_time": "Mon Sep 30 17:44:19 2013", 
-    "end_time": 1380555859.450503, 
+    "end_time": "2013-10-02 12:13:35.464550", 
     "error": "", 
-    "executable": "/home/leal/git/reductionServer/scripts/theta_vs_counts_IN5.sh /tmp/tmpkaNAEI ", 
+    "executable": "/home/leal/git/reductionServer/scripts/theta_vs_counts_IN5.sh /tmp/live_D2lycx.nxs ", 
     "function": "theta_vs_counts", 
     "input_params": {
         "numors": [
@@ -291,7 +289,11 @@ curl -s http://localhost:8080/results/12c5faa1-661e-47a6-b56e-3eb4e2c026f4 | pyt
                 0.0, 
                 0.0, 
                 107.0, 
+                26630.440714397362, 
+                73900.37826959942, 
                 (...)
+                1202.3282591853645, 
+                585.4388730584927, 
                 289.6976403687601, 
                 158.0
             ]
@@ -306,15 +308,15 @@ curl -s http://localhost:8080/results/12c5faa1-661e-47a6-b56e-3eb4e2c026f4 | pyt
             1.56893481993162, 
             2.540112536576862, 
             3.5110504074526236, 
-            (...)
+            4.507464014742497, 
+            (..)
             132.4872807689507, 
             133.47312916428413, 
             134.3798613665934
         ]
     }, 
     "return_code": 0, 
-    "start_local_time": "Mon Sep 30 17:44:08 2013", 
-    "start_time": 1380555848.857111, 
+    "start_time": "2013-10-02 12:13:25.125645", 
     "status": "done", 
     "timeout": 30
 }

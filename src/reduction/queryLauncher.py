@@ -14,6 +14,7 @@ import time
 import logging
 import helper.launcher
 import data.messages
+import datetime
 
 logger = logging.getLogger(__name__) 
     
@@ -39,8 +40,8 @@ class QueryLauncher():
         
         logger.debug("Launching the query in background...")
         
-        self._queryStorage[queryId]["start_time"] = time.time()
-        self._queryStorage[queryId]["start_local_time"] = time.asctime(time.localtime(time.time()))
+        self._queryStorage[queryId]["start_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+        #self._queryStorage[queryId]["start_local_time"] = time.asctime(time.localtime(time.time()))
         self._queryStorage[queryId]["status"] = "running" 
         
         # TODO mapping name and local command and timeout
@@ -64,8 +65,8 @@ class QueryLauncher():
         
         self._queryStorage[queryId]["status"] = "done" 
         self._queryStorage[queryId]["return_code"] = l.returnCode()
-        self._queryStorage[queryId]["end_time"] = time.time()
-        self._queryStorage[queryId]["end_local_time"] = time.asctime(time.localtime(time.time()))
+        self._queryStorage[queryId]["end_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+        #self._queryStorage[queryId]["end_local_time"] = time.asctime(time.localtime(time.time()))
         self._queryStorage[queryId]["error"] = l.error()
 
 

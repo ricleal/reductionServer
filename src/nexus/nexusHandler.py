@@ -34,11 +34,11 @@ class NeXusHandler(object):
         logger.debug("Parsing request...")
     
         # Need to write the file on disk! there's no open stream in nexus library for python
-        self.tempFile = tempfile.NamedTemporaryFile(delete=False)
+        self.tempFile = tempfile.NamedTemporaryFile(delete=False, prefix='live_', suffix='.nxs')
         self.tempFile.write(content)
         self.tempFile.close()
         
-        self.__openNexusFile()
+        self.file = None
 
     def __del__(self):
         logger.debug("Deleting NeXus temporary file: %s"%self.tempFile.name)
@@ -49,14 +49,29 @@ class NeXusHandler(object):
             logger.error("Error removing temporary nexus file: " + str(e))
         
     
-    def __openNexusFile(self):
+    def openFile(self):
         logger.debug("Opening nexus file...")
-        try:
-            self.file = nxs.open(self.tempFile.name,'r')
-        except  Exception as e:
-            logger.error("Problems opening the nexus file: " + str(e) )
-            raise
-
+        if self.file is None:
+            try:
+                self.file = nxs.open(self.tempFile.name,'r')
+            except  Exception as e:
+                logger.exception("Problems opening the nexus file: " + str(e) )
+                raise
+        else:
+            logger.warning("Nexus file appears to be open already.")
+            
+    def closeFile(self):
+        logger.debug("closing nexus file...")
+        if self.file is not None:
+            try:
+                file.close()
+                self.file = None
+            except  Exception as e:
+                logger.exception("Problems closing the nexus file: " + str(e) )
+                raise
+        else:
+            logger.warning("Nexus file appears to be closed already.")
+        
     def filename(self):
         return self.tempFile.name
     
@@ -87,8 +102,13 @@ class NeXusHandler(object):
     
     def dataToJson(self):
         data = self.data()
-        jsonData = simplejson.dumps(data.tolist())
+        jsonData = simplejson.dumps(self.data().tolist())
         return jsonData
     
+    def __repr__(self, *args, **kwargs):
+        return self.filename()
 
+if __name__ == '__main__':
+    pass
+    
     

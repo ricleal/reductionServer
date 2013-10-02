@@ -111,8 +111,8 @@ def query():
     try :
         contentAsDict = json.loads(content)
     except Exception, e:
-        message = "JSON looks invalid: " + str(e)
-        logger.exception(message)
+        message = "JSON appears to be invalid."
+        logger.exception(message  + str(e))
         return data.messages.Messages.error(message,str(e))
     
     logger.debug("FORMATTED Query received: " + str(contentAsDict))

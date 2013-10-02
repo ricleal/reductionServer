@@ -18,33 +18,45 @@ class Messages(object):
     '''
     
     messageTemplate = """{
-        'success' : '%(success)r',
-        'general_message' : '%(general_message)s',
-        'errors' : %(errors)r
+        'success' : '%r',
+        'message' : '%s',
+        'details' : %r
     }"""
-    
         
+    
     @staticmethod
-    def success(message):
-        data = {'success': True, 'general_message': message, "errors" : ''}
-        messageAsStr = Messages.messageTemplate%data
+    def success(message,details=''):
+        messageAsStr = Messages.messageTemplate%(True,message,details)
+        logger.debug(messageAsStr)
+        messageAsDic = ast.literal_eval(messageAsStr)
+        return messageAsDic    
+    
+    @staticmethod
+    def error(message,details=''):
+        messageAsStr = Messages.messageTemplate%(False,message,details)
         logger.debug(messageAsStr)
         messageAsDic = ast.literal_eval(messageAsStr)
         return messageAsDic
     
-    
     @staticmethod
-    def error(message,errors):
-        data = {'success': False, 'general_message': message, "errors" : errors}
-        messageAsStr = Messages.messageTemplate%data
+    def errorDetailed(message,complementaryMessage,value):
+        details = """{
+        'message' : %r, 
+        'value' : %r
+        }"""%(complementaryMessage,value)
+        messageAsStr = Messages.messageTemplate%(False,message,
+                                                 ast.literal_eval(details))
         logger.debug(messageAsStr)
         messageAsDic = ast.literal_eval(messageAsStr)
         return messageAsDic
 
+
 if __name__ == '__main__':
-    Messages.success("message")
-    Messages.success("This a message")
-    Messages.error("Error", {'code' : 1234})
-    
+    Messages.success("OK")
+    Messages.success("OK", "File received")
+    Messages.error("Error")
+    Messages.error("Error",details='There was an error processing XPTO.')
+    Messages.error("Error adding X.",details={'error' : 'xpto', 'valid' : [1,2,3]})
+    Messages.errorDetailed("Error adding X.","Valid values are", [1,2,3,5])
     
         
