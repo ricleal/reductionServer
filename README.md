@@ -286,7 +286,7 @@ When a query is invalid:
 
 Every *query* (e.g. *theta_vs_counts*) will be mapped internally to an executable. In the example below the *sofqw* is mapped to ```"executable": "/home/leal/git/reductionServer/scripts/theta_vs_counts_IN5.sh"```. 
 
-To get the status of all queries submitted to the server:
+To get the status of all queries submitted to the server along with the files:
 ```bash
 # This request can be either submitted by POST or GET
 curl  http://localhost:8080/status
@@ -294,8 +294,13 @@ curl  http://localhost:8080/status
 ```
 ```json
 {
-  "7c772e56-afd2-4e05-ad6a-7beec625eeb0": "done", 
-  "a388c27b-0227-4e6e-bb8f-328c9c93f99b": "done"
+    "dataStorage": {
+        "102296": "/tmp/live_LhAVdL.nxs", 
+        "102297": "/tmp/live_A6Qpvm.nxs"
+    }, 
+    "queryStorage": {
+        "a5573866-f687-49bd-87bd-56e4f5851baf": "done"
+    }
 }
 ```
 

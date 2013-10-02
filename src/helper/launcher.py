@@ -47,9 +47,11 @@ class Launcher(threading.Thread):
         self.__pid = None
         self.__returnCode = None
     
+    def __str__(self):
+        return "Launcher: " + self.__command + "; timeout=%d"%self.__timeout
+    
     def __repr__(self):
-        repr = "Launcher: " + self.__command + "; timeout=%d"%self.__timeout
-        return repr
+        return self.__str__()
     
     def run(self):
         '''
