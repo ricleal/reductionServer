@@ -128,14 +128,6 @@ def query():
     if validErrorMessage is not None :
         return validErrorMessage
     
-#     # See if numors exist first in the data storage
-#     from data.dataStorage import dataStorage
-#     numorsToProcess = set(contentAsDict["input_params"]["numors"])
-#     allNumors = set(dataStorage.keys())
-#     if not numorsToProcess.issubset(allNumors) :
-#         logger.error("Numors don't exist in the database: " +  str(list(numorsToProcess - allNumors)))
-#         return data.messages.Messages.error("Numors do not exist in the database",{"invalid_numors":list(numorsToProcess - allNumors)})    
-#     
     queryId = str(uuid.uuid4())
     from data.queryStorage import queryStorage
     queryStorage.addQuery(queryId,contentAsDict)
@@ -176,16 +168,30 @@ def results(queryId):
 
 @route('/status', method=['POST','GET'])
 def status():
+    """
+    Returns pairs of query_ids = status
+    """
+    ret = {"dataStorage":{},"queryStorage":{}}
     
-    from data.queryStorage import queryStorage
-    ret = {}
+    from data.dataStorage import dataStorage
     
-    for k in queryStorage.keys():
+    for k in dataStorage.keys():
         try:
-            ret[k] = queryStorage[k]["status"]
+            ret["dataStorage"][k] = '%s'%dataStorage[k]
         except:
             pass
     
+    
+    from data.queryStorage import queryStorage
+    
+    
+    for k in queryStorage.keys():
+        try:
+            ret["queryStorage"][k] = queryStorage[k]["status"]
+        except:
+            pass
+    
+    logger.debug("Satus:\n" + pprint.pformat(ret))
     return ret
 
 
