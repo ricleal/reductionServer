@@ -48,6 +48,17 @@ class NeXusHandler(object):
         except  Exception as e:
             logger.error("Error removing temporary nexus file: " + str(e))
         
+    def isValid(self):
+        """
+        Is this a valid Nexus file?
+        """
+        try :
+            fp = nxs.open(self.tempFile.name,'r')
+            fp.close()
+        except Exception, e:
+            logger.exception("This doesn't look a valid nexus file: " + str(e) )
+            return False
+        return True
     
     def openFile(self):
         logger.debug("Opening nexus file...")

@@ -84,12 +84,13 @@ def fileHandler(numor):
     
     content = bottle.request.body.read()
     nexusHandler = nexus.nexusHandler.NeXusHandler(content)
-    
-    from data.dataStorage import dataStorage
-    dataStorage[numor] = nexusHandler
-    logger.debug("DataStorage:\n" + pprint.pformat(dataStorage.items()))
-    
-    return data.messages.Messages.success("File successfully received.")
+    if nexusHandler.isValid() is False:
+        return data.messages.Messages.error("Nexus file received is not valid.");
+    else:
+        from data.dataStorage import dataStorage
+        dataStorage[numor] = nexusHandler
+        logger.debug("DataStorage:\n" + pprint.pformat(dataStorage.items()))
+        return data.messages.Messages.success("File successfully received.")
 
 #@route('/query/<numors:re:[0-9,]+>', method='POST')
 @route('/query', method='POST')

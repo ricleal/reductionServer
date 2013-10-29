@@ -69,5 +69,60 @@ exit
 
 EOI
 
+
+
+# New way
+
+[10:09 0.21 ~ ]
+[ferrazpc 10] ~ > /home/cs/richard/Free_Lamp81/START_lamp -nws
+
+Getting source from /home/cs/richard/Free_Lamp81/lamp ......
+bash: line 0: unalias: rm: not found
+bash: line 0: unalias: cp: not found
+bash: line 0: unalias: mv: not found
+update81a.rt loaded ...
+Lamp> 
+Lamp> 
+Lamp> 
+Lamp> w1=dist(50)
+w 1: Float   dim = 50 * 50 min=0.00000 max=35.3553
+Lamp> w2=w1
+w 2: Float   dim = 50 * 50 min=0.00000 max=35.3553
+Lamp> print,w1[*,0]
+      0.00000      1.00000      2.00000      3.00000      4.00000      5.00000
+      6.00000      7.00000      8.00000      9.00000      10.0000      11.0000
+      12.0000      13.0000      14.0000      15.0000      16.0000      17.0000
+      18.0000      19.0000      20.0000      21.0000      22.0000      23.0000
+      24.0000      25.0000      24.0000      23.0000      22.0000      21.0000
+      20.0000      19.0000      18.0000      17.0000      16.0000      15.0000
+      14.0000      13.0000      12.0000      11.0000      10.0000      9.00000
+      8.00000      7.00000      6.00000      5.00000      4.00000      3.00000
+      2.00000      1.00000
+w 1: Float   dim = 50 * 50 min=0.00000 max=35.3553
+Lamp> w3=total(w1,2)
+w 3: Float   dim = 50 min=625.000 max=1434.86
+Lamp> write_lamp,w=3,foramt='Column'
+
+write_lamp,w=3,foramt=�'Column'
+                        ^
+% Syntax error.
+Syntax error.
+Syntax error.
+
+write_lamp,w=3,foramt='Column'
+% Keyword FORAMT not allowed in call to: WRITE_LAMP
+Keyword FORAMT not allowed in call to: WRITE_LAMP
+Keyword FORAMT not allowed in call to: WRITE_LAMP
+
+Lamp> write_lamp,w=3,format='Column'
+file not saved ...!
+Lamp> 
+Lamp> write_lamp,'totot',w=3,format='Column'
+Lamp> 
+Lamp> write_lamp,'totot',w=3,format='HDF'
+W3 saved in totot_LAMP.hdf
+Lamp> 
+
+
 ```
 

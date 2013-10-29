@@ -469,3 +469,24 @@ TODO
 - A mapping between every function and the respective local executable.
 
 To date, a simple JSON definition of a reduction function is available here: [src/data/functions.json](src/data/functions.json). More will come soon.
+
+Notes for me:
+-------------
+Check if the pc where the server is running has the port open:
+```
+[10:54 0.00 ~/tmp ]
+[in6lnx2 27] tmp >  nmap -v -sT -PN 172.17.43.190
+#or
+nmap -v -p 8080 -PN 172.17.43.190
+```
+
+Launch server as:
+```
+./reductionServer.py -s 172.17.43.190 -p 8080
+```
+
+test it with:
+```
+curl -v --noproxy '*' http://172.17.43.190:8080/
+```
+
