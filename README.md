@@ -7,7 +7,14 @@ Prerequisites
 -------------
   - Nexus python library : [http://www.nexusformat.org/](http://www.nexusformat.org/)
   - Python bottle : [http://bottlepy.org](http://bottlepy.org/)
-
+  - MongoDB (pymongo):
+  	- In Ubuntu, type:
+  		```
+  		# if you have  python-pymongo already installed
+  		sudo apt-get purge python-pymongo
+  		sudo apt-get install python-pip
+  		sudo pip install pymongo
+  		```
 
 Prerequisites for testing
 -------------------------
