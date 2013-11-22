@@ -9,7 +9,6 @@ Unit tests for NeXus file handler
 import unittest
 import nexusHandler
 import logging
-
 import config.config
 
 logger = logging.getLogger(__name__) 
@@ -18,7 +17,7 @@ class Test(unittest.TestCase):
     
     def setUp(self):
         '''
-        
+        Run BEFORE every single test!
         '''
         filename = '/home/leal/Documents/Mantid/IN6/157589.nxs'
         self.f = open(filename).read()
@@ -44,12 +43,17 @@ class Test(unittest.TestCase):
         print 'filename:',filename
         self.assertTrue(filename.startswith('/tmp'))
     
-
+    def testIsValid(self):
+        valid = self.nxHandler.isValid()
+        print 'Valid:',valid
+        self.assertTrue(valid)
     
     def tearDown(self):
         del(self.nxHandler)
         
 
 if __name__ == "__main__":
+    # To run a single test: python -m unittest testnexus.Test.testIsValid
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
     unittest.TextTestRunner(verbosity=2).run(suite)
+#    unittest.main()
