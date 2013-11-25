@@ -1,20 +1,26 @@
 Reduction Server
 ===============
 
-ILL REST Reduction Server
+
+ILL REST Live data reduction server.
+
+The purpose of this project is to bridge data acquisition and data analysis.
+This server seats in the middle of the instrument control computer and the data reduction and analysis software.
+The instrument control computer always initiate the requests. The server reacts to these requests. Messages are passed in JSON format.
+Those requests are:
+
+- ```http:://<server_address>/file/<numor>``` - Send a file to the server. The server stores the file in dictionary/map indexed by the numor. The server keeps a predefined number of entries, and delete the old entries.
+- ```http:://<server_address>/query``` - Send a query to the server indicating the data analysis routine to be called. See below the specs. The server returns and id for this query.
+- ```http:://<server_address>/results/<queryId>``` - Interrogates the server about the result of query previously sent with queryId.
+- ```http:://<server_address>/status``` - Return the status of the server. 
+
+A single server is launched by instrument.
+Several servers can run in the same machine using different ports. The instrument name *MUST* be specified either in the configuration file, or when launching the server. See below. 
 
 Prerequisites
 -------------
   - Nexus python library : [http://www.nexusformat.org/](http://www.nexusformat.org/)
   - Python bottle : [http://bottlepy.org](http://bottlepy.org/)
-  - MongoDB (pymongo):
-  	- In Ubuntu, type:
-  		```
-  		# if you have  python-pymongo already installed
-  		sudo apt-get purge python-pymongo
-  		sudo apt-get install python-pip
-  		sudo pip install pymongo
-  		```
 
 Prerequisites for testing
 -------------------------
@@ -47,6 +53,10 @@ Options:
   -c CONFIG, --config=CONFIG
                         Configuration file. Default config.ini.
   -l LOG, --log=LOG     Logging configuration file. Default logging.ini.
+  -i INSTRUMENT, --instrument=INSTRUMENT
+                        Intrument to server. If empty looks for instrument
+                        name in the config file.
+
 ```
 
 Default ```.ini``` files are stored in the ```config``` directory. Usually the logging.ini does not need to be updated.

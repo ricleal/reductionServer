@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This function is called directly by the server.
+# It thens calls the mantid python script.
+
 if [[ $# -lt 1 ]]
 then
 	echo "Run as: $0 <Nexus file name>" 1>&2;  
