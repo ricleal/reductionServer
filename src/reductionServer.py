@@ -6,7 +6,7 @@ import json
 import sys
 import logging
 import os.path
-import nexus.nexusHandler
+import filehandlers.handlermanager
 import time
 import signal
 import uuid
@@ -80,16 +80,20 @@ def fileHandler(numor):
     curl -X POST --data-binary @157589.nxs http://localhost:8080/file/<numor>
     '''
     
-    logger.debug("Receiving Nexus file by POST with numor = %d" % numor)
+    logger.debug("Receiving file by HTTP POST with numor = %d" % numor)
     
     content = bottle.request.body.read()
-    nexusHandler = nexus.nexusHandler.NeXusHandler(content)
+    # based on the content get the right file handler
+    handlerManager = filehandlers.handlermanager.Manager(content)
+    fileHandler = handlerManager.getRespectiveHandler()
     
-    from data.dataStorage import dataStorage
-    dataStorage[numor] = nexusHandler
-    logger.debug("DataStorage:\n" + pprint.pformat(dataStorage.items()))
-    
-    return data.messages.Messages.success("File successfully received.")
+    if fileHandler is None:
+        return data.messages.Messages.error("File received is not valid", "Neither ASCII nor Nexus");
+    else:
+        from data.dataStorage import dataStorage
+        dataStorage[numor] = fileHandler
+        logger.debug("DataStorage:\n" + pprint.pformat(dataStorage.items()))
+        return data.messages.Messages.success("File successfully received.", "The handler is: " + fileHandler.__class__.__name__)
 
 #@route('/query/<numors:re:[0-9,]+>', method='POST')
 @route('/query', method='POST')

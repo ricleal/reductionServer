@@ -22,6 +22,7 @@ def commandLineOptions():
     parser.add_option('-p', '--port',   help='Server port. Default 8080.', type="int", default=8080)
     parser.add_option('-c', '--config', help='Configuration file. Default config.ini.', default='config.ini')
     parser.add_option('-l', '--log',    help='Logging configuration file. Default logging.ini.', default='logging.ini')
+    parser.add_option('-i', '--instrument',    help='Intrument to server. If empty looks for instrument name in the config file.', default=None)
     return parser
 
 parser = commandLineOptions();
@@ -53,10 +54,14 @@ if len(successFullyReadFiles) == 0:
 #              os.path.join(os.path.dirname(os.path.realpath(__file__)),CONFIG_FILENAME),
 #              os.path.join(os.path.dirname(os.path.realpath(__file__)),os.path.join(os.pardir,CONFIG_FILENAME))]) #..
 
-# Just to let know user which config file was parsed
+# Just to let know the user which config file was parsed
 import logging
 logger = logging.getLogger(__name__)
 logger.info("Using config file: %s"%successFullyReadFiles)
 
+## Because 
+if options.instrument is not None:
+    configParser.set("General", "instrument_name",options.instrument)
 
+logger.info("Server is defined for instrument: %s"%configParser.get("General", "instrument_name"))
 

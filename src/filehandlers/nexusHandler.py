@@ -12,12 +12,13 @@ import logging
 import simplejson
 import tempfile
 import os
+import generalHandler
 
 logger = logging.getLogger(__name__) 
 
     
 
-class NeXusHandler(object):
+class NeXusHandler(generalHandler.GeneralHandler):
     '''
     NeXusHandler to deal with a nexus file
     Keeps a pointer for the open file
@@ -29,33 +30,31 @@ class NeXusHandler(object):
     def __init__(self, content):
         '''
         @param content: binary stream - contents of the nexus file 
-        '''
+        '''    
+        logger.debug("Creating Nexus Handler")
+        super(NeXusHandler, self).__init__(content)
         
-        logger.debug("Parsing request...")
-    
-        # Need to write the file on disk! there's no open stream in nexus library for python
-        self.tempFile = tempfile.NamedTemporaryFile(delete=False, prefix='live_', suffix='.nxs')
-        self.tempFile.write(content)
-        self.tempFile.close()
-        
-        self.file = None
-
-    def __del__(self):
-        logger.debug("Deleting NeXus temporary file: %s"%self.tempFile.name)
-
+    def isValid(self):
+        """
+        Is this a valid Nexus file?
+        """
         try :
-            os.remove(self.tempFile.name)
-        except  Exception as e:
-            logger.error("Error removing temporary nexus file: " + str(e))
-        
+#             fp = nxs.open(self.tempFile.name,'r')
+#             fp.close()
+            self.openFile();
+            self.closeFile();
+        except Exception:
+            logger.exception("This doesn't look a valid nexus file...")
+            return False
+        return True
     
     def openFile(self):
         logger.debug("Opening nexus file...")
         if self.file is None:
             try:
                 self.file = nxs.open(self.tempFile.name,'r')
-            except  Exception as e:
-                logger.exception("Problems opening the nexus file: " + str(e) )
+            except  Exception:
+                logger.exception("Problems opening the nexus file...It was either deleted or is not valid!")
                 raise
         else:
             logger.warning("Nexus file appears to be open already.")
@@ -64,7 +63,7 @@ class NeXusHandler(object):
         logger.debug("closing nexus file...")
         if self.file is not None:
             try:
-                file.close()
+                self.file.close()
                 self.file = None
             except  Exception as e:
                 logger.exception("Problems closing the nexus file: " + str(e) )
@@ -72,8 +71,6 @@ class NeXusHandler(object):
         else:
             logger.warning("Nexus file appears to be closed already.")
         
-    def filename(self):
-        return self.tempFile.name
     
     def title(self):
         self.file.opengroup('entry0')
@@ -105,8 +102,6 @@ class NeXusHandler(object):
         jsonData = simplejson.dumps(self.data().tolist())
         return jsonData
     
-    def __repr__(self, *args, **kwargs):
-        return self.filename()
 
 if __name__ == '__main__':
     pass

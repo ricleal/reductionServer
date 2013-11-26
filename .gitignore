@@ -35,5 +35,6 @@ nosetests.xml
 .pydevproject
 
 *.log
-.*
-
+*~
+*.cds
+*.flag

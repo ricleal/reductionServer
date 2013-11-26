@@ -42,5 +42,13 @@
 			
 		}
 		
+	},
+	"plot_data":{
+		"description":"Plots raw data with corrections",
+		"timeout":40,
+		"local_mapping":{
+			"executable":"%(scripts_directory)s/plot_data_%(instrument_name)s.sh"			
+		}
+		
 	}
 }

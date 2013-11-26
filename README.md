@@ -1,34 +1,47 @@
-Reduction Server
+ILL Live Data Reduction Server
 ===============
 
-ILL REST Reduction Server
+ILL REST Live data reduction server.
+
+The purpose of this project is to bridge data acquisition and data analysis.
+This server seats in the middle of the instrument control computer and the data reduction and analysis software.
+The instrument control computer initiate the data analysis requests. The server reacts to these requests and forward the respective demands to the data analysis software. The server implements a Representational State Transfer (REST) with messages are passed in JSON format.
+
+The server implements the following requests:
+
+- ```http:://<server_address>/file/<numor>``` - Send a file to the server. The server stores the file in dictionary/map indexed by the numor. The server keeps a predefined number of entries, and delete the old entries.
+- ```http:://<server_address>/query``` - Send a query to the server indicating the data analysis routine to be called. See below the specs. The server returns and id for this query.
+- ```http:://<server_address>/results/<queryId>``` - Interrogates the server about the result of query previously sent with queryId.
+- ```http:://<server_address>/status``` - Return the status of the server. 
+
+A single server is launched by instrument.
+Several servers can run in the same machine using different ports. The instrument name *MUST* be specified either in the configuration file, or when launching the server. See below. 
 
 Prerequisites
 -------------
   - Nexus python library : [http://www.nexusformat.org/](http://www.nexusformat.org/)
   - Python bottle : [http://bottlepy.org](http://bottlepy.org/)
 
-
 Prerequisites for testing
 -------------------------
 
   - Curl ([http://curl.haxx.se](http://curl.haxx.se/)). It is usually already installed by default in any modern Linux distribution.
 
-At the ILL, in a Linux terminal, the following environent variables are often defined: `http_proxy` and `https_proxy`.
+At the ILL, in a Linux terminal, the following environment variables are often defined: `http_proxy` and `https_proxy`.
 
 ```bash
 http_proxy="http://proxy.ill.fr:8888"
 https_proxy="http://proxy.ill.fr:8888"
 ```
 
-These variables must be `unset` for the curl POST requests to work within the ILL network!
+For the curl POST requests to work within the ILL network, either these variables must be `unset` or the curl option ```--noproxy '*' ``` must be appended to the curl command.
 
 Testing
 -------------------------
 
 **Start the server:**
 
-```bash
+```
 # ./reductionServer.py -h
 Usage: reductionServer.py [options]
 
@@ -40,9 +53,12 @@ Options:
   -c CONFIG, --config=CONFIG
                         Configuration file. Default config.ini.
   -l LOG, --log=LOG     Logging configuration file. Default logging.ini.
+  -i INSTRUMENT, --instrument=INSTRUMENT
+                        Intrument to server. If empty looks for instrument
+                        name in the config file.
 ```
 
-Default ```.ini``` files are stored in the ```config``` directory. Usually the logging.ini does not need to be updated.
+The config files (```.ini``` files) are stored in the ```config``` directory. Usually, for testing, those files do not need to be updated.
 
 E.g.:
 
@@ -59,7 +75,6 @@ or the local hostname or the IP address. E.g.:
 **Test with a browser:**
 
 Open the adress ```http://localhost:8080/``` in a browser.
-
 
 **Test with curl client**
 
@@ -469,3 +484,24 @@ TODO
 - A mapping between every function and the respective local executable.
 
 To date, a simple JSON definition of a reduction function is available here: [src/data/functions.json](src/data/functions.json). More will come soon.
+
+Notes for me:
+-------------
+Check if the pc where the server is running has the port open:
+```
+[10:54 0.00 ~/tmp ]
+[in6lnx2 27] tmp >  nmap -v -sT -PN 172.17.43.190
+#or
+nmap -v -p 8080 -PN 172.17.43.190
+```
+
+Launch server as:
+```
+./reductionServer.py -s 172.17.43.190 -p 8080
+```
+
+test it with:
+```
+curl -v --noproxy '*' http://172.17.43.190:8080/
+```
+
