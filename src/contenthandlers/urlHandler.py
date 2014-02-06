@@ -60,6 +60,7 @@ class URLHandler(generalHandler.GeneralHandler):
             return False
         
         if not os.path.exists(self.parsedUrl.path) :
+            logger.error("File " + self.parsedUrl.path + " does not exist.")
             return  False
         else:
             return True
