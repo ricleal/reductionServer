@@ -10,15 +10,13 @@ Nexus handler
 import nxs
 import logging
 import simplejson
-import tempfile
-import os
-import generalHandler
+import fileHandler
 
 logger = logging.getLogger(__name__) 
 
     
 
-class NeXusHandler(generalHandler.GeneralHandler):
+class NeXusHandler(fileHandler.FileHandler):
     '''
     NeXusHandler to deal with a nexus file
     Keeps a pointer for the open file

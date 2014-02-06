@@ -6,7 +6,7 @@ import json
 import sys
 import logging
 import os.path
-import filehandlers.handlermanager
+import contenthandlers.handlermanager
 import time
 import signal
 import uuid
@@ -84,7 +84,7 @@ def fileHandler(numor):
     
     content = bottle.request.body.read()
     # based on the content get the right file handler
-    handlerManager = filehandlers.handlermanager.Manager(content)
+    handlerManager = contenthandlers.handlermanager.Manager(content)
     fileHandler = handlerManager.getRespectiveHandler()
     
     if fileHandler is None:

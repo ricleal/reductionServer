@@ -6,6 +6,7 @@ Created on Nov 22, 2013
 
 import nexusHandler
 import asciiHandler
+import urlHandler
 
 class Manager(object):
     '''
@@ -14,7 +15,8 @@ class Manager(object):
     '''
 
     registeredHandlers = [nexusHandler.NeXusHandler,
-                          asciiHandler.AsciiHandler]
+                          asciiHandler.AsciiHandler,
+                          urlHandler.URLHandler]
 
     def __init__(self, content):
         '''

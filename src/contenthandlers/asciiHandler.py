@@ -10,14 +10,13 @@ ascii handler
 
 import logging
 
-import os
-import generalHandler
+import fileHandler
 
 logger = logging.getLogger(__name__) 
 
     
 
-class AsciiHandler(generalHandler.GeneralHandler):
+class AsciiHandler(fileHandler.FileHandler):
     '''
     asciiHandler to deal with a ascii file
     Keeps a pointer for the open file
