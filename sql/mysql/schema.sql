@@ -12,10 +12,10 @@ DROP TABLE IF EXISTS `reductiondb`.`numors` ;
 
 CREATE  TABLE IF NOT EXISTS `reductiondb`.`numors` (
   `numor` INT NOT NULL ,
-  `filepath` VARCHAR(256) NOT NULL ,
-  `intrument_name` VARCHAR(45) NOT NULL ,
+  `instrument_name` VARCHAR(45) NOT NULL ,
   `update_date` DATETIME NOT NULL ,
-  PRIMARY KEY (`numor`) )
+  `filepath` VARCHAR(256) NOT NULL ,
+  PRIMARY KEY (`numor`, `instrument_name`) )
 ENGINE = InnoDB;
 
 
@@ -28,7 +28,7 @@ CREATE  TABLE IF NOT EXISTS `reductiondb`.`queries` (
   `query_id` VARCHAR(36) NOT NULL ,
   `instrument_name` VARCHAR(45) NOT NULL ,
   `update_date` DATETIME NOT NULL ,
-  PRIMARY KEY (`query_id`) )
+  PRIMARY KEY (`query_id`, `instrument_name`) )
 ENGINE = InnoDB;
 
 
@@ -40,8 +40,9 @@ DROP TABLE IF EXISTS `reductiondb`.`queries_has_numors` ;
 CREATE  TABLE IF NOT EXISTS `reductiondb`.`queries_has_numors` (
   `query_id` VARCHAR(36) NOT NULL ,
   `numor` INT NOT NULL ,
-  PRIMARY KEY (`query_id`, `numor`) ,
-  INDEX `fk_queries_has_numors_numors1` (`numor` ASC) ,
+  `instrument_name` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`query_id`, `numor`, `instrument_name`) ,
+  INDEX `fk_queries_has_numors_numors1` (`numor` ASC, `instrument_name` ASC) ,
   INDEX `fk_queries_has_numors_queries` (`query_id` ASC) ,
   CONSTRAINT `fk_queries_has_numors_queries`
     FOREIGN KEY (`query_id` )
@@ -49,8 +50,8 @@ CREATE  TABLE IF NOT EXISTS `reductiondb`.`queries_has_numors` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_queries_has_numors_numors1`
-    FOREIGN KEY (`numor` )
-    REFERENCES `reductiondb`.`numors` (`numor` )
+    FOREIGN KEY (`numor` , `instrument_name` )
+    REFERENCES `reductiondb`.`numors` (`numor` , `instrument_name` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
