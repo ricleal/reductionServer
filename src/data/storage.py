@@ -71,6 +71,23 @@ class Storage(object):
                 logger.error("MySQL Error: %s" % str(e))
             self.db.rollback();       
     
+    def getListOfValidNumors(self):
+        command = "select numor from numors where instrument_name = '%s'"% self.instrumentName
+        logger.debug("Query: " + command)
+        ret = [];
+        try:
+            self.cursor.execute(command)
+            for i in range(self.cursor.rowcount):
+                row = self.cursor.fetchone()
+                ret.append(row[0])
+        
+        except MySQLdb.Error, e:
+            try:
+                logger.error("MySQL Error [%d]: %s" % (e.args[0], e.args[1]))
+            except IndexError:
+                logger.error("MySQL Error: %s" % str(e))
+        return ret
+    
             
     def __now(self):
         return time.strftime('%Y-%m-%d %H:%M:%S')
@@ -88,7 +105,8 @@ def main():
     db.insertQuery(uuid.uuid4(),[1234])
     db.insertQuery(uuid.uuid4(),[1234,1235])
     
-    
+    rows = db.getListOfValidNumors()
+    print rows
     
 if __name__ == "__main__":
     main()

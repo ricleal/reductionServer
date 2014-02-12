@@ -96,14 +96,10 @@ curl -v http://localhost:8080/
 curl -X POST  http://localhost:8080/
 ```
 
-The reduction procedure starts with the submission of a NeXus file and the respective numor.
+The reduction procedure starts with the submission of either physical dat file (NeXus or Ascii) or a URL, and the respective numor.
 
-A unique instance of a limited size dictionary ```DataStorage```:
-```python
-from data.dataStorage import dataStorage
-```
-(inherited from [src/helper/dict.py](src/helper/dict.py) ) stores the pairs ```numor``` and ```NeXusHandler```. 
-The same Nexus file can be submitted to the server as many times as desired. If the ```numor``` is already in the ```DataStorage``` the NeXus file handler will be updated, e.g., the old file will be deleted and replaced by the new one.
+
+The same file or URL can be submitted to the server as many times as desired. If the ```numor``` is already in the database the file handler will be updated, e.g., the old file will be deleted and replaced by the new one.
 
 ```bash
 # Send a a binary nexus/hdf5 file by post with the respective numor appended to the URL.
@@ -116,8 +112,25 @@ curl -X POST --data-binary @157589.nxs http://localhost:8080/file/157589
     "message": "File successfully received.", 
     "success": "True"
 }
-
 ```
+
+Or a URL:
+```bash
+# Sent to the server URL.
+curl --noproxy '*' -X POST --data /home/leal/Documents/Mantid/IN4/064727 http://localhost:8080/file/064727
+# or
+curl --noproxy '*' -X POST --data "file:///home/leal/Documents/Mantid/IN4/064727" http://localhost:8080/file/064727
+
+# Return
+```
+```json
+{
+    "details": "", 
+    "message": "File successfully received.", 
+    "success": "True"
+}
+```
+
 
 Once a NeXus file is submitted to the server, the reduction process can start.
 This is performed by submiting JSON *queries* to the server. The format of the JSON queries is still beeing defined. To date the valid format is:

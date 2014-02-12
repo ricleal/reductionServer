@@ -90,9 +90,9 @@ def fileHandler(numor):
     if fileHandler is None:
         return data.messages.Messages.error("File received is not valid", "Neither ASCII nor Nexus");
     else:
-        from data.dataStorage import dataStorage
-        dataStorage[numor] = fileHandler
-        logger.debug("DataStorage:\n" + pprint.pformat(dataStorage.items()))
+        from data.storage import Storage
+        db = Storage()
+        db.insertOrUpdateNumor(numor, fileHandler.filename())
         return data.messages.Messages.success("File successfully received.", "The handler is: " + fileHandler.__class__.__name__)
 
 #@route('/query/<numors:re:[0-9,]+>', method='POST')
