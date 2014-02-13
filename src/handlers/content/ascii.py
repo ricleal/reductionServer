@@ -3,20 +3,20 @@ Created on Jul 22, 2013
 
 @author: leal
 
-ascii handler
+ascii handlers
 
 '''
 
 
 import logging
 
-import fileHandler
+from handlers.content.filename import File
 
 logger = logging.getLogger(__name__) 
 
     
 
-class AsciiHandler(fileHandler.FileHandler):
+class Ascii(File):
     '''
     asciiHandler to deal with a ascii file
     Keeps a pointer for the open file
@@ -30,7 +30,7 @@ class AsciiHandler(fileHandler.FileHandler):
         @param content: binary stream - contents of the ascii file 
         '''    
         logger.debug("Creating Ascii Handler")
-        super(AsciiHandler, self).__init__(content)
+        super(Ascii, self).__init__(content)
         
     def isValid(self):
         """

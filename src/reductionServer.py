@@ -6,7 +6,9 @@ import json
 import sys
 import logging
 import os.path
-import contenthandlers.handlermanager
+from handlers.content.manager import Manager  
+
+
 import time
 import signal
 import uuid
@@ -18,6 +20,9 @@ import data.queryStorage
 import data.queryValidator
 import reduction.queryLauncher
 import data.messages
+
+from data.json import Json
+
 
 '''
 
@@ -83,17 +88,17 @@ def fileHandler(numor):
     logger.debug("Receiving file by HTTP POST with numor = %d" % numor)
     
     content = bottle.request.body.read()
-    # based on the content get the right file handler
-    handlerManager = contenthandlers.handlermanager.Manager(content)
+    # based on the content get the right file handlers
+    handlerManager = Manager(content)
     fileHandler = handlerManager.getRespectiveHandler()
     
     if fileHandler is None:
-        return data.messages.Messages.error("File received is not valid", "Neither ASCII nor Nexus");
+        return data.messages.Messages.error("File/URL received is not valid.", "Neither ASCII, Nexus nor valid URL.");
     else:
         from data.storage import Storage
         db = Storage()
         db.insertOrUpdateNumor(numor, fileHandler.filename())
-        return data.messages.Messages.success("File successfully received.", "The handler is: " + fileHandler.__class__.__name__)
+        return data.messages.Messages.success("File/URL successfully received.", "The handlers is: " + fileHandler.__class__.__name__)
 
 #@route('/query/<numors:re:[0-9,]+>', method='POST')
 @route('/query', method='POST')
@@ -111,7 +116,11 @@ def query():
     content = bottle.request.body.read()
     
     logger.debug("RAW Query received: " + str(content))
-        
+    
+    
+    json = Json(content)
+    message = json.validate()
+    
     try :
         contentAsDict = json.loads(content)
     except Exception, e:

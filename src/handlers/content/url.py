@@ -2,14 +2,14 @@
 
 @author: leal
 
-URL handler
+URL handlers
 
 content is url type:
 
 scheme://domain:port/path?query_string#fragment_id
 
 
-This handler won validade the file for now!
+This handlers won validade the file for now!
 It only ckeck if it exists!
 
 '''
@@ -17,14 +17,14 @@ It only ckeck if it exists!
 
 import logging
 import os
-import generalHandler
 from urlparse import urlparse
+from handlers.content.filename import Handler
 
 logger = logging.getLogger(__name__) 
 
     
 
-class URLHandler(generalHandler.GeneralHandler):
+class Url(Handler):
     '''
     asciiHandler to deal with a ascii file
     Keeps a pointer for the open file
@@ -43,7 +43,7 @@ class URLHandler(generalHandler.GeneralHandler):
         self.content = content.rstrip()
         
         # Not using the super constructor as I don't expect a file
-        # super(URLHandler, self).__init__(content)
+        # super(Url, self).__init__(content)
         
         self.parsedUrl = None
         

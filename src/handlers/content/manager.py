@@ -4,19 +4,17 @@ Created on Nov 22, 2013
 @author: leal
 '''
 
-import nexusHandler
-import asciiHandler
-import urlHandler
+from handlers.content.nexus import NeXus
+from handlers.content.ascii import Ascii
+from handlers.content.url import Url
 
 class Manager(object):
     '''
     This class will check the stream content.
-    Validate the content and return the corresponding file handler.
+    Validate the content and return the corresponding file handlers.
     '''
 
-    registeredHandlers = [nexusHandler.NeXusHandler,
-                          asciiHandler.AsciiHandler,
-                          urlHandler.URLHandler]
+    registeredHandlers = [NeXus, Ascii, Url]
 
     def __init__(self, content):
         '''
@@ -28,7 +26,7 @@ class Manager(object):
     
     def getRespectiveHandler(self):
         """
-        According to the content, it will return the rigth handler 
+        According to the content, it will return the rigth handlers 
         """
         ret = None;
         for h in self.registeredHandlers :

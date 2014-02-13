@@ -3,20 +3,22 @@ Created on Jul 22, 2013
 
 @author: leal
 
-Nexus handler
+Nexus handlers
 
 '''
 
 import nxs
 import logging
 import simplejson
-import fileHandler
+
+from handlers.content.filename import File
+
 
 logger = logging.getLogger(__name__) 
 
     
 
-class NeXusHandler(fileHandler.FileHandler):
+class NeXus(File):
     '''
     NeXusHandler to deal with a nexus file
     Keeps a pointer for the open file
@@ -30,7 +32,7 @@ class NeXusHandler(fileHandler.FileHandler):
         @param content: binary stream - contents of the nexus file 
         '''    
         logger.debug("Creating Nexus Handler")
-        super(NeXusHandler, self).__init__(content)
+        super(NeXus, self).__init__(content)
         
     def isValid(self):
         """

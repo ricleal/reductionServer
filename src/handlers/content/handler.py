@@ -6,12 +6,10 @@ Created on Nov 22, 2013
 
 import abc
 import logging
-import tempfile
-import os
 
 logger = logging.getLogger(__name__)
 
-class GeneralHandler(object):
+class Handler(object):
     '''
     
     Abstract General Handler for threat files sen to the server 
@@ -23,7 +21,7 @@ class GeneralHandler(object):
         '''
         @param content: binary stream passed by post 
         '''
-        logger.debug("General handler init method...")
+        logger.debug("General handlers init method...")
         
     #         /self.file = None;
     

@@ -8,11 +8,12 @@ import abc
 import logging
 import tempfile
 import os
-import generalHandler
+
+from handlers.content.handler import Handler
 
 logger = logging.getLogger(__name__)
 
-class FileHandler(generalHandler.GeneralHandler):
+class File(Handler):
     '''
     
     Abstract General Handler for threat files sen to the server 
@@ -25,7 +26,7 @@ class FileHandler(generalHandler.GeneralHandler):
         @param content: binary stream - contents of the nexus file 
         '''
         
-        logger.debug("File handler init method...")
+        logger.debug("File handlers init method...")
     
         # Need to write the file on disk! there's no open stream in nexus library for python
         self.tempFile = tempfile.NamedTemporaryFile(delete=False, prefix='live_', suffix='.tmp')
