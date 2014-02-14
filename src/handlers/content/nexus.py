@@ -44,7 +44,7 @@ class NeXus(File):
             self.openFile();
             self.closeFile();
         except Exception:
-            logger.exception("This doesn't look a valid nexus file...")
+            logger.info("This doesn't look a valid nexus file...")
             return False
         return True
     
@@ -54,7 +54,7 @@ class NeXus(File):
             try:
                 self.file = nxs.open(self.tempFile.name,'r')
             except  Exception:
-                logger.exception("Problems opening the nexus file...It was either deleted or is not valid!")
+                logger.info("Problems opening the nexus file...It was either deleted or is not valid!")
                 raise
         else:
             logger.warning("Nexus file appears to be open already.")
@@ -66,7 +66,7 @@ class NeXus(File):
                 self.file.close()
                 self.file = None
             except  Exception as e:
-                logger.exception("Problems closing the nexus file: " + str(e) )
+                logger.info("Problems closing the nexus file: " + str(e) )
                 raise
         else:
             logger.warning("Nexus file appears to be closed already.")

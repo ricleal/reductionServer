@@ -29,9 +29,9 @@ class Json(object):
         
         try :
             self.jsonContent = json.loads(self.rawContent)
-            
+            return self.jsonContent
         except Exception, e:
             self.jsonContent = None
             message = "JSON appears to be invalid."
             logger.exception(message  + str(e))
-            return Messages.error(message,str(e))
+            return None

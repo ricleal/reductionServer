@@ -2,12 +2,17 @@
 
 import bottle
 from bottle import route
+from handlers.content.manager import Manager  
+import storage
+
+
+
+
+
 import json
 import sys
 import logging
 import os.path
-from handlers.content.manager import Manager  
-
 
 import time
 import signal
@@ -95,9 +100,8 @@ def fileHandler(numor):
     if fileHandler is None:
         return data.messages.Messages.error("File/URL received is not valid.", "Neither ASCII, Nexus nor valid URL.");
     else:
-        from data.storage import Storage
-        db = Storage()
-        db.insertOrUpdateNumor(numor, fileHandler.filename())
+        db = storage.getDBConnection()
+        db.insertOrUpdate('numors', numor, {"filename": fileHandler.filename() } )
         return data.messages.Messages.success("File/URL successfully received.", "The handlers is: " + fileHandler.__class__.__name__)
 
 #@route('/query/<numors:re:[0-9,]+>', method='POST')
@@ -117,16 +121,11 @@ def query():
     
     logger.debug("RAW Query received: " + str(content))
     
-    
     json = Json(content)
-    message = json.validate()
+    contentAsDict = json.validate()
     
-    try :
-        contentAsDict = json.loads(content)
-    except Exception, e:
-        message = "JSON appears to be invalid."
-        logger.exception(message  + str(e))
-        return data.messages.Messages.error(message,str(e))
+    if contentAsDict is None:
+        return data.messages.Messages.error("JSON appears to be invalid.")
     
     logger.debug("FORMATTED Query received: " + str(contentAsDict))
     
