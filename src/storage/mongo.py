@@ -5,7 +5,7 @@ Created on Feb 14, 2014
 '''
 
 from pymongo import MongoClient
-from config.config import configParser
+
 import datetime
 
 import logging
@@ -19,14 +19,13 @@ class MongoDB(object):
     
     db = None
 
-    def __init__(self):
+    def __init__(self,uri,instrumentName):
         '''
         Constructor
         '''
-        self.client = MongoClient(configParser.get("Database", "uri"))
+        self.client = MongoClient(uri)
         self.db = self.client.get_default_database()
-        
-        self.instrumentName = configParser.get("General", "instrument_name")
+        self.instrumentName = instrumentName
     
     def insertOrUpdate(self,collectionName,numor,dataInDicFormat):
         data = dataInDicFormat
@@ -52,19 +51,3 @@ class MongoDB(object):
     def __now(self):
         return datetime.datetime.now()
 
-    
-def test():
-    db = MongoDB()
-    for i in range(1000,1003):
-        db.insertOrUpdate('numors', i, {"filename": "/tmp/file_%d.nxs"%i} )
-
-    for i in range(1000,1003):
-        db.insertOrUpdate('numors', i, {"filename": "/tmp/file_%d.nxs"%(i+10)} )
-
-    for i in range(1000,1003):
-        db.insert('queries',{"id": i*10})
-    
-    print db.dumpCollectionToArray('numors',{'numor': 1000})
-   
-if __name__ == "__main__":
-    test()       

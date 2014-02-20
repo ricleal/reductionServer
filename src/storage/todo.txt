@@ -1,0 +1,3 @@
+TODO:
+MongoDB must inherit from a Abstract class.
+More classes similar to mongo DB must be created for e.g. MySQL, etc...
