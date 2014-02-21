@@ -123,7 +123,6 @@ def query():
     
     json = Json(content)
     contentAsDict = json.validate()
-    
     if contentAsDict is None:
         return data.messages.Messages.error("JSON appears to be invalid.")
     
