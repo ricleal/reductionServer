@@ -53,4 +53,16 @@ class LaunchManager(object):
         self.launcher.sendCommand(command,timeout)
     
     
+    def getResult(self):
+        '''
+        Python:
+        After the script run, dump workspace to json and then to a tmp file. Return a cat tmpfile
+        Lamp:
+        1 . create a tmp file in python and send commando to lamp:  export_json,s,file="${temp_filename}"
+        2. Correct the tmp file - python script
+        3. Return a cat tmpfile
+        
+        @return: JSON
+        '''
+        pass
     
