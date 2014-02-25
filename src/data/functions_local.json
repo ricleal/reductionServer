@@ -1,28 +1,24 @@
 {
 	"theta_vs_counts" : {
 		"timeout" : 30,
-		"local_mapping" : {
-			"executable" : "%(scripts_directory)s/theta_vs_counts_%(instrument_name)s.sh",
-			"params" : [
-				{
-					"name" : "numors",
-					"type" : "array",
-					"description" : "List of numors concerned"
-				}
-			]
-		}
+		"executable" : "%(scripts_directory)s/theta_vs_counts_%(instrument_name)s.sh",
+		"params" : [
+			{
+				"name" : "numors",
+				"type" : "array",
+				"description" : "List of numors concerned"
+			}
+		]
 	},
 	"plot_data" : {
 		"timeout" : 40,
-		"local_mapping" : {
-			"executable" : "%(scripts_directory)s/plot_data_%(instrument_name)s.sh",
-			"params" : [
-				{
-					"name" : "numors",
-					"type" : "array",
-					"description" : "List of numors concerned"
-				}
-			]
-		}
+		"executable" : "%(scripts_directory)s/plot_data_%(instrument_name)s.sh",
+		"params" : [
+			{
+				"name" : "numors",
+				"type" : "array",
+				"description" : "List of numors concerned"
+			}
+		]
 	}
 }
