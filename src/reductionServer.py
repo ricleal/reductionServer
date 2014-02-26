@@ -33,7 +33,7 @@ from data.json import Json
 
 Bottle reduction server
 
-To test use curl:
+To old_test use curl:
 -X GET | HEAD | POST | PUT | DELETE
 Use curl -v for verbose
 
@@ -84,7 +84,7 @@ def homepage_get():
 @route('/file/<numor:int>', method='POST')
 def fileHandler(numor):
     '''
-    To test:
+    To old_test:
     
     cd ~/Documents/Mantid/IN6
     curl -X POST --data-binary @157589.nxs http://localhost:8080/file/<numor>
