@@ -4,7 +4,7 @@ Created on Feb 24, 2014
 @author: leal
 '''
 from data.messages import Messages
-from handlers.query.definition import Query as QueryDefinition
+from query.specs.definition import QuerySpecs
 
 import storage
 import logging
@@ -42,7 +42,7 @@ class QueryValidator(object):
         self.rawContent = content
         
         self.jsonContent = None
-        self.queryDef = QueryDefinition()
+        self.queryDef = QuerySpecs()
         
     
     def validateQuery(self):

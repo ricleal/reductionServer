@@ -2,14 +2,14 @@
 
 @author: leal
 
-URL handlers
+URL content
 
 content is url type:
 
 scheme://domain:port/path?query_string#fragment_id
 
 
-This handlers won validade the file for now!
+This content won validade the file for now!
 It only ckeck if it exists!
 
 '''
@@ -18,7 +18,7 @@ It only ckeck if it exists!
 import logging
 import os
 from urlparse import urlparse
-from handlers.content.filename import Handler
+from content.handler.filename import Handler
 
 logger = logging.getLogger(__name__) 
 

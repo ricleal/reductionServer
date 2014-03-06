@@ -10,7 +10,7 @@ import json
 
 logger = logging.getLogger(__name__) 
 
-class Query(object):
+class QuerySpecs(object):
     '''
     classdocs
     

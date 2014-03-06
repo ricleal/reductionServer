@@ -3,14 +3,14 @@ Created on Jul 22, 2013
 
 @author: leal
 
-ascii handlers
+ascii content
 
 '''
 
 
 import logging
 
-from handlers.content.filename import File
+from content.handler.filename import File
 
 logger = logging.getLogger(__name__) 
 

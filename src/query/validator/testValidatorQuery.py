@@ -5,7 +5,7 @@ Created on Feb 24, 2014
 '''
 import unittest
 
-from handlers.validator.query import QueryValidator
+from query.validator.queryval import QueryValidator
 
 class Test(unittest.TestCase):
 

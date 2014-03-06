@@ -9,7 +9,7 @@ import logging
 import tempfile
 import os
 
-from handlers.content.handler import Handler
+from content.handler.handler import Handler
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class File(Handler):
         @param content: binary stream - contents of the nexus file 
         '''
         
-        logger.debug("File handlers init method...")
+        logger.debug("File content init method...")
     
         # Need to write the file on disk! there's no open stream in nexus library for python
         self.tempFile = tempfile.NamedTemporaryFile(delete=False, prefix='live_', suffix='.tmp')

@@ -3,7 +3,7 @@ Created on Feb 24, 2014
 
 @author: leal
 '''
-from handlers.content.manager import Manager  
+from content.manager import Manager  
 from data.messages import Messages
 import storage
 import logging
@@ -31,6 +31,6 @@ class FileValidator(object):
         else:
             db = storage.getDBConnection()
             db.insertOrUpdateNumor(numor, fileHandler.filename())
-            return Messages.success("File/URL successfully received.", "The handlers is: " + fileHandler.__class__.__name__)
+            return Messages.success("File/URL successfully received.", "The content is: " + fileHandler.__class__.__name__)
 
         

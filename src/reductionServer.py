@@ -2,7 +2,7 @@
 
 import bottle
 from bottle import route
-from handlers.content.manager import Manager  
+from content.manager import Manager  
 import storage
 
 
@@ -93,7 +93,7 @@ def fileHandler(numor):
     logger.debug("Receiving file by HTTP POST with numor = %d" % numor)
     
     content = bottle.request.body.read()
-    # based on the content get the right file handlers
+    # based on the content get the right file content
     handlerManager = Manager(content)
     fileHandler = handlerManager.getRespectiveHandler()
     
@@ -102,7 +102,7 @@ def fileHandler(numor):
     else:
         db = storage.getDBConnection()
         db.insertOrUpdate('numors', numor, {"filename": fileHandler.filename() } )
-        return data.messages.Messages.success("File/URL successfully received.", "The handlers is: " + fileHandler.__class__.__name__)
+        return data.messages.Messages.success("File/URL successfully received.", "The content is: " + fileHandler.__class__.__name__)
 
 #@route('/query/<numors:re:[0-9,]+>', method='POST')
 @route('/query', method='POST')

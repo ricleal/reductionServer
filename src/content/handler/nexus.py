@@ -3,7 +3,7 @@ Created on Jul 22, 2013
 
 @author: leal
 
-Nexus handlers
+Nexus content
 
 '''
 
@@ -11,7 +11,7 @@ import nxs
 import logging
 import simplejson
 
-from handlers.content.filename import File
+from content.handler.filename import File
 
 
 logger = logging.getLogger(__name__) 

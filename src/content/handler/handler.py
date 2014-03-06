@@ -21,7 +21,7 @@ class Handler(object):
         '''
         @param content: binary stream passed by post 
         '''
-        logger.debug("General handlers init method...")
+        logger.debug("General content init method...")
         
     #         /self.file = None;
     

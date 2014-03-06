@@ -5,13 +5,13 @@ Created on Feb 25, 2014
 '''
 import unittest
 
-from handlers.query.definition import Query
+from query.specs.definition import QuerySpecs
 
 class Test(unittest.TestCase):
 
 
     def testQuery(self):
-        q = Query()
+        q = QuerySpecs()
         
         self.assertTrue(q.doesLocalFunctionExist("theta_vs_counts"))
         self.assertTrue(q.doesRemoteFunctionExist("theta_vs_counts"))

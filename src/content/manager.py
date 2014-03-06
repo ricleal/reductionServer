@@ -4,14 +4,14 @@ Created on Nov 22, 2013
 @author: leal
 '''
 
-from handlers.content.nexus import NeXus
-from handlers.content.ascii import Ascii
-from handlers.content.url import Url
+from content.handler.nexus import NeXus
+from content.handler.ascii import Ascii
+from content.handler.url import Url
 
 class Manager(object):
     '''
     This class will check the stream content.
-    Validate the content and return the corresponding file handlers.
+    Validate the content and return the corresponding file content.
     '''
 
     registeredHandlers = [NeXus, Ascii, Url]
@@ -26,7 +26,7 @@ class Manager(object):
     
     def getRespectiveHandler(self):
         """
-        According to the content, it will return the rigth handlers 
+        According to the content, it will return the rigth content 
         """
         ret = None;
         for h in self.registeredHandlers :
