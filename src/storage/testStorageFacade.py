@@ -26,7 +26,7 @@ class Test(unittest.TestCase):
             db.insertOrUpdateNumor(i,"/tmp/file_%d.nxs"%(i+10))
     
         for i in range(1000,1003):
-            db.insertQuery(i*10, [i,i+1])
+            db.insertQuery({"queryId" : i*10, "numors" : [1000,1001] , "timeout":30})
         
         l = db.getListOfAllNumors()
         for i in range(1000,1003) :

@@ -32,8 +32,12 @@ class StorageFacade(object):
         self.db.insertOrUpdate('numors', numor, {"filename": filename } )
     
     
-    def insertQuery(self,queryId,numorList):
-        self.db.insert('queries',{"id": queryId, "numors" : numorList})
+    def insertQuery(self,queryDefinitionInJson):
+        self.db.insert('queries',queryDefinitionInJson)
+        
+    def updateQuery(self,queryId, queryJson):
+        self.db.update('queries',{"queryId" : queryId } , queryJson)
+
 
     def getListOfAllNumors(self):
         # This returns an array like:

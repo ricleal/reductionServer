@@ -40,6 +40,10 @@ class MongoDB(object):
         data['instrument_name']= self.instrumentName
         self.db[collectionName].insert(data);
     
+    def update(self,collectionName, idInDicFormat,dataInDicFormat):
+        #db.queries.update({ "_id": ObjectId('5319d44511f92a4620f93c02') }, { "$set": { 'numors': [2,3],'tes' : 'tes' } }, upsert=False)
+        self.db[collectionName].update(idInDicFormat, { "$set": dataInDicFormat }, upsert=False )
+    
     def dumpCollectionToArray(self,collectionName,constraint={},projection=None):
         """    
         @param collectionName: name
