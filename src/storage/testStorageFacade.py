@@ -27,6 +27,10 @@ class Test(unittest.TestCase):
     
         for i in range(1000,1003):
             db.insertQuery(i*10, [i,i+1])
+        
+        l = db.getListOfAllNumors()
+        for i in range(1000,1003) :
+            self.assertIn(i, l)
 
 
 if __name__ == "__main__":

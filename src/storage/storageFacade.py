@@ -35,6 +35,11 @@ class StorageFacade(object):
     def insertQuery(self,queryId,numorList):
         self.db.insert('queries',{"id": queryId, "numors" : numorList})
 
-
+    def getListOfAllNumors(self):
+        # This returns an array like:
+        # [{u'numor': 1000}, {u'numor': 1001}, ... ,{u'numor': 1234}]
+        arr = self.db.dumpCollectionToArray("numors",{},{'numor':True,'_id':False})
+        return [i['numor'] for i in arr]
+        
     
     

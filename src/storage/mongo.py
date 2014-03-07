@@ -40,12 +40,12 @@ class MongoDB(object):
         data['instrument_name']= self.instrumentName
         self.db[collectionName].insert(data);
     
-    def dumpCollectionToArray(self,collectionName,constraint={}):
+    def dumpCollectionToArray(self,collectionName,constraint={},projection=None):
         """    
         @param collectionName: name
         @param constraint: constraing for collection.find()
         """
-        cursor =  self.db[collectionName].find(constraint);
+        cursor =  self.db[collectionName].find(constraint,projection);
         return [i for i in cursor]
     
     def __now(self):
