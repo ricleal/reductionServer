@@ -70,7 +70,10 @@ class QuerySpecs(object):
         @todo: 
         @return: executable command corresponding to this query
         '''
-        timeout = self._functionsLocalDic[functionName]['timeout']
-        logger.debug("Executable command timeout: %d"%timeout)
-        return timeout
+        try :
+            timeout = self._functionsLocalDic[functionName]['timeout']
+            logger.debug("Executable command timeout: %d"%timeout)
+            return timeout
+        except:
+            return None
 
