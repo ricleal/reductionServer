@@ -1,7 +1,10 @@
 {
-	"method" : "subtract",
-	"params" : [
-		1234,
-		122112
-	]
+	"method" : "theta_vs_counts",
+	"params" : {
+		"numors" : [
+			94460,
+			94461,
+			94462
+		]
+	}
 }
