@@ -10,18 +10,18 @@ Created on Sep 25, 2013
 import sys
 import errno
 
-if len(sys.argv) != 3 :
-    sys.stderr.write("Run as %s <Nexus file path> <output json file>\n"%(sys.argv[0]))
-    sys.exit(errno.EINVAL)
+# if len(sys.argv) != 3 :
+#     sys.stderr.write("Run as %s <Nexus file path> <output json file>\n"%(sys.argv[0]))
+#     sys.exit(errno.EINVAL)
 
 
 
 
 # import everything
-from mantid_common import *
+from query.scripts.mantid_common import *
 
-datafile = sys.argv[1]
-jsonfile = sys.argv[2]
+datafile = '%{datafile}'
+
 maskfile = configParser.get('Mantid','in5_mask_file')
 
 # ## Redirect STDOUT STDERR
@@ -62,5 +62,4 @@ t = Transpose(InputWorkspace='Data_grouped_2theta_I',OutputWorkspace='Data_group
 # # Retitle the y-axis
 # l.setAxisTitle(Layer.Bottom, "Theta")
 
-out = workspaceToDic(t)
-dicToFile(out,jsonfile)
+result = workspaceToDic(t)

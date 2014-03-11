@@ -10,6 +10,7 @@ import logging
 import sys
 import StringIO
 import contextlib
+import os
 
 logger = logging.getLogger(__name__) 
 
@@ -60,24 +61,22 @@ class PythonScriptLauncher(Launcher):
         yield stdout
         sys.stdout = old
     
-    
-    
-    
-    
-    def sendCommand(self,command,timeout):
+    def sendCommand(self,command,timeout,inputParams=None):
         '''
         Sends a command to the launcher keeping previous state
         '''
         self.timeout = timeout
         self.command = command
+        self.inputParams = inputParams
         self._launch()
         
-    def resetAndSendCommand(self,command,timeout):
+    def resetAndSendCommand(self,command,timeout,inputParams=None):
         '''
         Sends a command to the launcher but before resets all the previous state
         '''
         self.timeout = timeout
         self.command = command
+        self.inputParams = inputParams
         self.globalVariables = {}
         self.localVariables = {}
         self._launch()
@@ -87,6 +86,10 @@ class PythonScriptLauncher(Launcher):
         """
         Blocks the execution!!!!
         """
+        if self.inputParams is not None :
+            logger.debug("Old file: " + self.command)
+            self.command = self.substituteParamsInFile(self.command,self.inputParams)
+            logger.debug("New file: " + self.command)
         
         self.start()
         self.join(self.timeout)
@@ -95,6 +98,10 @@ class PythonScriptLauncher(Launcher):
             logger.info("Thread timed out but the process is still running. Killing: %s" % self.command )
         else :
             logger.info("Thread finished successfully: %s"%self.command)
+        
+        if self.inputParams is not None and self.command.startswith('/tmp'):
+            os.remove(self.command)
+        self.inputParams = None
         
         # Restart thread to avoid : raise RuntimeError("threads can only be started once")
         super(PythonScriptLauncher, self).__init__()

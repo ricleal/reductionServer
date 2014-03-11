@@ -45,9 +45,6 @@ class QueryHandler(object):
                 self.queryId = str(uuid.uuid4())
                 queryJson = self._buildQuery()
                 
-                logger.debug("Insert query in the DB")
-                self._storeInTheDB(self,queryJson)
-                
                 # TODO : 
                 logger.debug("Build executable")
                 executable = self._buildExecutableWithParams(self)
@@ -55,7 +52,10 @@ class QueryHandler(object):
                 # TODO : 
                 logger.debug("Executing the query")
                 resultingJson = self._launchTheExecutable(executable)
-    
+                
+                logger.debug("Insert query in the DB")
+                self._storeInTheDB(self,queryJson)
+                
                 logger.debug("Store results in the DB")
                 self._storeExecutableResults(resultingJson)
                 
@@ -85,8 +85,12 @@ class QueryHandler(object):
         db.insertQuery(queryJson)
     
     def _buildExecutableWithParams(self):
-        pass
-
+        if self.validator.jsonContent.has_key("params") :
+            queryParams = self.validator.jsonContent["params"]
+            if queryParams.has_key("numors"): # list of numors:
+                
+                
+            
         
     def _launchTheExecutable(self, executable):
         pass

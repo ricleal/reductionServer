@@ -49,6 +49,9 @@ class ShellLauncher(Launcher):
 
         self._startThreads()
         self._startExecutable()
+        
+        self._params = None
+        self._result = None
     
     def _launchProcess(self):
         logger.debug('Starting subprocess...')
@@ -218,12 +221,13 @@ class ShellLauncher(Launcher):
     
     
     #TODO
-    def setInputParameters(self,inputParams):
+    def setInputParameters(self,inputParams=None):
         '''
         Sets input parameters
-        variable params
+        variable params in json
         '''
-        return
+        self._params = inputParams
+        
     
     #TODO
     def getResult(self):
@@ -231,7 +235,7 @@ class ShellLauncher(Launcher):
         Get result in form of json
         variable result
         '''
-        return
+        return self._result
         
     
 

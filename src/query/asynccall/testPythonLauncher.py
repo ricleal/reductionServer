@@ -5,6 +5,7 @@ Created on Feb 19, 2014
 '''
 import unittest
 import os
+import config.config
 
 from pythonlauncher import PythonScriptLauncher
 
@@ -12,6 +13,7 @@ class Test(unittest.TestCase):
 
     tmpfile = '/tmp/test12324.py'
     tmpfile2 = '/tmp/test123242.py'
+    tmpfile3 = '/tmp/test123243.py'
 
     def setUp(self):
         f = open(self.tmpfile, 'w')
@@ -31,12 +33,19 @@ class Test(unittest.TestCase):
         f.write("time.sleep(0.5)\n")
         f.write("result = {'out' : 1234}\n")
         f.write("print 'Finishing...'\n")
+        
+        f = open(self.tmpfile3, 'w')
+        f.write("import time\n")
+        f.write("print 'Starting...'\n")
+        f.write("print '%{toreplace}' \n")
+        f.write("print 'Finishing...'\n")
 
 
 
     def tearDown(self):
         os.remove(self.tmpfile)
         os.remove(self.tmpfile2)
+        os.remove(self.tmpfile3)
 
     def testRunSuccess(self):
         p = PythonScriptLauncher()
@@ -87,7 +96,22 @@ class Test(unittest.TestCase):
         self.assertIn("{'param2': 5678, 'param1': 1234}", out)
         res = p.getResult()
         self.assertEqual(res,{'out' : 1234})
+    
+    def testSendCommandWithParams(self):
+        p = PythonScriptLauncher()
+        params = {'toreplace' : 'REPLACED' }
+        p.sendCommand(self.tmpfile3, 4,params)
+        out = p.readOutput()
+        print out
+        self.assertIn("REPLACED", out)
         
+    def testRealScript(self):
+        p = PythonScriptLauncher()
+        params = {'datafile':'/net/serdon/illdata/131/in5/exp_TEST-2216/rawdata/104041.nxs'}
+        p.sendCommand('/home/leal/git/reductionServer/src/query/scripts/theta_vs_counts_IN5.py', 30,params)
+        res = p.getResult()
+        print res
+        self.assertIn("data_values", res)
         
 
 
