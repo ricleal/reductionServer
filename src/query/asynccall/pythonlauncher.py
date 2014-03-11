@@ -25,6 +25,12 @@ class PythonScriptLauncher(Launcher):
     To keep a thread in the execution!
     
     
+    The script send as command should read variables:
+    param - input parameters
+    set the result as 
+    result - variable
+    
+    
     '''
     
     def __init__(self, initParams=None):
@@ -113,7 +119,25 @@ class PythonScriptLauncher(Launcher):
         else:
             return self.output.getvalue()
     
+    def setInputParameters(self,inputParams):
+        '''
+        Sets input parameters
+        variable params
+        '''
+        self.localVariables['params'] = inputParams
+    
+    
+    def getResult(self):
+        '''
+        Get result in form of json
+        variable result
+        '''
+        if self.localVariables.has_key('result') :
+            return self.localVariables['result']
+        else :
+            return {}
         
+    
     ### Non private methods:
     
     

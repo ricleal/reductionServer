@@ -48,7 +48,25 @@ class Launcher(threading.Thread):
     
     @abc.abstractmethod
     def readOutput(self):
+        ''' reads stdout '''
         return
+    
+    @abc.abstractmethod
+    def setInputParameters(self,inputParams):
+        '''
+        Sets input parameters
+        variable params
+        '''
+        return
+    
+    @abc.abstractmethod
+    def getResult(self):
+        '''
+        Get result in form of json
+        variable result
+        '''
+        return
+        
     
     
     @abc.abstractmethod
@@ -60,7 +78,7 @@ class Launcher(threading.Thread):
     
     
     def __str__(self):
-        return "Launcher class!"
+        return self.__class__()
     
     def __repr__(self):
         return self.__str__()

@@ -6,8 +6,8 @@ Created on Feb 18, 2014
 
 ## This needs to be here!!!
 ## Only use the import in the config.ini file
-from asynccall.pythonlauncher import PythonScriptLauncher
-from asynccall.shelllauncher import ShellLauncher
+from query.asynccall.pythonlauncher import PythonScriptLauncher
+from query.asynccall.shelllauncher import ShellLauncher
 
 import ast
 

@@ -6,32 +6,26 @@ Created on Feb 19, 2014
 import unittest
 import os
 
-from asynccall.manager import LaunchManager
+from query.asynccall.manager import LaunchManager
+from config.config import configParser
 
 class Test(unittest.TestCase):
 
-    tmpfile = '/tmp/test12324.py'
-
+    scriptToCall = "/home/leal/git/reductionServer/scripts/theta_vs_counts_IN5.py"
+    
     def setUp(self):
-        f = open(self.tmpfile, 'w')
-        f.write("import time\n")
-        f.write("print 'Starting...'\n")
-        f.write("a = 1\n")
-        f.write("time.sleep(0.5)\n")
-        f.write("b = 2\n")
-        f.write("if locals().has_key('c'):\n")
-        f.write("\tc=True\n")
-        f.write("print 'Finishing...'\n")
-
+        # Make sure Python launcher will be called
+        configParser.set("Launcher", "name", "PythonScriptLauncher")
+        
 
     def tearDown(self):
-        os.remove(self.tmpfile)
-
+        pass
 
     def testLauncherNotThrows(self):
         m = LaunchManager()
-        m.sendCommand(self.tmpfile, 2)
-        
+        params = {"numors" : ["/home/leal/Documents/Mantid/IN5/094460.nxs"]}
+        m.sendCommand(self.scriptToCall, 30)
+        m.getResult()
 
 
 if __name__ == "__main__":

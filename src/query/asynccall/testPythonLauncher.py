@@ -11,6 +11,7 @@ from pythonlauncher import PythonScriptLauncher
 class Test(unittest.TestCase):
 
     tmpfile = '/tmp/test12324.py'
+    tmpfile2 = '/tmp/test123242.py'
 
     def setUp(self):
         f = open(self.tmpfile, 'w')
@@ -23,10 +24,19 @@ class Test(unittest.TestCase):
         f.write("\tc=True\n")
         f.write("print 'Finishing...'\n")
 
+        f = open(self.tmpfile2, 'w')
+        f.write("import time\n")
+        f.write("print 'Starting...'\n")
+        f.write("print 'input params', params\n")
+        f.write("time.sleep(0.5)\n")
+        f.write("result = {'out' : 1234}\n")
+        f.write("print 'Finishing...'\n")
+
+
 
     def tearDown(self):
         os.remove(self.tmpfile)
-
+        os.remove(self.tmpfile2)
 
     def testRunSuccess(self):
         p = PythonScriptLauncher()
@@ -67,8 +77,16 @@ class Test(unittest.TestCase):
         self.assertFalse(p.localVariables.has_key('b'))
         
         
-        
-  
+    def testInputOutputParams(self):
+        p = PythonScriptLauncher()
+        params = {'param1' : 1234, 'param2' : 5678 }
+        p.setInputParameters(params)
+        p.sendCommand(self.tmpfile2, 4)
+        out = p.readOutput()
+        print out
+        self.assertIn("{'param2': 5678, 'param1': 1234}", out)
+        res = p.getResult()
+        self.assertEqual(res,{'out' : 1234})
         
         
 

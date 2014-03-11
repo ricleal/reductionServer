@@ -217,6 +217,21 @@ class ShellLauncher(Launcher):
             self.exit()    
     
     
+    #TODO
+    def setInputParameters(self,inputParams):
+        '''
+        Sets input parameters
+        variable params
+        '''
+        return
+    
+    #TODO
+    def getResult(self):
+        '''
+        Get result in form of json
+        variable result
+        '''
+        return
         
     
 
