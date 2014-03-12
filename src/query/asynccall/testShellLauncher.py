@@ -6,6 +6,7 @@ Created on Feb 19, 2014
 import unittest
 import time
 from shelllauncher import ShellLauncher
+import config.config
 
 class Test(unittest.TestCase):
 
@@ -17,8 +18,21 @@ class Test(unittest.TestCase):
     fullStartExecutable = [lampExecutable, 
                                     lampPrompt, lampExitCommand,lampCleanupCommand]
 
+    tmpfile = '/tmp/test12324.prox'
+    
     def setUp(self):
-        pass
+        f = open(self.tmpfile, 'w')
+        f.write('print,"Line 1"\n')
+        f.write('print,"Line 2"\n')
+        f.write('print,"Line 3"\n')
+        f.write('print,"Line 4"\n')
+        f.write('RDSET,inst="D20"\n')
+        f.write('P_SET_PATH,"/home/leal/Documents/Mantid/D20/"\n')
+        f.write("w1=rdopr('829007',datp=d)\n")
+        f.write("help, w1, /st\n")
+        f.write('print,"Line 5"\n')
+        f.write('print,"Line 6"\n')
+        f.close()
 
     def tearDown(self):
         pass
@@ -26,24 +40,35 @@ class Test(unittest.TestCase):
 
     def testRunSuccess(self):
         p = ShellLauncher(self.fullStartExecutable)
-        p.sendCommand('print, "%s"'%self.stringToPrint, 1)
+        p.sendCommand(self.tmpfile, 30)
         out = p.readOutput()
-        self.assertEqual(out.strip(),self.stringToPrint)
-        p.sendCommand('print, "%s"'%self.stringToPrint, 1)
-        out = p.readOutput()
-        self.assertEqual(out.strip(),self.stringToPrint)
+        print out
+        self.assertIn("Line 2", out.strip())
         p.exit()
         
-    def testReRun(self):
+
+        
+    def testRealLamp(self):
         p = ShellLauncher(self.fullStartExecutable)
-        p.sendCommand('print, "%s"'%self.stringToPrint, 1)
         out = p.readOutput()
-        self.assertEqual(out.strip(),self.stringToPrint)
-        p.exit()
-        p.sendCommand('print, "%s"'%self.stringToPrint, 1)
+        print out
+                
+        params = {'instrument' : 'D20',
+                  'working_path' : '/home/leal/Documents/Mantid/D20/',
+                  'data_file':'829007'}
+        p.sendCommand('/home/leal/git/reductionServer/src/query/scripts/plot_data_D20.prox', 30,params)
+        
         out = p.readOutput()
-        self.assertNotEqual(out.strip(),None)
+        print out
+        
+        res = p.getResult()
+        print res
+
+        self.assertIn("data_shape", res)
+        
         p.exit()
+        
+    
         
         
         

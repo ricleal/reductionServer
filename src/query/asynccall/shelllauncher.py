@@ -13,6 +13,8 @@ import subprocess
 import time
 import os
 import threading
+import tempfile
+from query.scripts.fix_lamp_json import fixPlot1D
 
 logger = logging.getLogger(__name__) 
 # logger.addHandler(logging.StreamHandler()) 
@@ -52,6 +54,7 @@ class ShellLauncher(Launcher):
         
         self._params = None
         self._result = None
+        self._resultFile = None
     
     def _launchProcess(self):
         logger.debug('Starting subprocess...')
@@ -83,7 +86,7 @@ class ShellLauncher(Launcher):
             time.sleep(0.2)
             output = self._getOutput(self._outQueue)
         logger.debug(self._executable + 'is starting... Done!')
-        
+        time.sleep(0.1)
         errors = self._getOutput(self._errQueue)
         if len(errors.strip())>0: 
             logger.error(errors)
@@ -122,24 +125,33 @@ class ShellLauncher(Launcher):
             return False
 
     
-    def sendCommand(self,command,timeout):
+    def sendCommand(self,command,timeout,inputParams=None):
         '''
         Sends a command to the launcher keeping previous state
         '''
         self.timeout = timeout
         self.command = command
+        self.inputParams = self._addTempFileToInputParams(inputParams)
         self._launch()
         
-    def resetAndSendCommand(self,command,timeout):
+    def resetAndSendCommand(self,command,timeout,inputParams=None):
         '''
         Sends a command to the launcher but before resets all the previous state
         '''
         self.timeout = timeout
         self.command = command
+        self.inputParams = self._addTempFileToInputParams(inputParams)
         # reset
         self.send(self._cleanUpCommand)
         self._launch()
 
+   
+    def _addTempFileToInputParams(self,inputParams):
+        if inputParams is None:
+            inputParams = {}
+        self._resultFile = tempfile.NamedTemporaryFile(delete=False).name
+        inputParams["result_file"] = self._resultFile
+        return inputParams
    
     def _launch(self):
         """
@@ -147,6 +159,14 @@ class ShellLauncher(Launcher):
         Blocks the execution!!!!
         
         """
+        if self.inputParams is not None :
+            logger.debug("Old file: " + self.command)
+            self.command = self.substituteParamsInFile(self.command,self.inputParams,suffix=".prox")
+            logger.debug("New file: " + self.command)
+        
+        # Assuming only files are passed to lamp
+        self.command = "@"+self.command
+        
         self.start()
         self.join(self.timeout)
 
@@ -157,6 +177,12 @@ class ShellLauncher(Launcher):
             logger.debug("Done.")
         else :
             logger.info("Thread finished successfully: %s"%self.command)
+        
+        if self.inputParams is not None and self.command.startswith('/tmp'):
+            os.remove(self.command)
+        self.inputParams = None
+        
+        
         
         # Restart thread to avoid : raise RuntimeError("threads can only be started once")
         super(ShellLauncher, self).__init__()
@@ -174,16 +200,20 @@ class ShellLauncher(Launcher):
         
         logger.debug("Running in background: %s" % self.command)        
         
-        self.send(self.command)
         time.sleep(0.1)
+        self.send(self.command)
+        # Needs hight time out otherwise don't write to the file!
+        time.sleep(3)
     
     def readOutput(self):
         return self.receiveOutput()
         
     def send(self,command):
         self._relaunchIfItIsNotRunning()
-        self.__process.stdin.write(command + os.linesep)        
+        commandSent=command + os.linesep
+        self.__process.stdin.write(commandSent)        
         self.__process.stdin.flush()        
+        logger.debug("Command sent to shell: " + commandSent)
     
     def receiveOutput(self):
         output = self._getOutput(self._outQueue)
@@ -235,6 +265,18 @@ class ShellLauncher(Launcher):
         Get result in form of json
         variable result
         '''
+        
+        if self._resultFile is not None:
+            try:
+                print self._resultFile
+                with open(self._resultFile, 'r') as read_file:
+                    contents = read_file.read()
+                self._result = fixPlot1D(contents)
+                os.remove(self._resultFile)
+            except Exception, e:
+                logger.exception(str(e))
+                self._result = ""
+        
         return self._result
         
     

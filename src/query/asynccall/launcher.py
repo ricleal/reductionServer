@@ -10,6 +10,7 @@ import logging
 import os
 import abc
 import tempfile
+import pprint
 
 logger = logging.getLogger(__name__)
 
@@ -62,13 +63,16 @@ class Launcher(threading.Thread):
         return
     
     
-    def substituteParamsInFile(self,filename,paramsDict):
+    def substituteParamsInFile(self,filename,paramsDict,suffix=""):
         '''
         Will replace occurences of
         %{key} for value 
         @return: new file with substitutions
         '''
-        ft = tempfile.NamedTemporaryFile(delete=False)
+        
+        #logging.debug(pprint.pformat(paramsDict))
+        
+        ft = tempfile.NamedTemporaryFile(delete=False,suffix=suffix)
         try:
             with open(ft.name, 'w') as new_file:
                 with open(filename, 'r') as f:
@@ -77,7 +81,8 @@ class Launcher(threading.Thread):
                         new_file.write(new_line)
         except Exception, e:
             logger.exception(str(e))
-            
+        
+        #logging.debug(pprint.pformat(open(ft.name).readlines()))
         return ft.name
     
     def _replaceAll(self, text, mydict):
@@ -93,5 +98,10 @@ class Launcher(threading.Thread):
     def __repr__(self):
         return self.__str__()
     
-        
-    
+    @abc.abstractmethod
+    def getResult(self):
+        '''
+        Get result in form of json
+        variable result
+        '''
+        return
