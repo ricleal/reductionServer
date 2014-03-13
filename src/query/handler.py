@@ -13,6 +13,11 @@ import datetime
 import time
 import storage
 import logging
+import os.path
+from config.config import configParser
+import pprint
+
+#from apt_pkg import config
 
 logger = logging.getLogger(__name__)
 
@@ -45,16 +50,17 @@ class QueryHandler(object):
                 self.queryId = str(uuid.uuid4())
                 queryJson = self._buildQuery()
                 
-                # TODO : 
-                logger.debug("Build executable")
-                executable = self._buildExecutableWithParams(self)
+                logger.debug("Build executable and params")
+                inputParams = self._buildInputParams()
+                queryJson['input_params'] = inputParams
+            
+                logger.debug("Insert query in the DB")
+                self._storeInTheDB(queryJson)
                 
                 # TODO : 
                 logger.debug("Executing the query")
-                resultingJson = self._launchTheExecutable(executable)
-                
-                logger.debug("Insert query in the DB")
-                self._storeInTheDB(self,queryJson)
+                resultingJson = self._launchTheExecutable(inputParams)
+                                
                 
                 logger.debug("Store results in the DB")
                 self._storeExecutableResults(resultingJson)
@@ -70,7 +76,7 @@ class QueryHandler(object):
                 return Messages.error(message, str(e));
           
     
-    def _buildQuery(self,queryId):
+    def _buildQuery(self):
         queryJson = {}
         queryJson["queryId"] = self.queryId
         queryJson["start_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
@@ -84,20 +90,43 @@ class QueryHandler(object):
         db = storage.getDBConnection()
         db.insertQuery(queryJson)
     
-    def _buildExecutableWithParams(self):
+    def _buildInputParams(self):
+        '''
+        Necessary input params for Lamp and Mantid
+        Some redundancy is introduced as scripts read different formats
+        '''
+        params = {}
+        params["instrument"] =  configParser.get("General", "instrument_name")
+        
         if self.validator.jsonContent.has_key("params") :
             queryParams = self.validator.jsonContent["params"]
             if queryParams.has_key("numors"): # list of numors:
-                
-                
-            
+                listOfNumors =  queryParams["numors"]
+                db = storage.getDBConnection()
+                listOfFiles = db.getListOfFiles(listOfNumors)
+                if len(listOfFiles) > 1:
+                    params["data_files_full_path"]=listOfFiles
+                    params["data_files"] = []
+                    for i in listOfFiles:
+                        b = os.path.basename(i)
+                        params["data_files"].append(b)
+                else:
+                    params["data_file_full_path"]=listOfFiles[0]
+                    params["data_file"] = os.path.basename(listOfFiles[0])
+                # Assuming all files in the same folder
+                params["working_path"] = os.path.dirname(listOfFiles[0])
+        logger.debug(pprint.pformat(params))
+        return params 
         
-    def _launchTheExecutable(self, executable):
-        pass
+    def _launchTheExecutable(self, inputParams):
+        return "{'Dummy' : 12345}"
+        
     
     
     def _storeExecutableResults(self,resultingJson):
         queryJson = {}
+        logger.debug("storeExecutableResults")
+        logger.debug(resultingJson)
         try:
             queryJson["result"] = ast.literal_eval(resultingJson)
         except Exception, e:

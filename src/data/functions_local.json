@@ -1,7 +1,7 @@
 {
 	"theta_vs_counts" : {
 		"timeout" : 30,
-		"executable" : "%(scripts_directory)s/theta_vs_counts_%(instrument_name)s.sh",
+		"executable" : "%(scripts_directory)s/theta_vs_counts_%(instrument_name)s.py",
 		"params" : [
 			{
 				"name" : "numors",
@@ -12,7 +12,7 @@
 	},
 	"plot_data" : {
 		"timeout" : 40,
-		"executable" : "%(scripts_directory)s/plot_data_%(instrument_name)s.sh",
+		"executable" : "%(scripts_directory)s/plot_data_%(instrument_name)s.prox",
 		"params" : [
 			{
 				"name" : "numors",
