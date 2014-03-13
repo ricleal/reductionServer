@@ -29,8 +29,13 @@ class Test(unittest.TestCase):
             db.insertQuery({"queryId" : i*10, "numors" : [1000,1001] , "timeout":30})
         
         l = db.getListOfAllNumors()
+        print l
         for i in range(1000,1003) :
             self.assertIn(i, l)
+        
+        l = db.getListOfFiles([1000, 1001, 1002, 44235, 1234])
+        print l
+        self.assertIn('/tmp/file_1010.nxs', l)
 
 
 if __name__ == "__main__":

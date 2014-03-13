@@ -46,4 +46,10 @@ class StorageFacade(object):
         return [i['numor'] for i in arr]
         
     
+    def getListOfFiles(self,numors):
+        # This returns an array like:
+        # [{u'numor': 1000}, {u'numor': 1001}, ... ,{u'numor': 1234}]
+        arr = self.db.dumpCollectionToArray("numors",{"numor" : { "$in" : numors } },{'filename':True,'_id':False})
+        return [i['filename'] for i in arr]
+    
     
