@@ -49,8 +49,8 @@ class LaunchManager(object):
             self.launcher = classLauncher()
                
     
-    def sendCommand(self,command,timeout):
-        self.launcher.sendCommand(command,timeout)
+    def sendCommand(self,command,timeout,inputParams):
+        self.launcher.sendCommand(command,timeout,inputParams)
     
     
     def getResult(self):
@@ -64,5 +64,5 @@ class LaunchManager(object):
         
         @return: JSON
         '''
-        pass
+        return self.launcher.getResult()
     
