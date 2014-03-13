@@ -16,6 +16,8 @@ import logging
 import os.path
 from config.config import configParser
 import pprint
+from query.asynccall.manager import LaunchManager
+import threading
 
 #from apt_pkg import config
 
@@ -48,6 +50,7 @@ class QueryHandler(object):
             try :
                 logger.debug("Build query json")
                 self.queryId = str(uuid.uuid4())
+                
                 queryJson = self._buildQuery()
                 
                 logger.debug("Build executable and params")
@@ -57,18 +60,17 @@ class QueryHandler(object):
                 logger.debug("Insert query in the DB")
                 self._storeInTheDB(queryJson)
                 
-                # TODO : 
-                logger.debug("Executing the query")
-                resultingJson = self._launchTheExecutable(inputParams)
+                # This must be executed in thread!!
+                t = threading.Thread(target=self._executeQueryInParallel, args=(inputParams,))
+                t.start()
+                ####
                                 
-                
-                logger.debug("Store results in the DB")
-                self._storeExecutableResults(resultingJson)
-                
                 # Return
                 successMessageStr = self.jsonSuccessTemplate%(self.queryId,
                                                               self.validator.timeout,
                                                               self.validator.executable)
+                logger.debug("Message to send to the client:" + successMessageStr)
+                
                 return ast.literal_eval(successMessageStr)
             except Exception, e:
                 message = "Problems while processing the query..."
@@ -119,22 +121,18 @@ class QueryHandler(object):
         return params 
         
     def _launchTheExecutable(self, inputParams):
-        return "{'Dummy' : 12345}"
-        
+        logger.debug("Launching : " + self.validator.executable)
+        m = LaunchManager()
+        m.sendCommand(self.validator.executable, self.validator.timeout,inputParams)
+        res = m.getResult()
+        return res
     
     
     def _storeExecutableResults(self,resultingJson):
         queryJson = {}
         logger.debug("storeExecutableResults")
         logger.debug(resultingJson)
-        try:
-            queryJson["result"] = ast.literal_eval(resultingJson)
-        except Exception, e:
-            message = "JSON of the output processing file looks invalid: " + str(e)
-            logger.exception(message)
-            logger.debug(resultingJson)
-            queryJson["output"] = Messages.error(message,str(e))
-        
+        queryJson["result"] = resultingJson
         queryJson["status"] = "done" 
         queryJson["end_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
         queryJson["end_local_time"] = time.asctime(time.localtime(time.time()))
@@ -143,7 +141,11 @@ class QueryHandler(object):
         db.updateQuery(self.queryId, queryJson)
     
     
-        
+    def _executeQueryInParallel(self,inputParams):
+        logger.debug("Executing the query in parallel")
+        resultingJson = self._launchTheExecutable(inputParams)
+        logger.debug("Store results in the DB")
+        self._storeExecutableResults(resultingJson)
         
         
         

@@ -13,7 +13,7 @@ class Test(unittest.TestCase):
     validJson = """{
         "method":"theta_vs_counts",
         "params":{
-            "numors":[1000, 1001, 1002]
+            "numors":[102296]
         }
     }"""
     

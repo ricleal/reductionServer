@@ -20,7 +20,7 @@ import errno
 # import everything
 from query.scripts.mantid_common import *
 
-datafile = '%{datafile}'
+datafile = '%{data_file_full_path}'
 
 maskfile = configParser.get('Mantid','in5_mask_file')
 
