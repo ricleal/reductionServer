@@ -9,15 +9,12 @@ from result.handler import HandlerResult
 
 class Test(unittest.TestCase):
 
-
     def testResult(self):
         queryId = "76d5c930-1737-4dbc-80e0-dbc34339a0e7"
         r = HandlerResult(queryId)
         res = r.getQuery()
         print res
         self.assertIn('status',res)
-        
-        
 
 
 if __name__ == "__main__":

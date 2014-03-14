@@ -1,6 +1,24 @@
 ILL Live Data Reduction Server
 ===============
 
+
+
+
+```
+cd /home/leal/Documents/Mantid/IN5
+
+curl -v --noproxy '*' -X POST --data-binary @094460.nxs http://localhost:8080/file/094460
+
+curl -v --noproxy '*' -X POST --data "`pwd`" http://localhost:8080/file/094460
+
+
+```
+
+
+
+
+
+
 ILL REST Live data reduction server.
 
 The purpose of this project is to bridge data acquisition and data analysis.

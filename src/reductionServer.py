@@ -2,31 +2,18 @@
 
 import bottle
 from bottle import route
-from content.manager import Manager  
-import storage
 
-
-
-
-
-import json
 import sys
 import logging
-import os.path
-
 import time
 import signal
 import uuid
 import simplejson
 import pprint
 
-import data.dataStorage
-import data.queryStorage
-import data.queryValidator
-import reduction.queryLauncher
+import config.config
 import data.messages
-
-from data.json import Json
+from content.validator.filename import FileValidator
 
 
 '''
@@ -44,7 +31,7 @@ It assumes:
 
 '''
 
-import config.config
+
 
 logger = logging.getLogger("server")
 
@@ -54,14 +41,10 @@ def signal_handler(signal_, frame):
     logger.info("Server caught a signal! Server is shutting down...")
     logger.info("Killing running processes...")
     
-    queryManager = reduction.queryLauncher.QueryLauncher()
-    queryManager.killAllRunningLaunchers()
+    # TODO
+    # Any cleanups needed
     
-    # delete temporary nexus files
-    from data.dataStorage import dataStorage
-    dataStorage.deleteContent()
-    
-    time.sleep(1)
+    time.sleep(0.1)
     
     logger.info("Server shut down!")
     sys.exit(0)
@@ -93,17 +76,14 @@ def fileHandler(numor):
     logger.debug("Receiving file by HTTP POST with numor = %d" % numor)
     
     content = bottle.request.body.read()
-    # based on the content get the right file content
-    handlerManager = Manager(content)
-    fileHandler = handlerManager.getRespectiveHandler()
     
-    if fileHandler is None:
-        return data.messages.Messages.error("File/URL received is not valid.", "Neither ASCII, Nexus nor valid URL.");
-    else:
-        db = storage.getDBConnection()
-        db.insertOrUpdate('numors', numor, {"filename": fileHandler.filename() } )
-        return data.messages.Messages.success("File/URL successfully received.", "The content is: " + fileHandler.__class__.__name__)
-
+    v = FileValidator(content)
+    message = v.validateFile(numor)
+    
+    logger.debug(message)
+    return message
+    
+    
 #@route('/query/<numors:re:[0-9,]+>', method='POST')
 @route('/query', method='POST')
 def query():
