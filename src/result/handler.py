@@ -8,6 +8,7 @@ import storage
 import config.config
 import logging
 from data.messages import Messages
+import simplejson
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,12 @@ class HandlerResult(object):
             logger.error(message)
             return Messages.error(message, self.queryId);
         else:
-            return res[0]
+            try:
+                return simplejson.dumps(res[0])
+            except Exception, e:
+                message = "Problems validating json results for query id %s..."%self.queryId
+                logger.exception(message  + str(e))
+                return Messages.error(message, str(e));
 
     
     
