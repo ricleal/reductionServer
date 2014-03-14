@@ -33,15 +33,17 @@ class File(Handler):
         self.tempFile.write(content)
         self.tempFile.close()
         
+        logger.debug("Content written to: %s" % self.tempFile.name)
         self.file = None
 
     def __del__(self):
-        logger.debug("Deleting temporary file: %s" % self.tempFile.name)
-
-        try :
-            os.remove(self.tempFile.name)
-        except  Exception as e:
-            logger.error("Error removing temporary file: " + str(e))
+#         logger.debug("Deleting temporary file: %s" % self.tempFile.name)
+# 
+#         try :
+#             os.remove(self.tempFile.name)
+#         except  Exception as e:
+#             logger.error("Error removing temporary file: " + str(e))
+        pass
 
     def filename(self):
         return self.tempFile.name

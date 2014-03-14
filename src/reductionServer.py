@@ -14,7 +14,7 @@ import pprint
 import config.config
 import data.messages
 from content.validator.filename import FileValidator
-
+from query.handler import QueryHandler
 
 '''
 
@@ -67,10 +67,15 @@ def homepage_get():
 @route('/file/<numor:int>', method='POST')
 def fileHandler(numor):
     '''
-    To old_test:
     
-    cd ~/Documents/Mantid/IN6
-    curl -X POST --data-binary @157589.nxs http://localhost:8080/file/<numor>
+    User can send a binary / ascii file or an url for a file location.
+    
+    To test:
+    
+    curl -v --noproxy '*' -X POST --data-binary @094460.nxs http://localhost:8080/file/094460
+
+    curl -v --noproxy '*' -X POST --data "`pwd`" http://localhost:8080/file/094460
+    
     '''
     
     logger.debug("Receiving file by HTTP POST with numor = %d" % numor)
@@ -89,52 +94,20 @@ def fileHandler(numor):
 def query():
     '''
     
-    curl -v -H "Content-Type: application/json" \
-     -H "Accept: application/json"  \
-     -X POST \
-     -d '{"query":"plot", "axes":"x,y"}' \
-     http://localhost:8080/query>
+    
+    
      
     '''
     
     content = bottle.request.body.read()
-    
     logger.debug("RAW Query received: " + str(content))
     
-    json = Json(content)
-    contentAsDict = json.validate()
-    if contentAsDict is None:
-        return data.messages.Messages.error("JSON appears to be invalid.")
-    
-    logger.debug("FORMATTED Query received: " + str(contentAsDict))
+    qh = QueryHandler(content)
+    message = qh.process()
+    logger.debug(message)
+    return message
     
     
-    queryValidator = data.queryValidator.QueryValidator(contentAsDict)
-    
-    validErrorMessage = queryValidator.validateFunction()
-    if validErrorMessage is not None :
-        return validErrorMessage
-    
-    validErrorMessage = queryValidator.validateNumors()
-    if validErrorMessage is not None :
-        return validErrorMessage
-    
-    queryId = str(uuid.uuid4())
-    from data.queryStorage import queryStorage
-    queryStorage.addQuery(queryId,contentAsDict)
-    
-    logger.debug("QueryStorage:\n" + pprint.pformat(queryStorage.items()))
-    
-    #TODO: handle query
-    queryStorage[queryId]["executable"] = queryValidator.getExecutable() 
-    queryStorage[queryId]["timeout"] = queryValidator.getExecutableTimeout()
-    
-    q = reduction.queryLauncher.QueryLauncher()
-    q.processQuery(queryId)
-    
-    logger.debug("DataStorage:\n" + pprint.pformat(queryStorage.items()))
-    
-    return {"query_id" : queryId}
 
 @route('/results/<queryId>', method=['POST','GET'])
 def results(queryId):

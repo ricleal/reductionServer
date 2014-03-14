@@ -5,13 +5,18 @@ ILL Live Data Reduction Server
 
 
 ```
-cd /home/leal/Documents/Mantid/IN5
+cd 
 
-curl -v --noproxy '*' -X POST --data-binary @094460.nxs http://localhost:8080/file/094460
+curl -v --noproxy '*' -X POST --data "/home/leal/Documents/Mantid/IN5/094460.nxs" http://localhost:8080/file/094460
 
-curl -v --noproxy '*' -X POST --data "`pwd`" http://localhost:8080/file/094460
+curl -v --noproxy '*' -X POST --data-binary @/home/leal/Documents/Mantid/IN5/094460.nxs http://localhost:8080/file/094460
 
 
+curl -v --noproxy '*' -X POST \
+--data '{ "method" : "theta_vs_counts", "params" : { "numors":[94460]} }' \
+http://localhost:8080/query
+
+     
 ```
 
 
