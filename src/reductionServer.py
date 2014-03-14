@@ -15,6 +15,7 @@ import config.config
 import data.messages
 from content.validator.filename import FileValidator
 from query.handler import QueryHandler
+from result.handler import HandlerResult
 
 '''
 
@@ -117,46 +118,23 @@ def results(queryId):
     Test:
     curl -X POST  http://localhost:8080/results/<queryId>
     """
+            
+    r = HandlerResult(queryId)
+    message = r.getQuery()
+    logger.debug(message)
+    return message
     
-    from data.queryStorage import queryStorage
-    try:
-        thisQuery = queryStorage[queryId].copy() # copy by value
-        logger.debug("This Query:\n" + pprint.pformat(thisQuery))
-        del thisQuery["launcher"] # Json can't serialise objects!
-        return simplejson.dumps(thisQuery)
-    except Exception, e:
-        message = "query_id appears to be invalid."
-        logger.exception(message  + str(e))
-        return data.messages.Messages.error(message,str(e))
     
+
 
 @route('/status', method=['POST','GET'])
 def status():
     """
     Returns pairs of query_ids = status
     """
-    ret = {"dataStorage":{},"queryStorage":{}}
     
-    from data.dataStorage import dataStorage
-    
-    for k in dataStorage.keys():
-        try:
-            ret["dataStorage"][k] = '%s'%dataStorage[k]
-        except:
-            pass
-    
-    
-    from data.queryStorage import queryStorage
-    
-    
-    for k in queryStorage.keys():
-        try:
-            ret["queryStorage"][k] = queryStorage[k]["status"]
-        except:
-            pass
-    
-    logger.debug("Satus:\n" + pprint.pformat(ret))
-    return ret
+    # TODO!
+    pass
 
 
 def main(argv):

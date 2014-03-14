@@ -53,7 +53,7 @@ class StorageFacade(object):
         return [i['filename'] for i in arr]
     
     def getQuery(self,queryId):        
-        arr = self.db.dumpCollectionToArray("queries",{"queryId" : queryId })
+        arr = self.db.dumpCollectionToArray("queries",{"queryId" : queryId },{'last_updated_date':False,'_id':False})
         return arr
     
     
