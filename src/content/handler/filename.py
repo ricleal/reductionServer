@@ -21,7 +21,7 @@ class File(Handler):
     __metaclass__ = abc.ABCMeta
     
     
-    def __init__(self, content):
+    def __init__(self, content,suffix='.tmp'):
         '''
         @param content: binary stream - contents of the nexus file 
         '''
@@ -29,7 +29,7 @@ class File(Handler):
         logger.debug("File content init method...")
     
         # Need to write the file on disk! there's no open stream in nexus library for python
-        self.tempFile = tempfile.NamedTemporaryFile(delete=False, prefix='live_', suffix='.tmp')
+        self.tempFile = tempfile.NamedTemporaryFile(delete=False, prefix='live_', suffix=suffix)
         self.tempFile.write(content)
         self.tempFile.close()
         

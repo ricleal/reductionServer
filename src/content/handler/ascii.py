@@ -9,7 +9,7 @@ ascii content
 
 
 import logging
-
+import os
 from content.handler.filename import File
 
 logger = logging.getLogger(__name__) 
@@ -30,23 +30,34 @@ class Ascii(File):
         @param content: binary stream - contents of the ascii file 
         '''    
         logger.debug("Creating Ascii Handler")
-        super(Ascii, self).__init__(content)
+        super(Ascii, self).__init__(content,suffix=".txt")
         
     def isValid(self):
         """
         Is this a valid ILL ASCII File
         """
-        ret = False;
         try :
             self.openFile()
             header = "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR";
             firstLine = self.file.readline();
             if firstLine.find(header) >= 0:
-                ret = True;
-            self.closeFile()
+                self.closeFile()
+                return True;
+            else:
+                logger.debug("Does not look an Ascii valid file. Deleting temporary file: %s" % self.tempFile.name)
+                try :
+                    os.remove(self.tempFile.name)
+                except  Exception as e:
+                    logger.error("Error removing temporary file: " + str(e))
+                return False
         except Exception, e:
             logger.exception("Problems validating the ascii file: " + str(e) )
-        return ret
+            logger.debug("Deleting temporary file: %s" % self.tempFile.name)
+            try :
+                os.remove(self.tempFile.name)
+            except  Exception as e:
+                logger.error("Error removing temporary file: " + str(e))
+            return False
     
     def openFile(self):
         logger.debug("Opening ascii file...")

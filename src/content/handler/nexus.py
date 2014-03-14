@@ -10,6 +10,7 @@ Nexus content
 import nxs
 import logging
 import simplejson
+import os
 
 from content.handler.filename import File
 
@@ -32,7 +33,7 @@ class NeXus(File):
         @param content: binary stream - contents of the nexus file 
         '''    
         logger.debug("Creating Nexus Handler")
-        super(NeXus, self).__init__(content)
+        super(NeXus, self).__init__(content,suffix=".nxs")
         
     def isValid(self):
         """
@@ -45,6 +46,11 @@ class NeXus(File):
             self.closeFile();
         except Exception:
             logger.info("This doesn't look a valid nexus file...")
+            logger.debug("Deleting temporary file: %s" % self.tempFile.name)
+            try :
+                os.remove(self.tempFile.name)
+            except  Exception as e:
+                logger.error("Error removing temporary file: " + str(e))
             return False
         return True
     
