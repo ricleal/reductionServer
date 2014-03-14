@@ -7,15 +7,14 @@ import sys
 import logging
 import time
 import signal
-import uuid
-import simplejson
-import pprint
+
 
 import config.config
 import data.messages
 from content.validator.filename import FileValidator
 from query.handler import QueryHandler
 from result.handler import HandlerResult
+from status.handler import HandlerStatus
 
 '''
 
@@ -94,9 +93,6 @@ def fileHandler(numor):
 @route('/query', method='POST')
 def query():
     '''
-    
-    
-    
      
     '''
     
@@ -130,11 +126,13 @@ def results(queryId):
 @route('/status', method=['POST','GET'])
 def status():
     """
-    Returns pairs of query_ids = status
+    Returns data of queries
     """
     
-    # TODO!
-    pass
+    r = HandlerStatus()
+    message = r.getQueries()
+    logger.debug(message)
+    return message
 
 
 def main(argv):
