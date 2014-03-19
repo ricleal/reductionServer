@@ -1,54 +1,40 @@
 ILL Live Data Reduction Server
 ===============
 
-
-
-
-```
-cd 
-
-curl -v --noproxy '*' -X POST --data "/home/leal/Documents/Mantid/IN5/094460.nxs" http://localhost:8080/file/094460
-
-curl -v --noproxy '*' -X POST --data-binary @/home/leal/Documents/Mantid/IN5/094460.nxs http://localhost:8080/file/094460
-
-
-curl -v --noproxy '*' -X POST \
---data '{ "method" : "theta_vs_counts", "params" : { "numors":[94460]} }' \
-http://localhost:8080/query
-
-     
-```
-
-
-
-
-
-
 ILL REST Live data reduction server.
 
 The purpose of this project is to bridge data acquisition and data analysis.
 This server seats in the middle of the instrument control computer and the data reduction and analysis software.
-The instrument control computer initiate the data analysis requests. The server reacts to these requests and forward the respective demands to the data analysis software. The server implements a Representational State Transfer (REST) with messages are passed in JSON format.
 
-The server implements the following requests:
+The instrument control computer initiate the data analysis requests. The server reacts to these requests and forward the respective demands to the data analysis software. The server implements a Representational State Transfer (REST) with messages passed in [JSON](http://www.json.org/) format.
 
-- ```http:://<server_address>/file/<numor>``` - Send a file to the server. The server stores the file in dictionary/map indexed by the numor. The server keeps a predefined number of entries, and delete the old entries.
-- ```http:://<server_address>/query``` - Send a query to the server indicating the data analysis routine to be called. See below the specs. The server returns and id for this query.
-- ```http:://<server_address>/results/<queryId>``` - Interrogates the server about the result of query previously sent with queryId.
-- ```http:://<server_address>/status``` - Return the status of the server. 
-
-A single server is launched by instrument.
-Several servers can run in the same machine using different ports. The instrument name *MUST* be specified either in the configuration file, or when launching the server. See below. 
 
 Prerequisites
 -------------
   - Nexus python library : [http://www.nexusformat.org/](http://www.nexusformat.org/)
   - Python bottle : [http://bottlepy.org](http://bottlepy.org/)
+  - PyMongo : [http://api.mongodb.org/python/](http://api.mongodb.org/python/). Use ```pip``` or ```easy_install```to install the last version. See [http://api.mongodb.org/python/current/installation.html](http://api.mongodb.org/python/current/installation.html)
+
+Available methods
+-----------------
+
+The server implements the following methods:
+
+- ```http:://<server_address>:<port>/file/<numor>```
+    - Send a file or an URL to the server by POST identified by a <numor>. The server stores the file/url in the database indexed by the numor. 
+- ```http:://<server_address>/query```
+    - Send a query to the server indicating the data analysis routine to be called. See below the specs. The server returns and id for this query along with a foreseen timeout.
+- ```http:://<server_address>/results/<queryId>``` - Interrogates the server about the result of query previously sent with queryId. This method can be called either by POST or GET.
+- ```http:://<server_address>/status``` - Return the status of the queries in the server. 
+
+
+A single server is launched by instrument. A single server only deals with a single data processing software, i.e., either Mantid or LAMP.
+However, several servers can run in the same machine using different ports. The instrument name *MUST* be specified either in the configuration file, or when launching the server.  
 
 Prerequisites for testing
 -------------------------
 
-  - Curl ([http://curl.haxx.se](http://curl.haxx.se/)). It is usually already installed by default in any modern Linux distribution.
+- Curl ([http://curl.haxx.se](http://curl.haxx.se/)). It is usually already installed by default in any modern Linux distribution.
 
 At the ILL, in a Linux terminal, the following environment variables are often defined: `http_proxy` and `https_proxy`.
 
@@ -80,7 +66,6 @@ Options:
                         Intrument to server. If empty looks for instrument
                         name in the config file.
 ```
-
 The config files (```.ini``` files) are stored in the ```config``` directory. Usually, for testing, those files do not need to be updated.
 
 E.g.:
@@ -95,19 +80,195 @@ or the local hostname or the IP address. E.g.:
 ./reductionServer.py -s mypchostname.gen.ill.fr
 ```
 
+giving the instrument Name
+
+```bash
+./reductionServer.py -s 172.17.43.190 -p 8080 -i D20
+```
+
 **Test with a browser:**
 
 Open the adress ```http://localhost:8080/``` in a browser.
 
+The browser should show a json message similar to:
+```json
+{"message": "Server is up and running.", "details": "", "success": "True"}
+```
+
 **Test with curl client**
 
-The server has been implemented with the following conditions:
+- GET:
+```bash
+$ curl --noproxy '*' -X GET  http://172.17.43.190:8080/
+{"message": "Server is up and running.", "details": "", "success": "True"}
+```
+- POST:
+```bash
+$ curl --noproxy '*' -X POST  http://172.17.43.190:8080/
+{"message": "Server is up and running.", "details": "", "success": "True"}
+```
+Additional option for ```curl```:
 
-- There will be a server per instrument. However, one machine can serve several instruments, as long as the servers are launched in different ports.
+-   Verbose (```-v```) :
 
-- Every NeXus file must be submitted to the server with the corresponding "Numor" as part of the URL. The numor can be seen as the unique identifier for every data set. See below the examples. 
+```bash
+$ curl -v --noproxy '*' -X POST  http://172.17.43.190:8080/
+* About to connect() to 172.17.43.190 port 8080 (#0)
+*   Trying 172.17.43.190... connected
+> POST / HTTP/1.1
+> User-Agent: curl/7.22.0 (x86_64-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3
+> Host: 172.17.43.190:8080
+> Accept: */*
+> 
+* HTTP 1.0, assume close after body
+< HTTP/1.0 200 OK
+< Date: Wed, 19 Mar 2014 11:09:41 GMT
+< Server: WSGIServer/0.1 Python/2.7.3
+< Content-Length: 74
+< Content-Type: application/json
+< 
+* Closing connection #0
+{"message": "Server is up and running.", "details": "", "success": "True"}
+```
+
+- Defining header (```-H```) :
+
+```bash
+$ curl -H "Accept: application/json"  --noproxy '*' -X POST  http://172.17.43.190:8080/
+{"message": "Server is up and running.", "details": "", "success": "True"}
+```
 
 **Implemented functions to date**
+
+Submitting URL :
+
+```bash
+$ curl --noproxy '*' -X POST --data "/home/leal/Documents/Mantid/IN5/094460.nxs" http://172.17.43.190:8080/file/094460
+{"message": "File/URL successfully received.", "details": "The content is: Url", "success": "True"}
+```
+Submitting binary nexus file :
+
+```bash
+$ curl --noproxy '*' -X POST --data-binary @"/home/leal/Documents/Mantid/IN5/2014-03-19 -  dispersion peak/ILLIN5_Vana_095893.nxs" http://172.17.43.190:8080/file/095893
+{"message": "File/URL successfully received.", "details": "The content is: NeXus", "success": "True"}
+```
+
+The reduction procedure starts with the submission of either physical data file (NeXus or Ascii) or a URL, and the respective numor.
+
+The same file or URL can be submitted to the server as many times as desired. If the ```numor``` is already in the database the file handler will be updated, e.g., the old file (if a file is submitted) will be deleted and replaced by the new one.
+
+
+Submitting a query for the previously submited numor 095893:
+
+```bash
+$ curl --noproxy '*' -X POST --data '{ "method" : "theta_vs_counts", "params" : { "numors":[095893]} }' http://172.17.43.190:8080/query
+{"message": "Problems while validating the query...", "details": "JSON appears to be invalid.", "success": "False"}
+```
+
+Note that numors are passed as integers and are not json valid if are preceded by 0. The correct query should be:
+
+```bash
+$ curl --noproxy '*' -X POST --data '{ "method" : "theta_vs_counts", "params" : { "numors":[95893]} }' http://172.17.43.190:8080/query
+{"query_id": "ac4605bd-1818-4a47-8407-bfef8f8031b9", "details": "/home/leal/git/reductionServer/src/query/scripts/theta_vs_counts_IN5.py", "timeout": 30}
+```
+
+A query identifier (query_id) - universally unique identifier (UUID) - along with a foreseen timeout is returned for every query submited.
+
+Getting the query results for the query_id above:
+
+```bash
+$ curl --noproxy '*' -X GET http://172.17.43.190:8080/results/ac4605bd-1818-4a47-8407-bfef8f8031b9
+{"status": "done", "input_params": {"data_file_full_path": "/tmp/live_A0RAaO.nxs", "instrument": "IN5", "data_file": "live_A0RAaO.nxs", "working_path": "/tmp"}, "executable": "/home/leal/git/reductionServer/src/query/scripts/theta_vs_counts_IN5.py", "start_time": "2014-03-19 12:24:03.267611", "start_local_time": "Wed Mar 19 12:24:03 2014", "end_local_time": "Wed Mar 19 12:24:21 2014", "instrument_name": "IN5", "end_time": "2014-03-19 12:24:21.776211", "timeout": 30, "queryId": "ac4605bd-1818-4a47-8407-bfef8f8031b9", "result": {"x_axis_values": [0.7091979356415034, (...),  54637.875642356776, 57166.32749483072, 48121.27000871812, 30504.04663524441, 9994.113718620729]], "x_axis_label": "Scattering angle", "x_axis_unit": "degrees", "x_axis_shape": [135], "data_units": ""}}
+```
+
+The json output can be formatted pipping the output to ```python -mjson.tool```:
+
+```bash
+$ curl --noproxy '*' -X GET http://172.17.43.190:8080/results/ac4605bd-1818-4a47-8407-bfef8f8031b9 | python -mjson.tool
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  5856  100  5856    0     0  2014k      0 --:--:-- --:--:-- --:--:-- 2859k
+{
+    "end_local_time": "Wed Mar 19 12:24:21 2014", 
+    "end_time": "2014-03-19 12:24:21.776211", 
+    "executable": "/home/leal/git/reductionServer/src/query/scripts/theta_vs_counts_IN5.py", 
+    "input_params": {
+        "data_file": "live_A0RAaO.nxs", 
+        "data_file_full_path": "/tmp/live_A0RAaO.nxs", 
+        "instrument": "IN5", 
+        "working_path": "/tmp"
+    }, 
+    "instrument_name": "IN5", 
+    "queryId": "ac4605bd-1818-4a47-8407-bfef8f8031b9", 
+    "result": {
+        "data_label": "Counts", 
+        "data_shape": [
+            1, 
+            135
+        ], 
+        "data_units": "", 
+        "data_values": [
+            [
+                0.0, 
+                0.0, 
+                (...),
+                30504.04663524441, 
+                9994.113718620729
+            ]
+        ], 
+        "x_axis_label": "Scattering angle", 
+        "x_axis_shape": [
+            135
+        ], 
+        "x_axis_unit": "degrees", 
+        "x_axis_values": [
+            0.7091979356415034, 
+            1.56893481993162, 
+            (...),
+            133.47312916428413, 
+            134.3798613665934
+        ]
+    }, 
+    "start_local_time": "Wed Mar 19 12:24:03 2014", 
+    "start_time": "2014-03-19 12:24:03.267611", 
+    "status": "done", 
+    "timeout": 30
+}
+```
+
+One can also see the status of all queries stored in the server:
+
+```bash
+ curl --noproxy '*' -X GET http://172.17.43.190:8080/status | python -mjson.tool  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  1905  100  1905    0     0   527k      0 --:--:-- --:--:-- --:--:--  620k
+[
+    {
+        "end_local_time": "Fri Mar 14 15:13:30 2014", 
+        "end_time": "2014-03-14 15:13:30.470509", 
+        "executable": "/home/leal/git/reductionServer/src/query/scripts/theta_vs_counts_IN5.py", 
+        "instrument_name": "IN5", 
+        "queryId": "c22600bd-a84a-4752-904f-817f29ca5093", 
+        "start_local_time": "Fri Mar 14 15:13:28 2014", 
+        "start_time": "2014-03-14 15:13:28.382803", 
+        "status": "done", 
+        "timeout": 30
+    }, 
+    (.....), 
+    {
+        "end_local_time": "Wed Mar 19 12:24:21 2014", 
+        "end_time": "2014-03-19 12:24:21.776211", 
+        "executable": "/home/leal/git/reductionServer/src/query/scripts/theta_vs_counts_IN5.py", 
+        "instrument_name": "IN5", 
+        "queryId": "ac4605bd-1818-4a47-8407-bfef8f8031b9", 
+        "start_local_time": "Wed Mar 19 12:24:03 2014", 
+        "start_time": "2014-03-19 12:24:03.267611", 
+        "status": "done", 
+        "timeout": 30
+    }
+]
+
+```
 
 This simple call can be performed by POST or GET. This is useful to see if the server is running from a http browser.
 
@@ -119,10 +280,6 @@ curl -v http://localhost:8080/
 curl -X POST  http://localhost:8080/
 ```
 
-The reduction procedure starts with the submission of either physical dat file (NeXus or Ascii) or a URL, and the respective numor.
-
-
-The same file or URL can be submitted to the server as many times as desired. If the ```numor``` is already in the database the file handler will be updated, e.g., the old file will be deleted and replaced by the new one.
 
 ```bash
 # Send a a binary nexus/hdf5 file by post with the respective numor appended to the URL.
@@ -154,19 +311,15 @@ curl --noproxy '*' -X POST --data "file:///home/leal/Documents/Mantid/IN4/064727
 }
 ```
 
+**Format of the queries**
 
-Once a NeXus file is submitted to the server, the reduction process can start.
-This is performed by submiting JSON *queries* to the server. The format of the JSON queries is still beeing defined. To date the valid format is:
+The format of the JSON queries is still beeing defined. To date the valid format is:
 ```json
 {
-	"function":"<function name>",
-	"input_params":{
-		[
-		"<parameter name>":<parameter value>,
-		"<parameter name>":<parameter value>,
-		(...)
-		]
-		
+	"method" : "<method name to call>",
+	"params" : {
+		"name of the 1st input parameter" : <value : int, string, array, etc..>,
+		"name of the 2nd input parameter" : <value : int, string, array, etc..>
 	}
 }
 ```
@@ -174,344 +327,105 @@ A working example is:
 
 ```json
 {
-	"function":"theta_vs_counts",
-	"input_params":{
-		"numors":[
-			12345,
-            56789,
-            12121
+	"method" : "theta_vs_counts",
+	"params" : {
+		"numors" : [
+			94460,
+			94461,
+			94462
 		]
-		
 	}
 }
 ```
-where the input parameter ```numors``` is one of the numors associated with a nexus file and previously submitted.
+where the input parameter ```numors``` is one of the numors associated with a file or URL and previously submitted.
 
-A query identifier - universally unique identifier (UUID) - is returned for every query submited.
+Adding new reduction scripts
+----------------------------
 
-```bash
-# Send a query to the server enclosing the JSON above. The curl header (-H) parameters are optional. Both curl and Bottle.py are clever enough to detect the content formats.
-curl -v -H "Content-Type: application/json" \
-        -H "Accept: application/json"  \
-        -X POST \
-        -d  '{"function":"theta_vs_counts","input_params":{"numors":[102296]}}' \
-        http://localhost:8080/query
-# Return:
-```
-```json
-{
-    "query_id": "4b800405-3332-466a-be83-e6e6e0905ae4"
-}
-```
+In ```src/data``` two files exist with the local and remote definition of the queries to call.
 
-If an invalid query (invalid function name) is submitted to the server the result is:
-
-```bash
-curl -s -X POST -d '{"function":"theta_vs_count","input_params":{"numors":[10229]}}'  http://localhost:8080/query | python -mjson.tool
-```
+-   The remote definition (```functions_remote.json```):
 
 ```json
 {
-    "errors": {
-        "exception_message": "u'theta_vs_count'", 
-        "valid_functions": [
-            "theta_vs_counts"
-        ]
-    }, 
-    "general_message": "Error while validating the query function. Is it a valid function?", 
-    "success": "False"
+	"theta_vs_counts" : {
+		"description" : "Calculates the detector counts as a function of theta",
+		"instruments" : [
+			"IN4",
+			"IN5",
+			"IN6"
+		],
+		"params" : [
+			{
+				"name" : "numors",
+				"type" : "array",
+				"description" : "List of numors concerned"
+			}
+		],
+		"output" : [
+			{
+				"name" : "plot",
+				"type" : "plot_1d",
+				"description" : "1D plot of theta vs counts",
+				"units" : "NA"
+			}
+		]
+	},
+	"plot_data" : {
+		"description" : "Plots raw data with corrections",
+		"instruments" : [
+			"D20"
+		],
+		"params" : [
+			{
+				"name" : "numors",
+				"type" : "array",
+				"description" : "List of numors concerned"
+			}
+		],
+		"output" : [
+			{
+				"name" : "plot",
+				"type" : "plot_1d",
+				"description" : "1D plot of theta vs counts",
+				"units" : "NA"
+			}
+		]
+	}
 }
 ```
 
-If invalid input parameters (numors in this case) are sent in the query, the result is:
-
-```bash
-curl -s -X POST -d '{"function":"theta_vs_counts","input_params":{"numors":[10229]}}'  http://localhost:8080/query | python -mjson.tool
-```
+-   The local definition (```functions_local.json```):
 
 ```json
 {
-    "errors": {
-        "invalid_numors": [
-            10229
-        ]
-    }, 
-    "general_message": "Numors do not exist in the database", 
-    "success": "False"
+	"theta_vs_counts" : {
+		"timeout" : 30,
+		"executable" : "%(scripts_directory)s/theta_vs_counts_%(instrument_name)s.py",
+		"params" : [
+			{
+				"name" : "numors",
+				"type" : "array",
+				"description" : "List of numors concerned"
+			}
+		]
+	},
+	"plot_data" : {
+		"timeout" : 40,
+		"executable" : "%(scripts_directory)s/plot_data_%(instrument_name)s.prox",
+		"params" : [
+			{
+				"name" : "numors",
+				"type" : "array",
+				"description" : "List of numors concerned"
+			}
+		]
+	}
 }
 ```
 
-The ```query_id``` is used to fecth the results of a previously submitted query. The query submission details along with its results when fully processed are stored in the ```QueryStorage``` limited size dictionary:
+The variables ```scripts_directory``` and ```instrument_name``` will be assigned values in the ```config.ini``` file.
 
-```python
-from data.queryStorage import queryStorage
-```
-
-This dictionary is indexed by the UUID.
-
-The results of a query can be fecthed through the request ```/results```:
-
-```bash
-# Now the client will ask for the results of the previous query:
-curl -v -X POST http://localhost:8080/results/4b800405-3332-466a-be83-e6e6e0905ae4
-```
-
-The result of this request is the status of the query. When the processing of the query is still running the returned json looks similar to:
-
-```json
-{
-    "executable": "/home/leal/git/reductionServer/scripts/theta_vs_counts_IN5.sh /tmp/live_D2lycx.nxs ", 
-    "function": "theta_vs_counts", 
-    "input_params": {
-        "numors": [
-            102296
-        ]
-    }, 
-    "start_time": "2013-10-02 12:13:25.125645",
-    "status": "running", 
-    "timeout": 30
-}
-
-```
-
-When it is done:
-
-```json
-{
-    "end_time": "2013-10-02 12:13:35.464550", 
-    "error": "", 
-    "executable": "/home/leal/git/reductionServer/scripts/theta_vs_counts_IN5.sh /tmp/live_D2lycx.nxs ", 
-    "function": "theta_vs_counts", 
-    "input_params": {
-        "numors": [
-            102296
-        ]
-    }, 
-    "output": {
-        "data_label": "Counts", 
-        "data_shape": [
-            1, 
-            135
-        ], 
-        "data_units": "", 
-        "data_values": [
-            [
-                0.0, 
-                0.0, 
-                0.0, 
-(..) 
-                289.6976403687601, 
-                158.0
-            ]
-        ], 
-        "x_axis_label": "Scattering angle", 
-        "x_axis_shape": [
-            135
-        ], 
-        "x_axis_unit": "degrees", 
-        "x_axis_values": [
-            0.7091979356415034, 
-            1.56893481993162, 
-            2.540112536576862, 
-(..)
-            133.47312916428413, 
-            134.3798613665934
-        ]
-    }, 
-    "return_code": 0, 
-    "start_time": "2013-10-02 12:13:25.125645", 
-    "status": "done", 
-    "timeout": 30
-}
-
-```
-
-In the previous case the output is a plot.
-
-When a query is invalid:
-```json
-{
-    "details": "'dde5971c-a189-4532-a06a-7bc02b5a56f'", 
-    "message": "query_id appears to be invalid.", 
-    "success": "False"
-}
-
-```
-
-Every *query* (e.g. *theta_vs_counts*) will be mapped internally to an executable. In the example below the *sofqw* is mapped to ```"executable": "/home/leal/git/reductionServer/scripts/theta_vs_counts_IN5.sh"```. 
-
-To get the status of all queries submitted to the server along with the files:
-```bash
-# This request can be either submitted by POST or GET
-curl  http://localhost:8080/status
-# Return
-```
-```json
-{
-    "dataStorage": {
-        "102296": "/tmp/live_LhAVdL.nxs", 
-        "102297": "/tmp/live_A6Qpvm.nxs"
-    }, 
-    "queryStorage": {
-        "a5573866-f687-49bd-87bd-56e4f5851baf": "done"
-    }
-}
-```
-
-In the OS command line the JSON output can be formatted pipping the python command ```python -mjson.tool```:
-```bash
-# Running curl in silent mode (-s : Don't show progress meter or error messages).
-curl  -s http://localhost:8080/results/7c772e56-afd2-4e05-ad6a-7beec625eeb0 | python -mjson.tool
-
-```
-
-**Example:**
-
-Let's submit 2 data files with 2 different numors:
-```bash
-curl -s -X POST --data-binary @102296.nxs http://localhost:8080/file/102296 | python -mjson.tool
-```
-```json
-{
-    "details": "", 
-    "message": "File successfully received.", 
-    "success": "True"
-}
-
-```
-
-```bash
-curl -s -X POST --data-binary @102297.nxs http://localhost:8080/file/102297 | python -mjson.tool
-```
-```json
-{
-    "details": "", 
-    "message": "File successfully received.", 
-    "success": "True"
-}
-```
-
-Now let's submit a queries:
-
-1. Inexistant function:
-
-```bash
-curl -s -X POST -d '{"function":"theta_vs_count","input_params":{"numors":[10229]}}'  http://localhost:8080/query | python -mjson.tool
-```
-
-```json
-{
-    "errors": {
-        "exception_message": "u'theta_vs_count'", 
-        "valid_functions": [
-            "theta_vs_counts"
-        ]
-    }, 
-    "general_message": "Error while validating the query function. Is it a valid function?", 
-    "success": "False"
-}
-
-```
-
-2. Invalid Numors:
-
-```bash
-curl -s -X POST -d '{"function":"theta_vs_counts","input_params":{"numors":[10229]}}'  http://localhost:8080/query | python -mjson.tool
-```
-
-```json
-{
-    "errors": {
-        "invalid_numors": [
-            10229
-        ]
-    }, 
-    "general_message": "Numors do not exist in the database", 
-    "success": "False"
-}
-```
-
-3. Valid query
-
-```bash
-curl -s -X POST -d '{"function":"theta_vs_counts","input_params":{"numors":[102296]}}'  http://localhost:8080/query | python -mjson.tool
-```
-
-```json
-{
-    "query_id": "12c5faa1-661e-47a6-b56e-3eb4e2c026f4"
-}
-```
-
-Query result:
-
-```bash
-curl -s http://localhost:8080/results/12c5faa1-661e-47a6-b56e-3eb4e2c026f4 | python -mjson.tool
-```
-
-```json
-{
-    "end_time": "2013-10-02 12:13:35.464550", 
-    "error": "", 
-    "executable": "/home/leal/git/reductionServer/scripts/theta_vs_counts_IN5.sh /tmp/live_D2lycx.nxs ", 
-    "function": "theta_vs_counts", 
-    "input_params": {
-        "numors": [
-            102296
-        ]
-    }, 
-    "output": {
-        "data_label": "Counts", 
-        "data_shape": [
-            1, 
-            135
-        ], 
-        "data_units": "", 
-        "data_values": [
-            [
-                0.0, 
-                0.0, 
-                0.0, 
-                0.0, 
-                0.0, 
-                107.0, 
-                26630.440714397362, 
-                73900.37826959942, 
-                (...)
-                1202.3282591853645, 
-                585.4388730584927, 
-                289.6976403687601, 
-                158.0
-            ]
-        ], 
-        "x_axis_label": "Scattering angle", 
-        "x_axis_shape": [
-            135
-        ], 
-        "x_axis_unit": "degrees", 
-        "x_axis_values": [
-            0.7091979356415034, 
-            1.56893481993162, 
-            2.540112536576862, 
-            3.5110504074526236, 
-            4.507464014742497, 
-            (..)
-            132.4872807689507, 
-            133.47312916428413, 
-            134.3798613665934
-        ]
-    }, 
-    "return_code": 0, 
-    "start_time": "2013-10-02 12:13:25.125645", 
-    "status": "done", 
-    "timeout": 30
-}
-
-```
-
-**Test with unittest framework.**
-
-The file ```test.py``` in the root of the project has unittest invoking all the implement requests. The client calls are coded in pycurl. Comments show how to call the same requests through the ```curl``` command line.
 
 TODO
 ----
