@@ -14,7 +14,7 @@ import pprint
 
 logger = logging.getLogger(__name__)
 
-class Launcher(threading.Thread):
+class Launcher():
     '''
     
     Abstract General Launcher
@@ -27,8 +27,6 @@ class Launcher(threading.Thread):
         @param content: binary stream passed by post 
         '''
         logger.debug("Launcher init method...")
-        
-        threading.Thread.__init__(self)
         
         self.__initParams = initParams 
        
@@ -63,7 +61,7 @@ class Launcher(threading.Thread):
         return
     
     
-    def substituteParamsInFile(self,filename,paramsDict,suffix=""):
+    def substituteParamsInFile(self,filename,paramsDict,suffix="",prefix="tmp"):
         '''
         Will replace occurences of
         %{key} for value 
@@ -72,7 +70,7 @@ class Launcher(threading.Thread):
         
         #logging.debug(pprint.pformat(paramsDict))
         
-        ft = tempfile.NamedTemporaryFile(delete=False,suffix=suffix)
+        ft = tempfile.NamedTemporaryFile(delete=False,suffix=suffix,prefix=prefix)
         try:
             with open(ft.name, 'w') as new_file:
                 with open(filename, 'r') as f:

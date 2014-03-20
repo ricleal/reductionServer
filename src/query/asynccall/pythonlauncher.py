@@ -11,12 +11,13 @@ import sys
 import StringIO
 import contextlib
 import os
+from multiprocessing import Process, Queue
 
 logger = logging.getLogger(__name__) 
 
     
 
-class PythonScriptLauncher(Launcher):
+class PythonScriptLauncher(Launcher,Process):
     '''
     
     The python launcher 
@@ -39,12 +40,20 @@ class PythonScriptLauncher(Launcher):
         
         '''    
         logger.debug("Creating Python Script Launcher...")
-        super(PythonScriptLauncher, self).__init__()
         
-        self.setDaemon(True) # kills substreads when exit
+        
+        Process.__init__(self)
+        Launcher.__init__(self, initParams)
+        
         self.globalVariables= {}
         self.localVariables= {}
-        self.result = {}
+        
+        self.queueResult = Queue()
+        self.queueOutput = Queue()
+        
+        self.localVariables = {}
+        self.globalVariables = {}
+        self.result = None
         self.output = None
         
         self.timeout = None
@@ -78,8 +87,6 @@ class PythonScriptLauncher(Launcher):
         self.timeout = timeout
         self.command = command
         self.inputParams = inputParams
-        self.globalVariables = {}
-        self.localVariables = {}
         self._launch()
     
     # private
@@ -89,7 +96,7 @@ class PythonScriptLauncher(Launcher):
         """
         if self.inputParams is not None :
             logger.debug("Old file: " + self.command)
-            self.command = self.substituteParamsInFile(self.command,self.inputParams)
+            self.command = self.substituteParamsInFile(self.command,self.inputParams,suffix=".py",prefix="live_")
             logger.debug("New file: " + self.command)
         
         self.start()
@@ -97,6 +104,8 @@ class PythonScriptLauncher(Launcher):
 
         if self.is_alive():
             logger.info("Thread timed out but the process is still running. Killing: %s" % self.command )
+            self.terminate()
+            self.join()
         else :
             logger.info("Thread finished successfully: %s"%self.command)
         
@@ -105,33 +114,26 @@ class PythonScriptLauncher(Launcher):
         self.inputParams = None
         
         # Restart thread to avoid : raise RuntimeError("threads can only be started once")
-        super(PythonScriptLauncher, self).__init__()
+        #super(PythonScriptLauncher, self).__init__()
     
     
     def run(self):
         '''
-        Overrides: threading.Thread
-        Communicate  blocks until the command is fully executed.
+        No memory sharing!
         '''
-        
         logger.debug("Running in background: %s" % self.command)        
         
         with self._stdoutIO() as s:
-            execfile(self.command,  self.globalVariables, self.localVariables)
-        self.output = s
-        if self.localVariables.has_key('result') :
-            self.result = self.localVariables['result']
-        del(self.globalVariables)
-        del(self.localVariables)
-        self.globalVariables = {}
-        self.localVariables = {}
+            execfile(self.command, self.globalVariables, self.localVariables)
+        self.queueOutput.put(s.getvalue())
         
+        result = {}
+        if self.localVariables.has_key('result') :
+            result = self.localVariables['result']
+        self.queueResult.put(result)
         
     def readOutput(self):
-        if self.output is None:
-            return None
-        else:
-            return self.output.getvalue()
+        return self.queueOutput.get(block=False)
     
     def setInputParameters(self,inputParams):
         '''
@@ -146,7 +148,7 @@ class PythonScriptLauncher(Launcher):
         Get result in form of json
         variable result
         '''
-        return self.result
+        return self.queueResult.get(block=False)
     
         
     
