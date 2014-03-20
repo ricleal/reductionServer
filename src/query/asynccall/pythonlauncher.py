@@ -44,6 +44,7 @@ class PythonScriptLauncher(Launcher):
         self.setDaemon(True) # kills substreads when exit
         self.globalVariables= {}
         self.localVariables= {}
+        self.result = {}
         self.output = None
         
         self.timeout = None
@@ -118,6 +119,12 @@ class PythonScriptLauncher(Launcher):
         with self._stdoutIO() as s:
             execfile(self.command,  self.globalVariables, self.localVariables)
         self.output = s
+        if self.localVariables.has_key('result') :
+            self.result = self.localVariables['result']
+        del(self.globalVariables)
+        del(self.localVariables)
+        self.globalVariables = {}
+        self.localVariables = {}
         
         
     def readOutput(self):
@@ -139,10 +146,8 @@ class PythonScriptLauncher(Launcher):
         Get result in form of json
         variable result
         '''
-        if self.localVariables.has_key('result') :
-            return self.localVariables['result']
-        else :
-            return {}
+        return self.result
+    
         
     
     ### Non private methods:
