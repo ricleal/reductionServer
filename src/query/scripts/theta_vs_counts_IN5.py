@@ -43,17 +43,26 @@ MaskDetectors(Workspace='Data',MaskedWorkspace='IN5_Mask')
 #viewDetector('Data')
 
 ConvertUnits(InputWorkspace='Data',OutputWorkspace='Data_DeltaE',Target='DeltaE',EMode='Direct')
+DeleteWorkspace(Workspace='Data')
+
 Rebin(InputWorkspace='Data_DeltaE',OutputWorkspace='Data_DeltaE_Rebined',Params='-40,0.1,2',PreserveEvents='0')
+DeleteWorkspace(Workspace='Data_DeltaE')
+
 # put the theta rings (detector ids) in a temp file
 GenerateGroupingPowder(InputWorkspace='Data_DeltaE_Rebined',AngleStep='1',GroupingFilename='/tmp/group.xml')
 # group the detector in rings => merge data!
 GroupDetectors(InputWorkspace='Data_DeltaE_Rebined',OutputWorkspace='Data_grouped',MapFile=r'/tmp/group.xml')
+DeleteWorkspace(Workspace='Data_DeltaE_Rebined')
 
 #viewDetector('Data_grouped')
 
 ConvertSpectrumAxis(InputWorkspace='Data_grouped',OutputWorkspace='Data_grouped_2theta',Target='theta')
+DeleteWorkspace(Workspace='Data_grouped')
+
 # Do a Color Fill Plot
 Integration(InputWorkspace='Data_grouped_2theta',OutputWorkspace='Data_grouped_2theta_I')
+DeleteWorkspace(Workspace='Data_grouped_2theta')
+
 t = Transpose(InputWorkspace='Data_grouped_2theta_I',OutputWorkspace='Data_grouped_2theta_I_T')
 
 # # Do a Plot of the unique Spectrum
@@ -63,3 +72,5 @@ t = Transpose(InputWorkspace='Data_grouped_2theta_I',OutputWorkspace='Data_group
 # l.setAxisTitle(Layer.Bottom, "Theta")
 
 result = workspaceToDic(t)
+DeleteWorkspace(Workspace='Data_grouped_2theta_I_T')
+
