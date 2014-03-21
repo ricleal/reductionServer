@@ -4,7 +4,6 @@ Created on Feb 18, 2014
 @author: leal
 '''
 import subprocess
-import threading
 import time
 import logging
 import os

@@ -15,12 +15,13 @@ import os
 import threading
 import tempfile
 from query.scripts.fix_lamp_json import fixPlot1D
+from threading import Thread
 
 logger = logging.getLogger(__name__) 
 # logger.addHandler(logging.StreamHandler()) 
 # logger.setLevel(logging.DEBUG)
 
-class ShellLauncher(Launcher):
+class ShellLauncher(Launcher,Thread):
     '''
     
     
@@ -31,7 +32,9 @@ class ShellLauncher(Launcher):
         @param command: [_executable,_prompt,_exitCommand,_cleanUpCommand] 
         '''    
         logger.debug("Creating Shell Launcher.")
-        super(ShellLauncher, self).__init__()
+        Thread.__init__(self)
+        Launcher.__init__(self)
+        
     
         self._executable = command[0]
         self._prompt =  command[1]

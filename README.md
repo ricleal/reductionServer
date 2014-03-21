@@ -433,7 +433,7 @@ TODO
 - A list of supported reduction functions available per instrument.
 - A mapping between every function and the respective local executable.
 
-To date, a simple JSON definition of a reduction function is available here: [src/data/functions.json](src/data/functions.json). More will come soon.
+- Put the Launcher PID in a list / database to kill if necessary.
 
 Notes for me:
 -------------
