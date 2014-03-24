@@ -74,12 +74,10 @@ class QueryValidator(object):
     def _validateFunctionName(self):
         
         method = self.jsonContent["method"]
-        if not self.queryDef.doesLocalFunctionExist(method) :
-            message = "Local Function does not exist: " + method
+        if not self.queryDef.doesFunctionExist(method) :
+            message = "Function is not defined in the specs file: " + method
             raise Exception(message)
-        if not self.queryDef.doesRemoteFunctionExist(method) :
-            message = "Remote Function does not exist: " + method
-            raise Exception(message)
+        
             
     def _validateExecutableAndTimeOut(self):
         method = self.jsonContent["method"]

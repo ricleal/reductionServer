@@ -24,11 +24,9 @@ class QuerySpecs(object):
         '''
         Constructor
         '''
-        functionsRemoteFilename = configParser.get("General", "functions_remote_specs_file")
-        functionsLocalFilename = configParser.get("General", "functions_local_specs_file")
+        functionsFilename = configParser.get("General", "functions_specs_file")
+        self._functionsDic = self._importJsonFromFile(functionsFilename)
         
-        self._functionsRemoteDic = self._importJsonFromFile(functionsRemoteFilename)
-        self._functionsLocalDic = self._importJsonFromFile(functionsLocalFilename)
     
     def _importJsonFromFile(self,filename):
         '''
@@ -43,14 +41,8 @@ class QuerySpecs(object):
             message = "Error while validating the functions file: " + filename
             logger.exception(message + str(e))
     
-    def _doesFunctionExist(self,functionName, dicToUse):
-        return dicToUse.has_key(functionName)
-    
-    def doesRemoteFunctionExist(self,functionName):
-        return self._doesFunctionExist(functionName,self._functionsRemoteDic)
-    
-    def doesLocalFunctionExist(self,functionName):
-        return self._doesFunctionExist(functionName,self._functionsLocalDic)       
+    def doesFunctionExist(self,functionName):
+        return self._functionsDic.has_key(functionName)
     
     def getExecutableFullPath(self,functionName):
         '''
@@ -58,7 +50,7 @@ class QuerySpecs(object):
         '''
         logger.debug("Looking for the executable command.")
         
-        executable = self._functionsLocalDic[functionName]['executable']
+        executable = self._functionsDic[functionName]['executable']
 
         stringsToSubstitute = dict(configParser.items('General'))
         executable = executable%stringsToSubstitute
@@ -71,7 +63,7 @@ class QuerySpecs(object):
         @return: executable command corresponding to this query
         '''
         try :
-            timeout = self._functionsLocalDic[functionName]['timeout']
+            timeout = self._functionsDic[functionName]['timeout']
             logger.debug("Executable command timeout: %d"%timeout)
             return timeout
         except:

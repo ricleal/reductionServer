@@ -1,0 +1,86 @@
+{
+	"theta_vs_counts" : {
+		"description" : "Calculates the detector counts as a function of theta",
+		"instruments" : [
+			"IN4",
+			"IN5",
+			"IN6"
+		],
+		"timeout" : 30,
+		"executable" : "%(scripts_directory)s/theta_vs_counts_%(instrument_name)s.py",
+		"params" : [
+			{
+				"name" : "numors",
+				"type" : "array",
+				"description" : "List of numors concerned"
+			}
+		],
+		"output" : [
+			{
+				"name" : "plot",
+				"type" : "plot_1d",
+				"description" : "1D plot of theta vs counts",
+				"units" : "NA"
+			}
+		]
+	},
+	"sofqw" : {
+		"description" : "Calculates the S(Q,w)",
+		"instruments" : [
+			"IN4",
+			"IN5",
+			"IN6"
+		],
+		"timeout" : 600,
+		"executable" : "%(scripts_directory)s/sofqw_%(instrument_name)s.py",
+		"params" : [
+			{
+				"name" : "data_numors",
+				"type" : "array",
+				"description" : "List of numors concerned"
+			},
+			{
+				"name" : "vanadium_numors",
+				"type" : "array",
+				"description" : "List of numors concerned"
+			},
+			{
+				"name" : "transmission",
+				"type" : "float",
+				"default" : 0.95,
+				"description" : "Transmission e.g. 95"
+			}
+		],
+		"output" : [
+			{
+				"name" : "plot",
+				"type" : "plot_2d",
+				"description" : "2D plot of Q vs Omega",
+				"units" : "NA"
+			}
+		]
+	},
+	"plot_data" : {
+		"description" : "Plots raw data with corrections",
+		"instruments" : [
+			"D20"
+		],
+		"timeout" : 40,
+		"executable" : "%(scripts_directory)s/plot_data_%(instrument_name)s.prox",
+		"params" : [
+			{
+				"name" : "numors",
+				"type" : "array",
+				"description" : "List of numors concerned"
+			}
+		],
+		"output" : [
+			{
+				"name" : "plot",
+				"type" : "plot_1d",
+				"description" : "1D plot of theta vs counts",
+				"units" : "NA"
+			}
+		]
+	}
+}

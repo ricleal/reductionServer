@@ -13,12 +13,12 @@ class Test(unittest.TestCase):
     def testQuery(self):
         q = QuerySpecs()
         
-        self.assertTrue(q.doesLocalFunctionExist("theta_vs_counts"))
-        self.assertTrue(q.doesRemoteFunctionExist("theta_vs_counts"))
-        self.assertFalse(q.doesLocalFunctionExist("theta_vs_counts1"))
-        self.assertFalse(q.doesRemoteFunctionExist("theta_vs_counts1"))
+        self.assertTrue(q.doesFunctionExist("theta_vs_counts"))
+        
+        self.assertFalse(q.doesFunctionExist("theta_vs_counts1"))
+        
         self.assertEqual(q.getExecutableFullPath("theta_vs_counts"), 
-                         "/home/leal/git/reductionServer/scripts/theta_vs_counts_IN5.sh")
+                         "/home/leal/git/reductionServer/src/query/scripts/theta_vs_counts_IN5.py")
         self.assertEqual(q.getExecutableTimeout("theta_vs_counts"), 30)
 
 

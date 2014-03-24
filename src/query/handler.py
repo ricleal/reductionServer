@@ -106,7 +106,9 @@ class QueryHandler(object):
                 listOfNumors =  queryParams["numors"]
                 db = storage.getDBConnection()
                 listOfFiles = db.getListOfFiles(listOfNumors)
-                if len(listOfFiles) > 1:
+                if len(listOfFiles) <= 0:
+                    raise Exception("The numors %s don't exist in the DB"%listOfNumors)
+                elif len(listOfFiles) > 1:
                     params["data_files_full_path"]=listOfFiles
                     params["data_files"] = []
                     for i in listOfFiles:

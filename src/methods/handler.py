@@ -23,12 +23,12 @@ class HandlerMethods(object):
         '''
         Constructor
         '''
-        self._functionsRemoteFilename = configParser.get("General", "functions_remote_specs_file")
+        self._functionsFilename = configParser.get("General", "functions_specs_file")
         self._instrumentName = configParser.get("General", "instrument_name")
     
     def _getAllMethodsAsText(self):
         
-        with open(self._functionsRemoteFilename, 'r') as content_file:
+        with open(self._functionsFilename, 'r') as content_file:
             content = content_file.read()
         return content
         
@@ -42,7 +42,7 @@ class HandlerMethods(object):
         except Exception, e:
             message = "The remote specs file does not appear to have a json format."
             logger.exception(message  + str(e))
-            contentAsDic = Messages.error(message, str(e), self._functionsRemoteFilename );
+            contentAsDic = Messages.error(message, str(e), self._functionsFilename );
         return contentAsDic
     
     def getMethodsForThisInstrument(self):
@@ -61,7 +61,7 @@ class HandlerMethods(object):
         except Exception, e:
             message = "The remote specs file does not appear to have a json format."
             logger.exception(message  + str(e))
-            res = Messages.error(message, str(e), self._functionsRemoteFilename );
+            res = Messages.error(message, str(e), self._functionsFilename );
         return res
     
 

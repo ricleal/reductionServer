@@ -1,23 +1,11 @@
-### File INI configuration
-import ConfigParser, os
-
-CONFIG_FILENAME = 'config.ini'
-configParser = ConfigParser.ConfigParser()
-
-configParser.read([CONFIG_FILENAME,
-             os.path.join(os.getcwd(),CONFIG_FILENAME),
-             os.path.join(os.path.dirname(os.path.realpath(__file__)),CONFIG_FILENAME),
-             os.path.join(os.path.dirname(os.path.realpath(__file__)),os.path.join(os.pardir,CONFIG_FILENAME))]) #..
-
-
-
-
-### Mantid imports
+import config.config
+from config.config import configParser
 
 import sys
 sys.path.append(configParser.get('Mantid','bin_folder'))
-
 from mantid.simpleapi import *
+
+
 
 ### Usefull functions
 def workspaceToDic(ws):
