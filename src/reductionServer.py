@@ -139,10 +139,16 @@ def status():
 @route('/methods', method=['POST','GET'])
 def methods():
     h = HandlerMethods()
-    message = h.getMethods()
+    message = h.getAllMethods()
     logger.debug(message)
     return message
     
+@route('/methodsavailable', method=['POST','GET'])
+def methodsAvailable():
+    h = HandlerMethods()
+    message = h.getMethodsForThisInstrument()
+    logger.debug(message)
+    return message
 
 
 
