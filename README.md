@@ -22,11 +22,11 @@ The server implements the following methods:
 
 - ```http:://<server_address>:<port>/file/<numor>```
     - Send a file or an URL to the server by POST identified by a <numor>. The server stores the file/url in the database indexed by the numor. 
-- ```http:://<server_address>/query```
+- ```http:://<server_address>:<port>/query```
     - Send a query to the server indicating the data analysis routine to be called. See below the specs. The server returns and id for this query along with a foreseen timeout.
-- ```http:://<server_address>/results/<queryId>``` - Interrogates the server about the result of query previously sent with queryId. This method can be called either by POST or GET.
-- ```http:://<server_address>/status``` - Return the status of the queries in the server. 
-
+- ```http:://<server_address>:<port>/results/<queryId>``` - Interrogates the server about the result of query previously sent with queryId. This method can be called either by POST or GET.
+- ```http:://<server_address>:<port>/status``` - Return the status of the queries in the server. 
+- ```http:://<server_address>:<port>/methods``` - Return the methods details available per instrument.
 
 A single server is launched by instrument. A single server only deals with a single data processing software, i.e., either Mantid or LAMP.
 However, several servers can run in the same machine using different ports. The instrument name *MUST* be specified either in the configuration file, or when launching the server.  
