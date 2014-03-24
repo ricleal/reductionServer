@@ -10,11 +10,13 @@ import signal
 
 
 import config.config
+
 import data.messages
 from content.validator.filename import FileValidator
 from query.handler import QueryHandler
 from result.handler import HandlerResult
 from status.handler import HandlerStatus
+from methods.handler import HandlerMethods
 
 '''
 
@@ -133,6 +135,15 @@ def status():
     message = r.getQueries()
     logger.debug(message)
     return message
+
+@route('/methods', method=['POST','GET'])
+def methods():
+    h = HandlerMethods()
+    message = h.getMethods()
+    logger.debug(message)
+    return message
+    
+
 
 
 def main(argv):
