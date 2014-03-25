@@ -95,7 +95,8 @@ def fileHandler(numor):
 @route('/query', method='POST')
 def query():
     '''
-     
+    Get the query results. Sent json by the client should be of the form:
+    { "method" : "theta_vs_counts", "params" : { "numors":[94460]} }
     '''
     
     content = bottle.request.body.read()
@@ -122,7 +123,20 @@ def results(queryId):
     logger.debug(message)
     return message
     
+@route('/resultszipped/<queryId>', method=['POST','GET'])
+def resultszipped(queryId):
+    """
+    Return the contents of localDataStorage has json
     
+    Test:
+    curl -X POST  http://localhost:8080/resultszipped/<queryId>
+    """
+            
+    r = HandlerResult(queryId)
+    message = r.getQueryZipped()
+    logger.debug("Zipped content! size = %d"%len(message))
+    bottle.response.set_header('Content-Encoding', 'gzip')
+    return message
 
 
 @route('/status', method=['POST','GET'])

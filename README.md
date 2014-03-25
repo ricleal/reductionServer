@@ -25,6 +25,7 @@ The server implements the following methods:
 - ```http:://<server_address>:<port>/query```
     - Send a query to the server indicating the data analysis routine to be called. See below the specs. The server returns and id for this query along with a foreseen timeout.
 - ```http:://<server_address>:<port>/results/<queryId>``` - Interrogates the server about the result of query previously sent with queryId. This method can be called either by POST or GET.
+- ```http:://<server_address>:<port>/resultszipped/<queryId>``` - Interrogates the server about the result of query previously sent with queryId. The result is returned compressed with gzip. This method can be called either by POST or GET.
 - ```http:://<server_address>:<port>/status``` - Return the status of the queries in the server. 
 - ```http:://<server_address>:<port>/methods``` - Return the methods details available for all instruments.
 - ```http:://<server_address>:<port>/methodsavailable``` - Return the methods details available per this instrument.
@@ -236,6 +237,12 @@ $ curl --noproxy '*' -X GET http://172.17.43.190:8080/results/ac4605bd-1818-4a47
     "timeout": 30
 }
 ```
+For great amounts of data, the query result can also be transferred compresses (gzip). For this the method ```resultszipped``` must be invoked in a similar way as ```results```. Note below the option ```--compressed``` in the curl call:
+
+```
+curl --compressed --noproxy '*' -X POST http://localhost:8080/resultszipped/2e4b82af-a200-4695-8d06-b0ee5543fa0f
+```
+
 
 One can also see the status of all queries stored in the server:
 
