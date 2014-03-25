@@ -49,6 +49,41 @@
 				"type" : "float",
 				"default" : 0.95,
 				"description" : "Transmission e.g. 95"
+			},
+			{
+				"name" : "transmission",
+				"type" : "float",
+				"default" : 0.95,
+				"description" : "Transmission e.g. 95"
+			},
+			{
+				"name" : "vanadium_peak_range",
+				"type" : "array",
+				"default" : [
+					7000,
+					8500
+				],
+				"description" : "TOF limits to find vanadium peak"
+			},
+			{
+				"name" : "rebining_in_energy",
+				"type" : "array",
+				"default" : [
+					-3,
+					0.02,
+					3
+				],
+				"description" : "from step to"
+			},
+			{
+				"name" : "rebining_in_q",
+				"type" : "array",
+				"default" : [
+					0,
+					0.01,
+					2
+				],
+				"description" : "from step to"
 			}
 		],
 		"output" : [
