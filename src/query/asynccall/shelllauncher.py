@@ -152,7 +152,7 @@ class ShellLauncher(Launcher,Thread):
     def _addTempFileToInputParams(self,inputParams):
         if inputParams is None:
             inputParams = {}
-        self._resultFile = tempfile.NamedTemporaryFile(delete=False).name
+        self._resultFile = tempfile.NamedTemporaryFile(delete=False,prefix="live_",suffix=".json").name
         inputParams["result_file"] = self._resultFile
         return inputParams
    
@@ -164,7 +164,7 @@ class ShellLauncher(Launcher,Thread):
         """
         if self.inputParams is not None :
             logger.debug("Old file: " + self.command)
-            self.command = self.substituteParamsInFile(self.command,self.inputParams,suffix=".prox")
+            self.command = self.substituteParamsInFile(self.command,self.inputParams,prefix="live_",suffix=".prox")
             logger.debug("New file: " + self.command)
         
         # Assuming only files are passed to lamp
