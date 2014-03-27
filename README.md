@@ -347,9 +347,7 @@ where the input parameter ```numors``` is one of the numors associated with a fi
 Adding new reduction scripts
 ----------------------------
 
-In ```src/data``` two files exist with the local and remote definition of the queries to call.
-
--   The remote definition (```functions_remote.json```):
+In ```src/data``` there is a file with the definitions of the queries to call (```functions.json```):
 
 ```json
 {
@@ -360,11 +358,13 @@ In ```src/data``` two files exist with the local and remote definition of the qu
 			"IN5",
 			"IN6"
 		],
+		"timeout" : 30,
+		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_theta_vs_counts.py",
 		"params" : [
 			{
 				"name" : "numors",
-				"type" : "array",
-				"description" : "List of numors concerned"
+				"type" : "string",
+				"description" : "one or more numors splitted by ,"
 			}
 		],
 		"output" : [
@@ -376,16 +376,18 @@ In ```src/data``` two files exist with the local and remote definition of the qu
 			}
 		]
 	},
-	"plot_data" : {
-		"description" : "Plots raw data with corrections",
+	"tt2q" : {
+		"description" : "Calculates 2 theta to Q",
 		"instruments" : [
 			"D20"
 		],
+		"timeout" : 20,
+		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_tt2q.prox",
 		"params" : [
 			{
 				"name" : "numors",
-				"type" : "array",
-				"description" : "List of numors concerned"
+				"type" : "string",
+				"description" : "one or more numors splitted by ,"
 			}
 		],
 		"output" : [
@@ -396,33 +398,27 @@ In ```src/data``` two files exist with the local and remote definition of the qu
 				"units" : "NA"
 			}
 		]
-	}
-}
-```
-
--   The local definition (```functions_local.json```):
-
-```json
-{
-	"theta_vs_counts" : {
-		"timeout" : 30,
-		"executable" : "%(scripts_directory)s/theta_vs_counts_%(instrument_name)s.py",
-		"params" : [
-			{
-				"name" : "numors",
-				"type" : "array",
-				"description" : "List of numors concerned"
-			}
-		]
 	},
-	"plot_data" : {
-		"timeout" : 40,
-		"executable" : "%(scripts_directory)s/plot_data_%(instrument_name)s.prox",
+	"tt2d" : {
+		"description" : "Calculates 2 theta to d",
+		"instruments" : [
+			"D20"
+		],
+		"timeout" : 20,
+		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_tt2d.prox",
 		"params" : [
 			{
 				"name" : "numors",
-				"type" : "array",
-				"description" : "List of numors concerned"
+				"type" : "string",
+				"description" : "one or more numors splitted by ,"
+			}
+		],
+		"output" : [
+			{
+				"name" : "plot",
+				"type" : "plot_1d",
+				"description" : "1D plot of theta vs counts",
+				"units" : "NA"
 			}
 		]
 	}
