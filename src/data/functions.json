@@ -10,9 +10,9 @@
 		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_theta_vs_counts.py",
 		"params" : [
 			{
-				"name" : "data_numors",
-				"type" : "array",
-				"description" : "List of numors concerned"
+				"name" : "numors",
+				"type" : "string",
+				"description" : "one or more numors splitted by ,"
 			}
 		],
 		"output" : [
@@ -20,77 +20,6 @@
 				"name" : "plot",
 				"type" : "plot_1d",
 				"description" : "1D plot of theta vs counts",
-				"units" : "NA"
-			}
-		]
-	},
-	"sofqw" : {
-		"description" : "Calculates the S(Q,w). NOT IMPLEMENTED YET!!!",
-		"instruments" : [
-			"IN4",
-			"IN5",
-			"IN6"
-		],
-		"timeout" : 600,
-		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_sofqw.py",
-		"params" : [
-			{
-				"name" : "data_numors",
-				"type" : "array",
-				"description" : "List of numors concerned"
-			},
-			{
-				"name" : "vanadium_numors",
-				"type" : "array",
-				"description" : "List of numors concerned"
-			},
-			{
-				"name" : "transmission",
-				"type" : "float",
-				"default" : 0.95,
-				"description" : "Transmission e.g. 95"
-			},
-			{
-				"name" : "transmission",
-				"type" : "float",
-				"default" : 0.95,
-				"description" : "Transmission e.g. 95"
-			},
-			{
-				"name" : "vanadium_peak_range",
-				"type" : "array",
-				"default" : [
-					7000,
-					8500
-				],
-				"description" : "TOF limits to find vanadium peak"
-			},
-			{
-				"name" : "rebining_in_energy",
-				"type" : "array",
-				"default" : [
-					-3,
-					0.02,
-					3
-				],
-				"description" : "from step to"
-			},
-			{
-				"name" : "rebining_in_q",
-				"type" : "array",
-				"default" : [
-					0,
-					0.01,
-					2
-				],
-				"description" : "from step to"
-			}
-		],
-		"output" : [
-			{
-				"name" : "plot",
-				"type" : "plot_2d",
-				"description" : "2D plot of Q vs Omega",
 				"units" : "NA"
 			}
 		]
@@ -104,9 +33,9 @@
 		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_tt2q.prox",
 		"params" : [
 			{
-				"name" : "data_numors",
+				"name" : "numors",
 				"type" : "string",
-				"description" : "string with numors"
+				"description" : "one or more numors splitted by ,"
 			}
 		],
 		"output" : [
@@ -127,9 +56,9 @@
 		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_tt2d.prox",
 		"params" : [
 			{
-				"name" : "data_numors",
+				"name" : "numors",
 				"type" : "string",
-				"description" : "string with numors"
+				"description" : "one or more numors splitted by ,"
 			}
 		],
 		"output" : [
