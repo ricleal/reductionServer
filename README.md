@@ -28,7 +28,7 @@ The server implements the following methods:
 - ```http:://<server_address>:<port>/resultszipped/<queryId>``` - Interrogates the server about the result of query previously sent with queryId. The result is returned compressed with gzip. This method can be called either by POST or GET.
 - ```http:://<server_address>:<port>/status``` - Return the status of the queries in the server. 
 - ```http:://<server_address>:<port>/methods``` - Return the methods details available for all instruments.
-- ```http:://<server_address>:<port>/methodsavailable``` - Return the methods details available per this instrument.
+- ```http:://<server_address>:<port>/methodsavailable``` - Return the methods details available for the instrument the server is configured.
 
 A single server is launched by instrument. A single server only deals with a single data processing software, i.e., either Mantid or LAMP.
 However, several servers can run in the same machine using different ports. The instrument name *MUST* be specified either in the configuration file, or when launching the server.  
@@ -160,17 +160,17 @@ The reduction procedure starts with the submission of either physical data file 
 The same file or URL can be submitted to the server as many times as desired. If the ```numor``` is already in the database the file handler will be updated, e.g., the old file (if a file is submitted) will be deleted and replaced by the new one.
 
 
-Submitting a query for the previously submited numor 095893:
+Submitting a query for the previously submitted numor 095893:
 
 ```bash
-$ curl --noproxy '*' -X POST --data '{ "method" : "theta_vs_counts", "params" : { "numors":[095893]} }' http://172.17.43.190:8080/query
+$ curl --noproxy '*' -X POST --data '{ "method" : "theta_vs_counts", "params" : { "numors":"095893"} }' http://172.17.43.190:8080/query
 {"message": "Problems while validating the query...", "details": "JSON appears to be invalid.", "success": "False"}
 ```
 
 Note that numors are passed as integers and are not json valid if are preceded by 0. The correct query should be:
 
 ```bash
-$ curl --noproxy '*' -X POST --data '{ "method" : "theta_vs_counts", "params" : { "numors":[95893]} }' http://172.17.43.190:8080/query
+$ curl --noproxy '*' -X POST --data '{ "method" : "theta_vs_counts", "params" : { "numors":"95893"} }' http://172.17.43.190:8080/query
 {"query_id": "ac4605bd-1818-4a47-8407-bfef8f8031b9", "details": "/home/leal/git/reductionServer/src/query/scripts/theta_vs_counts_IN5.py", "timeout": 30}
 ```
 
@@ -180,7 +180,7 @@ Getting the query results for the query_id above:
 
 ```bash
 $ curl --noproxy '*' -X GET http://172.17.43.190:8080/results/ac4605bd-1818-4a47-8407-bfef8f8031b9
-{"status": "done", "input_params": {"data_file_full_path": "/tmp/live_A0RAaO.nxs", "instrument": "IN5", "data_file": "live_A0RAaO.nxs", "working_path": "/tmp"}, "executable": "/home/leal/git/reductionServer/src/query/scripts/theta_vs_counts_IN5.py", "start_time": "2014-03-19 12:24:03.267611", "start_local_time": "Wed Mar 19 12:24:03 2014", "end_local_time": "Wed Mar 19 12:24:21 2014", "instrument_name": "IN5", "end_time": "2014-03-19 12:24:21.776211", "timeout": 30, "queryId": "ac4605bd-1818-4a47-8407-bfef8f8031b9", "result": {"x_axis_values": [0.7091979356415034, (...),  54637.875642356776, 57166.32749483072, 48121.27000871812, 30504.04663524441, 9994.113718620729]], "x_axis_label": "Scattering angle", "x_axis_unit": "degrees", "x_axis_shape": [135], "data_units": ""}}
+{"status": "done", "input_params": {"data_file_full_path": "/tmp/live_A0RAaO.nxs", "instrument": "IN5",  "max_seconds_to_finish": 0, "data_file": "live_A0RAaO.nxs", "working_path": "/tmp"}, "executable": "/home/leal/git/reductionServer/src/query/scripts/theta_vs_counts_IN5.py", "start_time": "2014-03-19 12:24:03.267611", "start_local_time": "Wed Mar 19 12:24:03 2014", "end_local_time": "Wed Mar 19 12:24:21 2014", "instrument_name": "IN5", "end_time": "2014-03-19 12:24:21.776211", "timeout": 30, "queryId": "ac4605bd-1818-4a47-8407-bfef8f8031b9", "result": {"x_axis_values": [0.7091979356415034, (...),  54637.875642356776, 57166.32749483072, 48121.27000871812, 30504.04663524441, 9994.113718620729]], "x_axis_label": "Scattering angle", "x_axis_unit": "degrees", "x_axis_shape": [135], "data_units": ""}}
 ```
 
 The json output can be formatted pipping the output to ```python -mjson.tool```:
@@ -201,6 +201,7 @@ $ curl --noproxy '*' -X GET http://172.17.43.190:8080/results/ac4605bd-1818-4a47
         "working_path": "/tmp"
     }, 
     "instrument_name": "IN5", 
+    "max_seconds_to_finish": 0,
     "queryId": "ac4605bd-1818-4a47-8407-bfef8f8031b9", 
     "result": {
         "data_label": "Counts", 
@@ -337,11 +338,7 @@ A working example is:
 {
 	"method" : "theta_vs_counts",
 	"params" : {
-		"numors" : [
-			94460,
-			94461,
-			94462
-		]
+		"numors" : "094460,094461,094462"
 	}
 }
 ```
