@@ -7,10 +7,10 @@
 			"IN6"
 		],
 		"timeout" : 30,
-		"executable" : "%(scripts_directory)s/theta_vs_counts_%(instrument_name)s.py",
+		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_theta_vs_counts.py",
 		"params" : [
 			{
-				"name" : "numors",
+				"name" : "data_numors",
 				"type" : "array",
 				"description" : "List of numors concerned"
 			}
@@ -32,7 +32,7 @@
 			"IN6"
 		],
 		"timeout" : 600,
-		"executable" : "%(scripts_directory)s/sofqw_%(instrument_name)s.py",
+		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_sofqw.py",
 		"params" : [
 			{
 				"name" : "data_numors",
@@ -95,18 +95,41 @@
 			}
 		]
 	},
-	"plot_data" : {
-		"description" : "Plots raw data with corrections",
+	"tt2q" : {
+		"description" : "Calculates 2 theta to Q",
 		"instruments" : [
 			"D20"
 		],
-		"timeout" : 40,
-		"executable" : "%(scripts_directory)s/plot_data_%(instrument_name)s.prox",
+		"timeout" : 20,
+		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_tt2q.prox",
 		"params" : [
 			{
-				"name" : "numors",
-				"type" : "array",
-				"description" : "List of numors concerned"
+				"name" : "data_numors",
+				"type" : "string",
+				"description" : "string with numors"
+			}
+		],
+		"output" : [
+			{
+				"name" : "plot",
+				"type" : "plot_1d",
+				"description" : "1D plot of theta vs counts",
+				"units" : "NA"
+			}
+		]
+	},
+	"tt2d" : {
+		"description" : "Calculates 2 theta to d",
+		"instruments" : [
+			"D20"
+		],
+		"timeout" : 20,
+		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_tt2d.prox",
+		"params" : [
+			{
+				"name" : "data_numors",
+				"type" : "string",
+				"description" : "string with numors"
 			}
 		],
 		"output" : [
