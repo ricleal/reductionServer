@@ -66,7 +66,7 @@ def homepage_get():
     return data.messages.Messages.success("Server is up and running.")
 
 
-@route('/file/<numor:int>', method='POST')
+@route('/file/<numor:re:[0-9]+>', method='POST')
 def fileHandler(numor):
     '''
     
@@ -80,7 +80,7 @@ def fileHandler(numor):
     
     '''
     
-    logger.debug("Receiving file by HTTP POST with numor = %d" % numor)
+    logger.debug("Receiving file by HTTP POST with numor = %s" % numor)
     
     content = bottle.request.body.read()
     

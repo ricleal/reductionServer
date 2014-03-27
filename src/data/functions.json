@@ -25,7 +25,7 @@
 		]
 	},
 	"sofqw" : {
-		"description" : "Calculates the S(Q,w)",
+		"description" : "Calculates the S(Q,w). NOT IMPLEMENTED YET!!!",
 		"instruments" : [
 			"IN4",
 			"IN5",

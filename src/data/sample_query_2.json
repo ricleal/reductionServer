@@ -1,11 +1,7 @@
 {
 	"method" : "method_name_1",
 	"params" : {
-		"numors" : [
-			94460,
-			94461,
-			94462
-		],
+		"numors" : "94460,94461,94462",
 		"cutoff" : 12.2323,
 		"estimate" : 12.2323,
 		"par_list" : [

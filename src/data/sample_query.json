@@ -1,10 +1,6 @@
 {
 	"method" : "theta_vs_counts",
 	"params" : {
-		"numors" : [
-			94460,
-			94461,
-			94462
-		]
+		"numors" : "94460"
 	}
 }

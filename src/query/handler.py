@@ -103,7 +103,9 @@ class QueryHandler(object):
         if self.validator.jsonContent.has_key("params") :
             queryParams = self.validator.jsonContent["params"]
             if queryParams.has_key("numors"): # list of numors:
-                listOfNumors =  queryParams["numors"]
+                listOfNumorsText =  queryParams["numors"]
+                # TODO : We have to handle this for numor ranges
+                listOfNumors = listOfNumorsText.split(',')
                 db = storage.getDBConnection()
                 listOfFiles = db.getListOfFiles(listOfNumors)
                 if len(listOfFiles) <= 0:
