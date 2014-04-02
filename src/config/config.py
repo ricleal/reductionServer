@@ -29,15 +29,6 @@ parser = commandLineOptions();
 (options, args) = parser.parse_args()
 
 
-### File log config
-import os
-
-LOGGING_CONF=os.path.join(os.path.dirname(__file__),options.log)
-
-from logging import config as _config
-_config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
-
-
 ### File INI configuration
 import ConfigParser, os
 
@@ -54,14 +45,26 @@ if len(successFullyReadFiles) == 0:
 #              os.path.join(os.path.dirname(os.path.realpath(__file__)),CONFIG_FILENAME),
 #              os.path.join(os.path.dirname(os.path.realpath(__file__)),os.path.join(os.pardir,CONFIG_FILENAME))]) #..
 
+
+## If the instrument was set through the command line overwrite that from the config.ini
+
+if options.instrument is not None:
+    configParser.set("General", "instrument_name",options.instrument)
+
+### File log config
+# Log file name will be appended with the instrument name
+import os
+LOGGING_CONF=os.path.join(os.path.dirname(__file__),options.log)
+from logging import config as _config
+#_config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
+logFileName = '/tmp/live_%s.log'%configParser.get("General", "instrument_name")
+_config.fileConfig(LOGGING_CONF,defaults={'logfilename': logFileName},disable_existing_loggers=False)
+
 # Just to let know the user which config file was parsed
 import logging
 logger = logging.getLogger(__name__)
 logger.info("Using config file: %s"%successFullyReadFiles)
 
-## Because 
-if options.instrument is not None:
-    configParser.set("General", "instrument_name",options.instrument)
 
 logger.info("Server is defined for instrument: %s"%configParser.get("General", "instrument_name"))
 
