@@ -9,7 +9,10 @@ from config.config import options
 from config.config import configParser
 
 '''
-
+import sys
+import os
+import logging
+from logging import config as _config
 
 ### Command line options
 import optparse
@@ -45,6 +48,10 @@ if len(successFullyReadFiles) == 0:
 #              os.path.join(os.path.dirname(os.path.realpath(__file__)),CONFIG_FILENAME),
 #              os.path.join(os.path.dirname(os.path.realpath(__file__)),os.path.join(os.pardir,CONFIG_FILENAME))]) #..
 
+# if not valid file!
+if len(successFullyReadFiles) == 0:
+    sys.stderr.write('ERROR: The file %s is invalid...\n'%CONFIG_FILENAME)
+    sys.exit()
 
 ## If the instrument was set through the command line overwrite that from the config.ini
 
@@ -53,15 +60,13 @@ if options.instrument is not None:
 
 ### File log config
 # Log file name will be appended with the instrument name
-import os
+
 LOGGING_CONF=os.path.join(os.path.dirname(__file__),options.log)
-from logging import config as _config
 #_config.fileConfig(LOGGING_CONF,disable_existing_loggers=False)
 logFileName = '/tmp/live_%s.log'%configParser.get("General", "instrument_name")
 _config.fileConfig(LOGGING_CONF,defaults={'logfilename': logFileName},disable_existing_loggers=False)
 
 # Just to let know the user which config file was parsed
-import logging
 logger = logging.getLogger(__name__)
 logger.info("Using config file: %s"%successFullyReadFiles)
 
