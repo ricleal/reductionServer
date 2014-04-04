@@ -135,7 +135,7 @@ class QueryHandler(object):
     def _storeExecutableResults(self,resultingJson):
         queryJson = {}
         logger.debug("storeExecutableResults")
-        logger.debug(resultingJson)
+        logger.debug(pprint.pformat(resultingJson))
         queryJson["result"] = resultingJson
         queryJson["status"] = "done" 
         queryJson["end_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")

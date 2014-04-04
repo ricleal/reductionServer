@@ -25,4 +25,4 @@ def fixPlot1D(jsonData):
     
     # outputs the dic correscted
     
-    return json.dumps(d)
+    return d

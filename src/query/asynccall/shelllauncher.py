@@ -206,7 +206,7 @@ class ShellLauncher(Launcher,Thread):
         time.sleep(0.1)
         self.send(self.command)
         # Needs hight time out otherwise don't write to the file!
-        time.sleep(3)
+        time.sleep(10)
     
     def readOutput(self):
         return self.receiveOutput()
@@ -246,7 +246,7 @@ class ShellLauncher(Launcher,Thread):
         if self._isSubProcessRunning() :
             self.__process.kill()
         time.sleep(0.1)
-        print 'Done!'
+        logger.debug('Exiting shell launcher...')
     
     def __del__(self):
         if self._isSubProcessRunning() :
@@ -271,14 +271,16 @@ class ShellLauncher(Launcher,Thread):
         
         if self._resultFile is not None:
             try:
-                print self._resultFile
+                logger.debug("Temporary file with resulting json: %s"%self._resultFile)
                 with open(self._resultFile, 'r') as read_file:
                     contents = read_file.read()
+                if len(contents) <= 0 :
+                    raise Exception("Results file appears to be empty!")
                 self._result = fixPlot1D(contents)
                 os.remove(self._resultFile)
             except Exception, e:
                 logger.exception(str(e))
-                self._result = ""
+                self._result = None
         
         return self._result
         
