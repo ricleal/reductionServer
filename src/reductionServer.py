@@ -2,28 +2,27 @@
 
 import bottle
 from bottle import route
-import json
+
 import sys
 import logging
-import os.path
-import filehandlers.handlermanager
 import time
 import signal
-import uuid
-import simplejson
-import pprint
 
-import data.dataStorage
-import data.queryStorage
-import data.queryValidator
-import reduction.queryLauncher
+
+import config.config
+
 import data.messages
+from content.validator.filename import FileValidator
+from query.handler import QueryHandler
+from result.handler import HandlerResult
+from status.handler import HandlerStatus
+from methods.handler import HandlerMethods
 
 '''
 
 Bottle reduction server
 
-To test use curl:
+To old_test use curl:
 -X GET | HEAD | POST | PUT | DELETE
 Use curl -v for verbose
 
@@ -34,7 +33,7 @@ It assumes:
 
 '''
 
-import config.config
+
 
 logger = logging.getLogger("server")
 
@@ -44,14 +43,10 @@ def signal_handler(signal_, frame):
     logger.info("Server caught a signal! Server is shutting down...")
     logger.info("Killing running processes...")
     
-    queryManager = reduction.queryLauncher.QueryLauncher()
-    queryManager.killAllRunningLaunchers()
+    # TODO
+    # Any cleanups needed
     
-    # delete temporary nexus files
-    from data.dataStorage import dataStorage
-    dataStorage.deleteContent()
-    
-    time.sleep(1)
+    time.sleep(0.1)
     
     logger.info("Server shut down!")
     sys.exit(0)
@@ -71,83 +66,48 @@ def homepage_get():
     return data.messages.Messages.success("Server is up and running.")
 
 
-@route('/file/<numor:int>', method='POST')
+@route('/file/<numor:re:[0-9]+>', method='POST')
 def fileHandler(numor):
     '''
+    
+    User can send a binary / ascii file or an url for a file location.
+    
     To test:
     
-    cd ~/Documents/Mantid/IN6
-    curl -X POST --data-binary @157589.nxs http://localhost:8080/file/<numor>
+    curl -v --noproxy '*' -X POST --data-binary @094460.nxs http://localhost:8080/file/094460
+
+    curl -v --noproxy '*' -X POST --data "`pwd`" http://localhost:8080/file/094460
+    
     '''
     
-    logger.debug("Receiving file by HTTP POST with numor = %d" % numor)
+    logger.debug("Receiving file by HTTP POST with numor = %s" % numor)
     
     content = bottle.request.body.read()
-    # based on the content get the right file handler
-    handlerManager = filehandlers.handlermanager.Manager(content)
-    fileHandler = handlerManager.getRespectiveHandler()
     
-    if fileHandler is None:
-        return data.messages.Messages.error("File received is not valid", "Neither ASCII nor Nexus");
-    else:
-        from data.dataStorage import dataStorage
-        dataStorage[numor] = fileHandler
-        logger.debug("DataStorage:\n" + pprint.pformat(dataStorage.items()))
-        return data.messages.Messages.success("File successfully received.", "The handler is: " + fileHandler.__class__.__name__)
-
+    v = FileValidator(content)
+    message = v.validateFile(numor)
+    
+    logger.debug(message)
+    return message
+    
+    
 #@route('/query/<numors:re:[0-9,]+>', method='POST')
 @route('/query', method='POST')
 def query():
     '''
-    
-    curl -v -H "Content-Type: application/json" \
-     -H "Accept: application/json"  \
-     -X POST \
-     -d '{"query":"plot", "axes":"x,y"}' \
-     http://localhost:8080/query>
-     
+    Get the query results. Sent json by the client should be of the form:
+    { "method" : "theta_vs_counts", "params" : { "numors":[94460]} }
     '''
     
     content = bottle.request.body.read()
-    
     logger.debug("RAW Query received: " + str(content))
-        
-    try :
-        contentAsDict = json.loads(content)
-    except Exception, e:
-        message = "JSON appears to be invalid."
-        logger.exception(message  + str(e))
-        return data.messages.Messages.error(message,str(e))
     
-    logger.debug("FORMATTED Query received: " + str(contentAsDict))
+    qh = QueryHandler(content)
+    message = qh.process()
+    logger.debug(message)
+    return message
     
     
-    queryValidator = data.queryValidator.QueryValidator(contentAsDict)
-    
-    validErrorMessage = queryValidator.validateFunction()
-    if validErrorMessage is not None :
-        return validErrorMessage
-    
-    validErrorMessage = queryValidator.validateNumors()
-    if validErrorMessage is not None :
-        return validErrorMessage
-    
-    queryId = str(uuid.uuid4())
-    from data.queryStorage import queryStorage
-    queryStorage.addQuery(queryId,contentAsDict)
-    
-    logger.debug("QueryStorage:\n" + pprint.pformat(queryStorage.items()))
-    
-    #TODO: handle query
-    queryStorage[queryId]["executable"] = queryValidator.getExecutable() 
-    queryStorage[queryId]["timeout"] = queryValidator.getExecutableTimeout()
-    
-    q = reduction.queryLauncher.QueryLauncher()
-    q.processQuery(queryId)
-    
-    logger.debug("DataStorage:\n" + pprint.pformat(queryStorage.items()))
-    
-    return {"query_id" : queryId}
 
 @route('/results/<queryId>', method=['POST','GET'])
 def results(queryId):
@@ -157,46 +117,53 @@ def results(queryId):
     Test:
     curl -X POST  http://localhost:8080/results/<queryId>
     """
+            
+    r = HandlerResult(queryId)
+    message = r.getQuery()
+    logger.debug(message)
+    return message
     
-    from data.queryStorage import queryStorage
-    try:
-        thisQuery = queryStorage[queryId].copy() # copy by value
-        logger.debug("This Query:\n" + pprint.pformat(thisQuery))
-        del thisQuery["launcher"] # Json can't serialise objects!
-        return simplejson.dumps(thisQuery)
-    except Exception, e:
-        message = "query_id appears to be invalid."
-        logger.exception(message  + str(e))
-        return data.messages.Messages.error(message,str(e))
+@route('/resultszipped/<queryId>', method=['POST','GET'])
+def resultszipped(queryId):
+    """
+    Return the contents of localDataStorage has json
     
+    Test:
+    curl -X POST  http://localhost:8080/resultszipped/<queryId>
+    """
+            
+    r = HandlerResult(queryId)
+    message = r.getQueryZipped()
+    logger.debug("Zipped content! size = %d"%len(message))
+    bottle.response.set_header('Content-Encoding', 'gzip')
+    return message
+
 
 @route('/status', method=['POST','GET'])
 def status():
     """
-    Returns pairs of query_ids = status
+    Returns data of queries
     """
-    ret = {"dataStorage":{},"queryStorage":{}}
     
-    from data.dataStorage import dataStorage
+    r = HandlerStatus()
+    message = r.getQueries()
+    logger.debug(message)
+    return message
+
+@route('/methods', method=['POST','GET'])
+def methods():
+    h = HandlerMethods()
+    message = h.getAllMethods()
+    logger.debug(message)
+    return message
     
-    for k in dataStorage.keys():
-        try:
-            ret["dataStorage"][k] = '%s'%dataStorage[k]
-        except:
-            pass
-    
-    
-    from data.queryStorage import queryStorage
-    
-    
-    for k in queryStorage.keys():
-        try:
-            ret["queryStorage"][k] = queryStorage[k]["status"]
-        except:
-            pass
-    
-    logger.debug("Satus:\n" + pprint.pformat(ret))
-    return ret
+@route('/methodsavailable', method=['POST','GET'])
+def methodsAvailable():
+    h = HandlerMethods()
+    message = h.getMethodsForThisInstrument()
+    logger.debug(message)
+    return message
+
 
 
 def main(argv):

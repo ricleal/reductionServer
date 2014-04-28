@@ -1,54 +1,73 @@
 {
-	"theta_vs_counts":{
-		"description":"Calculates the detector counts as a function of theta",
-		"timeout":30,
-		"parameters":{
-			"input":[
-				
-			],
-			"output":[
-				{
-					"name":"plot",
-					"type":"json",
-					"description":"1D plot of theta vs counts",
-					"units":"NA"
-				}
-				
-			]
-			
-		},
-		"local_mapping":{
-			"executable":"%(scripts_directory)s/theta_vs_counts_%(instrument_name)s.sh",
-			"parameters":{
-				"input":[
-					{
-						"name":"filename",
-						"type":"string",
-						"description":"local nexus file name"
-					}
-					
-				],
-				"output":[
-					{
-						"name":"plot",
-						"type":"json",
-						"description":"1D plot of theta vs counts",
-						"units":"NA"
-					}
-					
-				]
-				
+	"theta_vs_counts" : {
+		"description" : "Calculates the detector counts as a function of theta",
+		"instruments" : [
+			"IN4",
+			"IN5",
+			"IN6"
+		],
+		"timeout" : 30,
+		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_theta_vs_counts.py",
+		"params" : [
+			{
+				"name" : "numors",
+				"type" : "string",
+				"description" : "one or more numors splitted by ,"
 			}
-			
-		}
-		
+		],
+		"output" : [
+			{
+				"name" : "plot",
+				"type" : "plot_1d",
+				"description" : "1D plot of theta vs counts",
+				"units" : "NA"
+			}
+		]
 	},
-	"plot_data":{
-		"description":"Plots raw data with corrections",
-		"timeout":40,
-		"local_mapping":{
-			"executable":"%(scripts_directory)s/plot_data_%(instrument_name)s.sh"			
-		}
-		
+	"tt2q" : {
+		"description" : "Calculates 2 theta to Q",
+		"instruments" : [
+			"D20"
+		],
+		"timeout" : 20,
+		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_tt2q.prox",
+		"params" : [
+			{
+				"name" : "numors",
+				"type" : "string",
+				"description" : "one or more numors splitted by ,"
+			}
+		],
+		"output" : [
+			{
+				"name" : "plot",
+				"type" : "plot_1d",
+				"description" : "1D plot of theta vs counts",
+				"units" : "NA"
+			}
+		]
+	},
+	"tt2d" : {
+		"description" : "Calculates 2 theta to d",
+		"instruments" : [
+			"D20"
+		],
+		"timeout" : 20,
+		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_tt2d.prox",
+		"params" : [
+			{
+				"name" : "numors",
+				"type" : "string",
+				"description" : "one or more numors splitted by ,"
+			}
+		],
+		"output" : [
+			{
+				"name" : "plot",
+				"type" : "plot_1d",
+				"description" : "1D plot of theta vs counts",
+				"units" : "NA"
+			}
+		]
 	}
 }

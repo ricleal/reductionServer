@@ -1,0 +1,17 @@
+; ---------------------------------------------------------------------
+; Plot D20 data
+;  
+; ---------------------------------------------------------------------fi
+
+json_compile
+
+RDSET,inst="%{instrument}"
+P_SET_PATH,"%{working_path}"
+
+w1 = rdopr("%{data_file}",datp=d)
+normalize,w1,100000
+w1 = tt2q(w1)
+
+s = { data_values : w1, data_shape : size(w1,/DIMENSIONS), data_label :  d.Y_TIT, data_units :  d.Y_TIT, x_axis_shape : size(d.X,/DIMENSIONS), x_axis_values : d.X, x_axis_label : d.X_TIT, x_axis_unit : d.X_TIT }
+
+export_json,s,file='%{result_file}'

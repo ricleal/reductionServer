@@ -1,10 +1,6 @@
-# File just for testing. Below are typical queries
 {
-	"function":"theta_vs_counts",
-	"input_params":{
-		"numors":[
-			12345
-		]
-		
+	"method" : "theta_vs_counts",
+	"params" : {
+		"numors" : "94460"
 	}
 }
