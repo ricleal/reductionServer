@@ -14,9 +14,9 @@ import config.config
 import data.messages
 from content.validator.filename import FileValidator
 from query.handler import QueryHandler
-from result.handler import HandlerResult
-from status.handler import HandlerStatus
-from methods.handler import HandlerMethods
+from result.handler import ResultHandler
+from status.handler import StatusHandler
+from methods.handler import MethodsHandler
 
 '''
 
@@ -118,7 +118,7 @@ def results(queryId):
     curl -X POST  http://localhost:8080/results/<queryId>
     """
             
-    r = HandlerResult(queryId)
+    r = ResultHandler(queryId)
     message = r.getQuery()
     logger.debug(message)
     return message
@@ -132,7 +132,7 @@ def resultszipped(queryId):
     curl -X POST  http://localhost:8080/resultszipped/<queryId>
     """
             
-    r = HandlerResult(queryId)
+    r = ResultHandler(queryId)
     message = r.getQueryZipped()
     logger.debug("Zipped content! size = %d"%len(message))
     bottle.response.set_header('Content-Encoding', 'gzip')
@@ -145,21 +145,21 @@ def status():
     Returns data of queries
     """
     
-    r = HandlerStatus()
+    r = StatusHandler()
     message = r.getQueries()
     logger.debug(message)
     return message
 
 @route('/methods', method=['POST','GET'])
 def methods():
-    h = HandlerMethods()
+    h = MethodsHandler()
     message = h.getAllMethods()
     logger.debug(message)
     return message
     
 @route('/methodsavailable', method=['POST','GET'])
 def methodsAvailable():
-    h = HandlerMethods()
+    h = MethodsHandler()
     message = h.getMethodsForThisInstrument()
     logger.debug(message)
     return message

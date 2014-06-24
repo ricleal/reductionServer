@@ -14,7 +14,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
-class HandlerResult(object):
+class ResultHandler(object):
     '''
     classdocs
     '''

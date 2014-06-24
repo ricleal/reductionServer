@@ -5,13 +5,13 @@ Created on Mar 13, 2014
 '''
 import unittest
 
-from result.handler import HandlerResult
+from result.handler import ResultHandler
 
 class Test(unittest.TestCase):
 
     def testResult(self):
         queryId = "76d5c930-1737-4dbc-80e0-dbc34339a0e7"
-        r = HandlerResult(queryId)
+        r = ResultHandler(queryId)
         res = r.getQuery()
         print res
         self.assertIn('status',res)

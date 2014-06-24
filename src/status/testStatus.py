@@ -5,13 +5,13 @@ Created on Mar 13, 2014
 '''
 import unittest
 
-from status.handler import HandlerStatus
+from status.handler import StatusHandler
 
 class Test(unittest.TestCase):
 
     def testResult(self):
         
-        r = HandlerStatus()
+        r = StatusHandler()
         res = r.getQueries()
         print res
         self.assertGreater(len(res),0)

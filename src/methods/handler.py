@@ -13,7 +13,7 @@ import ast
 
 logger = logging.getLogger(__name__)
 
-class HandlerMethods(object):
+class MethodsHandler(object):
     '''
     classdocs
     '''

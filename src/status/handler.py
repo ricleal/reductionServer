@@ -12,7 +12,7 @@ import simplejson
 
 logger = logging.getLogger(__name__)
 
-class HandlerStatus(object):
+class StatusHandler(object):
     '''
     classdocs
     '''
