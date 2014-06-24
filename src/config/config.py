@@ -73,3 +73,8 @@ logger.info("Using config file: %s"%successFullyReadFiles)
 
 logger.info("Server is defined for instrument: %s"%configParser.get("General", "instrument_name"))
 
+## Print parser
+for section_name in configParser.sections():
+    logger.debug('Section: ' + section_name)
+    for name, value in configParser.items(section_name):
+        logger.debug('  %s = %s' % (name, value))
