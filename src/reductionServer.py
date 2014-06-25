@@ -2,6 +2,7 @@
 
 import bottle
 from bottle import route
+from bottle import response
 
 import sys
 import logging
@@ -148,6 +149,8 @@ def status():
     r = StatusHandler()
     message = r.getQueries()
     logger.debug(message)
+    # Because the response is [...] it's not considered json
+    response.content_type = 'application/json'
     return message
 
 @route('/methods', method=['POST','GET'])
