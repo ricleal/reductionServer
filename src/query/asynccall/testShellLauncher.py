@@ -56,7 +56,7 @@ class Test(unittest.TestCase):
         params = {'instrument' : 'D20',
                   'working_path' : '/home/leal/Documents/Mantid/D20/',
                   'data_file':'829007'}
-        p.sendCommand('/home/leal/git/reductionServer/src/query/scripts/plot_data_D20.prox', 30,params)
+        p.sendCommand('/home/leal/git/reductionServer/src/query/scripts/ILL_D20_tt2d.prox', 30,params)
         
         out = p.readOutput()
         print out

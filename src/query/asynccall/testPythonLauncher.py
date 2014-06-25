@@ -61,7 +61,7 @@ class Test(unittest.TestCase):
     def testRealScript(self):
         p = PythonScriptLauncher()
         params = {'data_file_full_path':'/net/serdon/illdata/131/in5/exp_TEST-2216/rawdata/104041.nxs'}
-        p.sendCommand('/home/leal/git/reductionServer/src/query/scripts/theta_vs_counts_IN5.py', 30,params)
+        p.sendCommand('/home/leal/git/reductionServer/src/query/scripts/ILL_IN5_theta_vs_counts.py', 30,params)
         res = p.getResult()
         print res
         self.assertIn("data_values", res)
