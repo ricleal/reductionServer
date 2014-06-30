@@ -8,7 +8,7 @@ import sys
 import logging
 import time
 import signal
-
+import os
 
 import config.config
 
@@ -42,14 +42,9 @@ logger = logging.getLogger("server")
 # Handle signals
 def signal_handler(signal_, frame):
     logger.info("Server caught a signal! Server is shutting down...")
-    logger.info("Killing running processes...")
-    
-    # TODO
-    # Any cleanups needed
-    
-    time.sleep(0.1)
-    
-    logger.info("Server shut down!")
+    logger.info("Server shuting down!")
+    logger.info("Server killing all processes in my group...")
+    os.killpg(0, signal.SIGKILL) # kill all processes in my group
     sys.exit(0)
      
 signal.signal(signal.SIGINT, signal_handler)
