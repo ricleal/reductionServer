@@ -18,8 +18,6 @@ def getClass( className, argsToConstructor=None ):
     '''
     returns a class instance given a name
     :param className : class name 
-    :type className : str
-    
     '''
     if argsToConstructor is None:
         return globals()[className]()    
@@ -30,7 +28,10 @@ def getClass( className, argsToConstructor=None ):
 
 class LaunchManager(object):
     '''
-    classdocs
+    LaunchManager 
+    
+    Reads the config.ini files and initialises the Launcher to be used (e.g. Python or shell).
+    
     '''
 
     def __init__(self):
@@ -57,6 +58,7 @@ class LaunchManager(object):
         '''
         Python:
         After the script run, dump workspace to json and then to a tmp file. Return a cat tmpfile
+        
         Lamp:
         1 . create a tmp file in python and send commando to lamp:  export_json,s,file="${temp_filename}"
         2. Correct the tmp file - python script

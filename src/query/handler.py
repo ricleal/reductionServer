@@ -25,7 +25,10 @@ logger = logging.getLogger(__name__)
 
 class QueryHandler(object):
     '''
-    classdocs
+    Main class to handle the query sent by the client.
+    
+    One object per query!!
+    
     '''
 
     jsonSuccessTemplate = """{
@@ -36,12 +39,17 @@ class QueryHandler(object):
 
     def __init__(self, content):
         '''
-        Constructor
+        builds a validator first
         '''
         self.validator = QueryValidator(content)
     
     def process(self):
-        
+        '''
+        validates query first, if no errors:
+        - build query fields : add key,value entries
+        - insert query into the DB
+        - launch it in a separate thread (thread runs until finishes or timeout!)
+        '''
         errors = self.validator.validateQuery()
         if errors is not None:
             logger.error("Problems while validating the query...")
@@ -60,10 +68,9 @@ class QueryHandler(object):
                 logger.debug("Insert query in the DB")
                 self._storeInTheDB(queryJson)
                 
-                # This must be executed in thread!!
+                # _executeQueryInParallel(...) handles the system call
                 t = threading.Thread(target=self._executeQueryInParallel, args=(inputParams,))
                 t.start()
-                ####
                                 
                 # Return
                 successMessageStr = self.jsonSuccessTemplate%(self.queryId,
@@ -79,6 +86,10 @@ class QueryHandler(object):
           
     
     def _buildQuery(self):
+        '''
+        Add complementary fields to the query
+        Note: Query is stored in the DB as json!
+        '''
         queryJson = {}
         queryJson["queryId"] = self.queryId
         queryJson["start_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
@@ -94,8 +105,30 @@ class QueryHandler(object):
     
     def _buildInputParams(self):
         '''
-        Necessary input params for Lamp and Mantid
-        Some redundancy is introduced as scripts read different formats
+        Necessary input params for Lamp and Mantid.
+        The json query has usually the following structure:
+        {
+            "method" : "theta_vs_counts",
+            "params" : {
+                "numors" : "94460"
+            }
+        }
+        
+        This routine 
+        - split the numors from text into a list
+        - Check if numors are in the DB (i.e. if a path file entry exists!)
+        introduces the following fields:
+        - data_files_full_path
+        - data_files
+        or the following 2:
+        - data_file_full_path
+        - data_file
+        - working_path
+        Some redundancy is introduced as scripts read different formats.
+        
+        TODO:
+        More fields may be needed in the future!
+        
         '''
         params = {}
         params["instrument"] =  configParser.get("General", "instrument_name")
@@ -127,14 +160,16 @@ class QueryHandler(object):
     def _launchTheExecutable(self, inputParams):
         logger.debug("Launching : " + self.validator.executable)
         m = LaunchManager()
-        m.sendCommand(self.validator.executable, self.validator.timeout,inputParams)
+        m.sendCommand(self.validator.executable, 
+                      self.validator.timeout,
+                      inputParams)
         res = m.getResult()
         return res
     
     
     def _storeExecutableResults(self,resultingJson):
         queryJson = {}
-        logger.debug("storeExecutableResults")
+        logger.debug("storing results of the routine in the Database. Query id = " + self.queryId )
         logger.debug(pprint.pformat(resultingJson))
         queryJson["result"] = resultingJson
         queryJson["status"] = "done" 

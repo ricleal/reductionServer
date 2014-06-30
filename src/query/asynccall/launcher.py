@@ -3,13 +3,10 @@ Created on Feb 18, 2014
 
 @author: leal
 '''
-import subprocess
-import time
 import logging
-import os
 import abc
 import tempfile
-import pprint
+
 
 logger = logging.getLogger(__name__)
 
