@@ -1,0 +1,175 @@
+*****************************
+;* SANS REDUCTION BATCH FILE *
+;*****************************
+
+json_compile
+
+; Instrument, Path and Calibration (input)
+; ********************************
+I = 'd22'                     ;Instrument
+H = '/home/cs/richard/SANSron'  ;Working path or blank
+D = '/home/cs/richard/SANSron'  ;Data    path or blank
+C = ''                        ;Cycle  '123' or blank
+P = ''                        ;Proposal 'InternalUse' or blank
+F ='/home/cs/lambda/CALIBRATION/'+I+'.cal' ;Calibration file or blank
+
+;I = "%{instrument}"                     ;Instrument
+;H = "%{working_path}"  ;Working path or blank
+;D = "%{working_path}"  ;Data    path or blank
+;C = ''                        ;Cycle  '123' or blank
+;P = ''                        ;Proposal 'InternalUse' or blank
+;F ='/home/cs/lambda/CALIBRATION/'+I+'.cal' ;Calibration file or blank
+
+
+; Treatment Options (input)
+; *****************
+O = {UseMONITOR:'yes' , WaterXsectionVal:0 , AbsSCALE:'yes' , reRead:'no' , Qdep:'yes'}
+
+; TRANSMISSION Files and XYrangeROI (input)
+; *********************************
+T = {Tsample:'31290:31299' , Tscell:'31288' , Tsbeam:'31287' , Twater:'31289' , Twcell:'31288' , Twbeam:'31287'}
+R = {XrTRANS:[60,68] , YrTRANS:[59,71]}
+
+; WATER Files , WaterBeamBox[x1,y1,nx,ny] and Thickness (input)
+; *****************************************************
+W = {Water:'31314' , WaterCell:'31313' , WaterB4C:'31312' , WaterBox:[59,58,9,12] , WThickness:0.1}
+
+; Configuration, BeamCenter file, XYRangeROI, optional Flux file (input)
+; **************************************************************
+G = {CONFIG:'low'    , BeamTrC:'31287' , XrCENTER:[60,68] , YrCENTER:[59,69] , FLUX:''} ; CONFIG angles:'low','middle','high'
+G = {CONFIG:'middle' , BeamTrC:'31285' , XrCENTER:[60,69] , YrCENTER:[60,70] , FLUX:''} ; CONFIG angles:'low','middle','high'
+G = {CONFIG:'high'   , BeamTrC:'31286' , XrCENTER:[21,31] , YrCENTER:[58,71] , FLUX:''} ; CONFIG angles:'low','middle','high'
+
+; SAMPLE Files and BEAMwidthMask and Thickness (input)
+; ********************************************
+S = {Sample:'31302:31311' , SampleCell:'31301' , SampleB4C:'31300' , BeamWidth:[10,12] , SThickness:0.2}
+S = {Sample:'31315:31324' , SampleCell:'31313' , SampleB4C:'31312' , BeamWidth:[11,13] , SThickness:0.2}
+S = {Sample:'31328:31337' , SampleCell:'31326' , SampleB4C:'31325' , BeamWidth:[12,15] , SThickness:0.2}
+
+; Additional DETECTOR masks box[x1,y1,nx,ny] Xline[1,2,3] Yline[1,2] (input)
+; ******************************************************************
+M = {MDETbox:0 , MDETxlines:0 , MDETylines:0}
+
+; Result option: 'Reset' (reset before treat) or 'Merge' (merge in files) (input)
+; ***********************************************************************          
+Q = {Option:'Reset' , Background:0.}
+Q = {Option:'Merge' , Background:0.}
+
+; END OF INPUTS
+; *************
+
+; @live_sans_reduction.prox 
+; START ***********************************************
+; Workspaces containing current config data set
+; *********************************************
+; W1 = Transmission WATER                      
+; W2 = Transmission WATER CELL                 
+; W3 = Transmission SAMPLE                     
+; W4 = Transmission SAMPLE CELL                
+; W5 = Transmission SAMPLE BEAM                
+; W6 = Transmission WATER  BEAM                
+; W9 = Transmission SAMPLE for PHI0 and CENTER 
+;                                              
+; W7 = Mask using a BACKGROUND (or SECTORS)'   
+; W8 = Mask using a WATER'                     
+;                                              
+; W10= WATER                                   
+; W11= WATER  CELL                             
+; W12= SAMPLE                                  
+; W13= SAMPLE CELL                             
+; W14= Cd/B4C SAMPLE                           
+; W15= Cd/B4C WATER                            
+;                                              
+; W16= Corrected DATA selected by the slider   
+; W17= EFFICIENCY DETECTOR IMAGE               
+; W18, W31 W32 W33= CORRECTED DATA: current conf, 1 2 3
+; W19, W34 W35 W36= INTEGRATIONS  : current conf, 1 2 3
+; 
+; W21= SUPRPLOT inspection                     
+; W22= MERGED CURVES                           
+; W23= DELTA Q                                 
+;                                              
+; W24= Used for ALTERNATIVE WATER              
+; W25= Used for imported gnum.100 files        
+; W26= Used for ALTERNATIVE FLUX trs.          
+
+; Instrument, Path and Calibration
+; ********************************
+RDSET, inst=I
+if H gt ' ' then CD, H
+if D gt ' ' then RDSET, PATH    =D
+if C gt ' ' then RDSET, CYCLE   =C
+if P gt ' ' then RDSET, PROPOSAL=P
+IF F gt ' ' then CALIBRATION, file=F else CALIBRATION, /nocal
+
+; Init the Application, additional detector mask and Water beamStop
+; *****************************************************************
+SANS_SETTINGS, instrument=I, Options=O, /nowind
+SANS_MASK,     box=M.MDETbox, Xline=M.MDETxlines, Yline=M.MDETylines, WaterBox=W.WaterBox
+
+; Calculate Transmissions , Center and Flux
+; *****************************************
+A = SANS_TRANSM(T, Xrange=R.XrTRANS, Yrange=R.YrTRANS, /Mask)
+B = SANS_CENTER(G, Xr=G.XrCENTER, yr=G.YrCENTER, /Fit, /Mask)
+
+; BeamStop Sample Mask
+; ********************
+SANS_MASK,  XYbeam=S.BeamWidth ;!!!SEE beammod
+if S.Sample le ' ' then ENDPROX
+
+; Data Correction
+; ***************
+W18 = SANS_COR(sample=S,water=W)
+
+; 2Pi Radial Integration, should reset previous results before integration
+; ************************************************************************
+if strupcase(Q.Option) eq 'RESET' then SANS_MERGE,/reset
+w19=SANS_RADIAL(W18,minInt=5,incr=1.0)
+
+; Merge
+; *****
+if strupcase(Q.Option) eq 'MERGE' then SANS_MERGE, background=Q.background , Instrument=I
+; @live_sans_reduction.prox 
+; END ***********************************************
+
+
+; Workspaces containing current config data set
+; *********************************************
+; W1 = Transmission WATER                      
+; W2 = Transmission WATER CELL                 
+; W3 = Transmission SAMPLE                     
+; W4 = Transmission SAMPLE CELL                
+; W5 = Transmission SAMPLE BEAM                
+; W6 = Transmission WATER  BEAM                
+; W9 = Transmission SAMPLE for PHI0 and CENTER 
+;                                              
+; W7 = Mask using a BACKGROUND (or SECTORS)'   
+; W8 = Mask using a WATER'                     
+;                                              
+; W10= WATER                                   
+; W11= WATER  CELL                             
+; W12= SAMPLE                                  
+; W13= SAMPLE CELL                             
+; W14= Cd/B4C SAMPLE                           
+; W15= Cd/B4C WATER                            
+;                                              
+; W16= Corrected DATA selected by the slider   
+; W17= EFFICIENCY DETECTOR IMAGE               
+; W18, W31 W32 W33= CORRECTED DATA: current conf, 1 2 3
+; W19, W34 W35 W36= INTEGRATIONS  : current conf, 1 2 3
+; 
+; W21= SUPRPLOT inspection                     
+; W22= MERGED CURVES                           
+; W23= DELTA Q                                 
+;                                              
+; W24= Used for ALTERNATIVE WATER              
+; W25= Used for imported gnum.100 files        
+; W26= Used for ALTERNATIVE FLUX trs. 
+
+; LAMP main routine ends here:
+; TODO: Change workspace to export
+
+take_datp,dataExp,w=19
+s = { data_values : w19[*,0], data_shape : size(w1,/DIMENSIONS), data_label :  dataExp.Y_TIT, data_units :  dataExp.Y_TIT, x_axis_shape : size(dataExp.X,/DIMENSIONS), x_axis_values : dataExp.X, x_axis_label : dataExp.X_TIT, x_axis_unit : dataExp.X_TIT }
+
+export_json,s,file='%{result_file}'

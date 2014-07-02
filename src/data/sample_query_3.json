@@ -1,0 +1,8 @@
+
+{
+	"method" : "reduce",
+	"params" : {
+		"numors" : "94460,94461,94462",
+		"UseMONITOR" : "yes"
+	}
+}

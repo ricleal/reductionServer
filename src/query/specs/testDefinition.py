@@ -32,6 +32,8 @@ class Test(unittest.TestCase):
         self.assertEqual(q.getExecutableFullPath("theta_vs_counts"),
                          "/home/leal/git/reductionServer/src/query/scripts/ILL_IN5_theta_vs_counts.py")
         self.assertEqual(q.getExecutableTimeout("theta_vs_counts"), 30)
+        
+        self.assertEqual(q.getDefaultValueForParameter("reduce", "UseMONITOR"),'yes')
 
 
 if __name__ == "__main__":

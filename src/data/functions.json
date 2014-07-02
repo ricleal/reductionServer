@@ -69,5 +69,34 @@
 				"units" : "NA"
 			}
 		]
+	},
+		"reduce" : {
+		"description" : "Reduces data for sans",
+		"instruments" : [
+			"D22"
+		],
+		"timeout" : 60,
+		"executable" : "%(scripts_directory)s/%(facility_name)s_%(instrument_name)s_reduce.prox",
+		"params" : [
+			{
+				"name" : "numors",
+				"type" : "string",
+				"description" : "one or more numors splitted by ,"
+			},
+			{
+				"name" : "UseMONITOR",
+				"type" : "yes or no",
+				"description" : "",
+				"default" : "yes"
+			}
+		],
+		"output" : [
+			{
+				"name" : "plot",
+				"type" : "plot_1d",
+				"description" : "1D plot of theta vs counts",
+				"units" : "NA"
+			}
+		]
 	}
 }

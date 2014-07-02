@@ -12,11 +12,14 @@ logger = logging.getLogger(__name__)
 
 class QuerySpecs(object):
     '''
-    classdocs
     
-    Class responsable for storing the available functions:
-    - Local
-    - Remote (available to nomad)
+    Class responsable for storing the available functions for each query.
+    
+    The specification of the queries is defined in:  
+    ("General", "functions_specs_file")
+    
+    The file is transformed in a dictionary which is stored under the
+    variable self._functionsDic
     
     '''
     
@@ -25,6 +28,7 @@ class QuerySpecs(object):
         Constructor
         '''
         functionsFilename = configParser.get("General", "functions_specs_file")
+        logger.debug("Using functions spec file: " + functionsFilename)
         self._functionsDic = self._importJsonFromFile(functionsFilename)
         
     
@@ -38,7 +42,7 @@ class QuerySpecs(object):
             json_data.close()
             return data
         except Exception as e:
-            message = "Error while validating the functions file: " + filename
+            message = "Error while validating the JSON of functions spec file: " + filename
             logger.exception(message + str(e))
     
     def doesFunctionExist(self,functionName):
@@ -68,4 +72,23 @@ class QuerySpecs(object):
             return timeout
         except:
             return None
+    
+    
+    def getDefaultValueForParameter(self, functionName, paramName):
+        '''
+        If there is a 'default' key for every parameter returns its value
+        Return None if there is no default defined
+        '''
+        try :
+            params = self._functionsDic[functionName]['params']
+            for p in params:
+                print p
+                if p['name'] == paramName:
+                    return p['default']
+            return None
+        except Exception as e:
+            message = "Error while get Default Value For Parameter=" + paramName
+            logger.exception(message + str(e))
+            return None
+        
 
