@@ -80,6 +80,10 @@ class Launcher():
         return ft.name
     
     def _replaceAll(self, text, mydict):
+        """
+        Replaces in text ocurrences of %{xpto}
+        by mydict['xpto']=VALUE
+        """
         for k, v in mydict.iteritems():
             k = "%{" + k + "}"
             text = text.replace(k, v)

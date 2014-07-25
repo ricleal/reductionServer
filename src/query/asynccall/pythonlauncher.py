@@ -110,6 +110,7 @@ class PythonScriptLauncher(Launcher,Process):
             logger.info("Thread finished successfully: %s"%self.command)
         
         if self.inputParams is not None and self.command.startswith('/tmp'):
+            logger.info("Deleting file: " + self.command)
             os.remove(self.command)
         self.inputParams = None
         

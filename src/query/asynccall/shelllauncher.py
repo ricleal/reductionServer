@@ -182,6 +182,7 @@ class ShellLauncher(Launcher,Thread):
             logger.info("Thread finished successfully: %s"%self.command)
         
         if self.inputParams is not None and self.command.startswith('/tmp'):
+            logger.info("Deleting file: " + self.command)
             os.remove(self.command)
         self.inputParams = None
         
@@ -277,6 +278,7 @@ class ShellLauncher(Launcher,Thread):
                 if len(contents) <= 0 :
                     raise Exception("Results file appears to be empty!")
                 self._result = fixPlot1D(contents)
+                logger.debug("Deleting result file: " + self._resultFile)
                 os.remove(self._resultFile)
             except Exception, e:
                 logger.exception(str(e))
