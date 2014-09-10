@@ -40,7 +40,8 @@ def workspaceToDic(ws):
     xAxis = ws.getAxis(0)
     xAxisUnit = xAxis.getUnit()
     res["x_axis_label"] = xAxisUnit.caption()
-    res["x_axis_unit"] = xAxisUnit.label()
+    #res["x_axis_unit"] = xAxisUnit.label()
+    res["x_axis_unit"] = str(xAxisUnit.symbol())
     
     return res
     

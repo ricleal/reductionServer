@@ -29,6 +29,7 @@ class Test(unittest.TestCase):
         f.write("import time\n")
         f.write("print 'Starting...'\n")
         f.write("print '%{toreplace}' \n")
+        f.write("print '%{nottoreplace}' \n")
         f.write("print 'Finishing...'\n")
 
 
@@ -58,13 +59,13 @@ class Test(unittest.TestCase):
         print out
         self.assertIn("REPLACED", out)
         
-    def testRealScript(self):
-        p = PythonScriptLauncher()
-        params = {'data_file_full_path':'/net/serdon/illdata/131/in5/exp_TEST-2216/rawdata/104041.nxs'}
-        p.sendCommand('/home/leal/git/reductionServer/src/query/scripts/ILL_IN5_theta_vs_counts.py', 30,params)
-        res = p.getResult()
-        print res
-        self.assertIn("data_values", res)
+#     def testRealScript(self):
+#         p = PythonScriptLauncher()
+#         params = {'data_file_full_path':'/net/serdon/illdata/131/in5/exp_TEST-2216/rawdata/104041.nxs'}
+#         p.sendCommand('/home/leal/git/reductionServer/src/query/scripts/ILL_IN5_theta_vs_counts.py', 30,params)
+#         res = p.getResult()
+#         print res
+#         self.assertIn("data_values", res)
         
 
 

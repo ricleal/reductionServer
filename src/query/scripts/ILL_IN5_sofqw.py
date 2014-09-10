@@ -9,22 +9,18 @@ Created on Sep 25, 2013
 
 from query.scripts.mantid_common import *
 
-datafile = '%{data_file_full_path}'
+from mantid import config
+
+config.appendDataSearchDir(r"%{working_path}") 
+
+config['default.instrument'] = "IN5"
+config.setFacility("ILL")
 
 maskfile = configParser.get('Mantid','in5_mask_file')
 mapfile = configParser.get('Mantid','in5_map_file')
 
-
-
-
-
-
-
-
-
-
 # load data
-Load(Filename=datafile,OutputWorkspace='Data')
+Load(Filename='%{data_numors}.nxs',OutputWorkspace='Data')
 # Load Mask
 LoadMask(Instrument='IN5',InputFile=maskfile ,OutputWorkspace='IN5_Mask')
 # Apply mask to the detector - data

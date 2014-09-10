@@ -34,7 +34,10 @@ class Test(unittest.TestCase):
         self.assertEqual(q.getExecutableTimeout("theta_vs_counts"), 30)
         
         self.assertEqual(q.getDefaultValueForParameter("reduce", "UseMONITOR"),'yes')
-
+        self.assertEqual(q.getDefaultValueForParameter("theta_vs_counts", "numors"), None)
+        self.assertEqual(q.getDefaultValueForParameter("theta_vs_counts", "Dummy"), None)
+        
+        self.assertEqual(q.getDefaultParameters("reduce"), {"UseMONITOR" : 'yes' })
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testQuery']

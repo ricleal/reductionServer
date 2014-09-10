@@ -1,3 +1,132 @@
+031280
+031281
+031282
+031283
+031284
+031285
+031286
+031287
+031288
+031289
+031290
+031291
+031292
+031293
+031294
+031295
+031296
+031297
+031298
+031299
+031300
+031301
+031302
+031303
+031304
+031305
+031306
+031307
+031308
+031309
+031310
+031311
+031312
+031313
+031314
+031315
+031316
+031317
+031318
+031319
+031320
+031321
+031322
+031323
+031324
+031325
+031326
+031327
+031328
+031329
+031330
+031331
+031332
+031333
+031334
+031335
+031336
+031337
+031338
+031338
+031339
+031339
+
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031280" http://localhost:8080/file/031280
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031281" http://localhost:8080/file/031281
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031281" http://localhost:8080/file/031281
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031282" http://localhost:8080/file/031282
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031282" http://localhost:8080/file/031282
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031283" http://localhost:8080/file/031283
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031283" http://localhost:8080/file/031283
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031284" http://localhost:8080/file/031284
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031285" http://localhost:8080/file/031285
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031286" http://localhost:8080/file/031286
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031287" http://localhost:8080/file/031287
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031288" http://localhost:8080/file/031288
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031289" http://localhost:8080/file/031289
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031290" http://localhost:8080/file/031290
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031291" http://localhost:8080/file/031291
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031292" http://localhost:8080/file/031292
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031293" http://localhost:8080/file/031293
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031294" http://localhost:8080/file/031294
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031295" http://localhost:8080/file/031295
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031296" http://localhost:8080/file/031296
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031297" http://localhost:8080/file/031297
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031298" http://localhost:8080/file/031298
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031299" http://localhost:8080/file/031299
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031300" http://localhost:8080/file/031300
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031301" http://localhost:8080/file/031301
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031302" http://localhost:8080/file/031302
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031303" http://localhost:8080/file/031303
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031304" http://localhost:8080/file/031304
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031305" http://localhost:8080/file/031305
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031306" http://localhost:8080/file/031306
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031307" http://localhost:8080/file/031307
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031308" http://localhost:8080/file/031308
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031309" http://localhost:8080/file/031309
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031310" http://localhost:8080/file/031310
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031311" http://localhost:8080/file/031311
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031312" http://localhost:8080/file/031312
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031313" http://localhost:8080/file/031313
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031314" http://localhost:8080/file/031314
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031315" http://localhost:8080/file/031315
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031316" http://localhost:8080/file/031316
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031317" http://localhost:8080/file/031317
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031318" http://localhost:8080/file/031318
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031319" http://localhost:8080/file/031319
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031320" http://localhost:8080/file/031320
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031321" http://localhost:8080/file/031321
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031322" http://localhost:8080/file/031322
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031323" http://localhost:8080/file/031323
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031324" http://localhost:8080/file/031324
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031325" http://localhost:8080/file/031325
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031326" http://localhost:8080/file/031326
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031327" http://localhost:8080/file/031327
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031328" http://localhost:8080/file/031328
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031329" http://localhost:8080/file/031329
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031330" http://localhost:8080/file/031330
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031331" http://localhost:8080/file/031331
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031332" http://localhost:8080/file/031332
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031333" http://localhost:8080/file/031333
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031334" http://localhost:8080/file/031334
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031335" http://localhost:8080/file/031335
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031336" http://localhost:8080/file/031336
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031337" http://localhost:8080/file/031337
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031338" http://localhost:8080/file/031338
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031338" http://localhost:8080/file/031338
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031339" http://localhost:8080/file/031339
+curl --noproxy '*' -X POST --data "/home/cs/richard/SANSron/031339" http://localhost:8080/file/031339
+
 
 {
 	"method" : "reduce",

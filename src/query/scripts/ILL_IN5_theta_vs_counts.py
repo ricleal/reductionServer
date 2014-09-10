@@ -20,20 +20,15 @@ import errno
 # import everything
 from query.scripts.mantid_common import *
 
-datafile = '%{data_file_full_path}'
+from mantid import config
+
+config.appendDataSearchDir(r"%{working_path}") 
+config['default.instrument'] = "IN5"
 
 maskfile = configParser.get('Mantid','in5_mask_file')
 
-# ## Redirect STDOUT STDERR
-# import sys, os, logging
-# sys.stdout = os.devnull
-# sys.stderr = os.devnull
-# logger = logging.getLogger()
-# logger.disabled = True
-
-
 # load data
-Load(Filename=datafile,OutputWorkspace='Data')
+Load(Filename='%{data_numors}.nxs',OutputWorkspace='Data')
 # Load Mask
 LoadMask(Instrument='IN5',InputFile=maskfile ,OutputWorkspace='IN5_Mask')
 # Apply mask to the detector - data

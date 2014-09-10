@@ -82,13 +82,37 @@ class QuerySpecs(object):
         try :
             params = self._functionsDic[functionName]['params']
             for p in params:
-                print p
                 if p['name'] == paramName:
-                    return p['default']
+                    if 'default' in p:
+                        logger.debug("Default value for parameter " + paramName + " = " + p['default'])
+                        return p['default']
+                    else :
+                        logger.error('default does not exist for ' + paramName +'. => It is MANDATORY!')
+                        return None
+            logger.error('Parameter '+ paramName + ' does not exist for function ' +  functionName)
             return None
         except Exception as e:
             message = "Error while get Default Value For Parameter=" + paramName
             logger.exception(message + str(e))
             return None
+    
+    def getDefaultParameters(self,functionName):
+        '''
+        Builds a dict of the form:
+        {'paramater name' : 'parameter default value', ... }
+        '''
+        outDic = {}
+        try :
+            params = self._functionsDic[functionName]['params']
+            for p in params:
+                if 'default' in p:
+                    logger.debug("Default value for parameter " + p['name'] + " = " + p['default'])
+                    outDic[p['name']] = p['default']
+            return outDic
+        except Exception as e:
+            message = "Error while getting Default Parameters for function name =" + functionName
+            logger.exception(message + str(e))
+            return outDic
+    
         
 

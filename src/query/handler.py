@@ -63,6 +63,8 @@ class QueryHandler(object):
                 
                 logger.debug("Build executable and params")
                 inputParams = self._buildInputParams()
+                # Add default values to the params
+                self._buildDefaultParams(inputParams)
                 queryJson['input_params'] = inputParams
             
                 logger.debug("Insert query in the DB")
@@ -130,32 +132,44 @@ class QueryHandler(object):
         More fields may be needed in the future!
         
         '''
+        
         params = {}
         params["instrument"] =  configParser.get("General", "instrument_name")
         
         if self.validator.jsonContent.has_key("params") :
             queryParams = self.validator.jsonContent["params"]
-            if queryParams.has_key("numors"): # list of numors:
-                listOfNumorsText =  queryParams["numors"]
-                # TODO : We have to handle this for numor ranges
-                listOfNumors = listOfNumorsText.split(',')
-                db = storage.getDBConnection()
-                listOfFiles = db.getListOfFiles(listOfNumors)
-                if len(listOfFiles) <= 0:
-                    raise Exception("The numors %s don't exist in the DB"%listOfNumors)
-                elif len(listOfFiles) > 1:
-                    params["data_files_full_path"]=listOfFiles
-                    params["data_files"] = []
-                    for i in listOfFiles:
-                        b = os.path.basename(i)
-                        params["data_files"].append(b)
-                else:
-                    params["data_file_full_path"]=listOfFiles[0]
-                    params["data_file"] = os.path.basename(listOfFiles[0])
-                # Assuming all files in the same folder
-                params["working_path"] = os.path.dirname(listOfFiles[0])
+            # for all paramms: 
+            for key, value in queryParams.iteritems():
+                if key.endswith("numors"):
+                    listOfNumorsText =  value
+                    # TODO : We have to handle this for numor ranges
+                    listOfNumors = listOfNumorsText.split(',')
+                    db = storage.getDBConnection()
+                    listOfFiles = db.getListOfFiles(listOfNumors)
+                    if len(listOfFiles) <= 0:
+                        raise Exception("The numors %s don't exist in the DB"%listOfNumors)
+
+                    params["working_path"] = os.path.dirname(listOfFiles[0])
+                params[key]=value
         logger.debug(pprint.pformat(params))
         return params 
+    
+    def _buildDefaultParams(self, queryParams):
+        """
+        It will add to the @queryParams the default parameters,
+        i.e., if a parameter is not present in  queryParams,
+        the default { name : value } will be added
+        
+        @param queryParams : dic with { name : value, ... } of the input parameters
+        """
+        # Those are the default values 
+        defaultParamsDic = self.validator.queryDef.getDefaultParameters("reduce")
+        
+        for key in defaultParamsDic:
+            if key not in queryParams.keys():
+                queryParams.update({ key : defaultParamsDic[key] })
+        
+            
         
     def _launchTheExecutable(self, inputParams):
         logger.debug("Launching : " + self.validator.executable)

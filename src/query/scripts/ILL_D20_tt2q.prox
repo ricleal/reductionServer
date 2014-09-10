@@ -8,7 +8,7 @@ json_compile
 RDSET,inst="%{instrument}"
 P_SET_PATH,"%{working_path}"
 
-w1 = rdopr("%{data_file}",datp=d)
+w1 = rdopr("%{numors}",datp=d)
 normalize,w1,100000
 w1 = tt2q(w1)
 
